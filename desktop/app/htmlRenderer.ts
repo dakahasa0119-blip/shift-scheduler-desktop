@@ -40,6 +40,7 @@ function renderWorkspace(viewModel: AppViewModel): string {
     "</div>",
     '<aside class="side-rail" aria-label="操作と確認">',
     renderOperationPanel(viewModel),
+    renderWorkflowPanel(viewModel),
     renderDiagnostics(viewModel),
     "</aside>",
     "</section>",
@@ -54,6 +55,7 @@ function renderMonthlyOverview(viewModel: AppViewModel): string {
     .filter((line) => line.trim()).length;
   const shortageCount = buildDailyCoverage(viewModel).reduce((sum, day) => sum + day.shortages.length, 0);
   const nightCount = activeRows.reduce((sum, row) => sum + countRowShifts(row).night, 0);
+  const resultLabel = viewModel.diagnostics?.result.label || viewModel.status.label;
   return [
     '<section class="monthly-overview" aria-label="運用サマリー">',
     renderOverviewMetric("対象月", `${viewModel.settings.year}年${viewModel.settings.month}月`),
@@ -61,10 +63,7 @@ function renderMonthlyOverview(viewModel: AppViewModel): string {
     renderOverviewMetric("希望", `${requestCount}件`),
     renderOverviewMetric("夜勤", `${nightCount}枠`),
     renderOverviewMetric("不足", shortageCount ? `${shortageCount}件` : "なし", shortageCount ? "blocked" : "ready"),
-    renderOverviewMetric(
-      "必要配置",
-      `早${viewModel.settings.requirements.early} 日${viewModel.settings.requirements.day} 遅${viewModel.settings.requirements.late} 夜${viewModel.settings.requirements.night}`,
-    ),
+    renderOverviewMetric("運用判定", resultLabel, viewModel.status.tone === "blocked" ? "blocked" : "neutral"),
     "</section>",
   ].join("");
 }
@@ -98,6 +97,32 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "exportPdf"),
     renderActionById(viewModel, "exportJson"),
     "</div>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderWorkflowPanel(viewModel: AppViewModel): string {
+  const hasDiagnostics = Boolean(viewModel.diagnostics);
+  const blocked = viewModel.status.tone === "blocked";
+  const steps = [
+    { label: "入力確認", detail: "職員条件、希望、勤務表の形式を確認", state: "ready" },
+    { label: "勤務表作成", detail: "Solverで作成し、停止理由と注意事項を確認", state: hasDiagnostics ? (blocked ? "blocked" : "ready") : "pending" },
+    { label: "配布前確認", detail: "不足、未充足希望、修正候補を確認", state: hasDiagnostics ? (blocked ? "blocked" : "ready") : "pending" },
+    { label: "勤務実績作成", detail: "配布用勤務表を実績シートへコピー", state: "pending" },
+    { label: "急休対応", detail: "当日急休は実績へ反映し、必要時にリカバリー", state: "pending" },
+    { label: "月次切替", detail: "勤務表・実績・履歴をアーカイブして次月へ", state: "pending" },
+  ];
+  return [
+    '<section class="workflow-panel" aria-label="運用フロー">',
+    "<h2>運用フロー</h2>",
+    '<div class="workflow-list">',
+    steps
+      .map(
+        (step, index) =>
+          `<div class="workflow-step workflow-${step.state}"><span>${index + 1}</span><strong>${escapeHtml(step.label)}</strong><small>${escapeHtml(step.detail)}</small></div>`,
+      )
+      .join(""),
     "</div>",
     "</section>",
   ].join("");
@@ -181,9 +206,10 @@ function renderRequestsOverview(viewModel: AppViewModel): string {
     "</div>",
     '<div class="request-summary">',
     Object.entries(counts)
-      .map(([type, count]) => `<span class="request-pill">${escapeHtml(type)} <strong>${count}</strong></span>`)
+      .map(([type, count]) => `<span class="request-pill request-${requestKind(type)}">${escapeHtml(type)} <strong>${count}</strong></span>`)
       .join(""),
     "</div>",
+    renderRequestLegend(),
     '<div class="preview-wrap compact-table">',
     '<table class="preview-table request-preview">',
     "<thead><tr>",
@@ -195,7 +221,7 @@ function renderRequestsOverview(viewModel: AppViewModel): string {
         [
           "<tr>",
           `<td><strong>${escapeHtml(row[0] || "")}</strong></td>`,
-          `<td>${escapeHtml(row[1] || "")}</td>`,
+          `<td><span class="request-type request-${requestKind(row[1] || "")}">${escapeHtml(row[1] || "")}</span></td>`,
           `<td>${escapeHtml(row[2] || "")}</td>`,
           `<td>${escapeHtml(row[3] || "")}</td>`,
           `<td>${escapeHtml(row[4] || "")}</td>`,
@@ -207,6 +233,27 @@ function renderRequestsOverview(viewModel: AppViewModel): string {
     "</div>",
     "</section>",
   ].join("");
+}
+
+function renderRequestLegend(): string {
+  return [
+    '<div class="request-legend" aria-label="希望区分の扱い">',
+    '<span><strong class="legend-hard"></strong>休暇・公休系は必ず守る</span>',
+    '<span><strong class="legend-work"></strong>勤務希望は未充足でも確認事項</span>',
+    '<span><strong class="legend-exclusion"></strong>供給除外は公休数に含めない</span>',
+    '<span><strong class="legend-urgent"></strong>当日急休は勤務実績側で扱う</span>',
+    "</div>",
+  ].join("");
+}
+
+function requestKind(type: string): "hard" | "work" | "exclusion" | "urgent" | "other" {
+  if (type === "事前希望休" || type === "有給" || type === "特別休") return "hard";
+  if (type === "希望早出" || type === "希望日勤" || type === "希望遅出" || type === "希望夜勤") return "work";
+  if (type === "出張" || type === "産休" || type === "育休" || type === "休職" || type === "長期病欠" || type === "入職前" || type === "退職後" || type === "供給除外") {
+    return "exclusion";
+  }
+  if (type === "当日急遽休" || type === "当日特別休") return "urgent";
+  return "other";
 }
 
 function renderShiftChips(value: string): string {
@@ -662,6 +709,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 .action:disabled { color: #9aa3ad; background: #eef1f4; }
 .action:not(:disabled) { cursor: pointer; }
 .operation-panel,
+.workflow-panel,
 .diagnostics {
   background: var(--surface);
   border: 1px solid var(--line);
@@ -671,6 +719,59 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 .operation-panel {
   display: grid;
   gap: 12px;
+}
+.workflow-list {
+  display: grid;
+  gap: 8px;
+}
+.workflow-step {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 2px 8px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfcfd;
+}
+.workflow-step span {
+  grid-row: span 2;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #e7edf2;
+  color: #41505c;
+  font-size: 12px;
+  font-weight: 800;
+}
+.workflow-step strong {
+  line-height: 1.2;
+}
+.workflow-step small {
+  color: var(--muted);
+  line-height: 1.35;
+}
+.workflow-ready {
+  border-color: #a8cfb4;
+  background: #f5fbf7;
+}
+.workflow-ready span {
+  background: #dcefe3;
+  color: #1d6f42;
+}
+.workflow-blocked {
+  border-color: #dfa1a1;
+  background: #fff6f6;
+}
+.workflow-blocked span {
+  background: #f8d8d8;
+  color: var(--blocked);
+}
+.workflow-pending {
+  opacity: 0.82;
 }
 .operation-group {
   display: grid;
@@ -886,8 +987,61 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   font-size: 12px;
   font-weight: 700;
 }
+.request-hard {
+  border-color: #d7b267;
+  background: #fff8e7;
+  color: #694b10;
+}
+.request-work {
+  border-color: #9fc3d5;
+  background: #eef7fb;
+  color: #234f64;
+}
+.request-exclusion {
+  border-color: #c5cbd1;
+  background: #f5f6f7;
+  color: #3f4850;
+}
+.request-urgent {
+  border-color: #dfaaaa;
+  background: #fff3f3;
+  color: #8b3434;
+}
 .request-pill strong {
   font-variant-numeric: tabular-nums;
+}
+.request-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.request-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.request-legend strong {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+.legend-hard { background: #d7b267; }
+.legend-work { background: #9fc3d5; }
+.legend-exclusion { background: #aeb7bf; }
+.legend-urgent { background: #dfaaaa; }
+.request-type {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
 }
 .settings-grid {
   display: grid;
@@ -1046,6 +1200,7 @@ thead .sticky { z-index: 5; background: #e7edf2; }
   .workspace { grid-template-columns: 1fr; }
   .side-rail { position: static; }
   .monthly-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .request-legend { grid-template-columns: 1fr; }
   .section-heading { align-items: flex-start; flex-direction: column; }
   .button-grid { grid-template-columns: 1fr; }
   .role-col { min-width: 92px; }
