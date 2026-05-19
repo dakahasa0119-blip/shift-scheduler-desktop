@@ -19,6 +19,8 @@ export interface AppViewModel {
   actualScheduleTsv: string;
   changeHistoryTsv: string;
   urgentLeaveHistoryTsv: string;
+  plannedLeaveCancelOptions: AppSelectOptionViewModel[];
+  urgentLeaveCancelOptions: AppSelectOptionViewModel[];
   settings: AppSettingsViewModel;
   schedule: ScheduleTableViewModel;
   diagnostics: DiagnosticPanelViewModel | null;
@@ -42,6 +44,11 @@ export interface AppStatusViewModel {
   tone: "ready" | "working" | "warning" | "blocked";
 }
 
+export interface AppSelectOptionViewModel {
+  value: string;
+  label: string;
+}
+
 export interface AppActionViewModel {
   id:
     | "validate"
@@ -49,6 +56,8 @@ export interface AppActionViewModel {
     | "solve"
     | "createActual"
     | "addLeaveRequest"
+    | "cancelPlannedLeave"
+    | "cancelUrgentLeave"
     | "recover"
     | "save"
     | "load"
@@ -65,6 +74,7 @@ export interface AppActionViewModel {
     | "ensureHistory"
     | "exportChangeHistoryTsv"
     | "exportUrgentLeaveHistoryTsv"
+    | "exportAiDebugJson"
     | "applyJson"
     | "exportJson"
     | "exportExcel"
@@ -160,6 +170,8 @@ function buildAppViewModelFromParts(
     actualScheduleTsv: renderActualScheduleTsv(document),
     changeHistoryTsv: renderChangeHistoryTsv(document),
     urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
+    plannedLeaveCancelOptions: buildPlannedLeaveCancelOptions(document),
+    urgentLeaveCancelOptions: buildUrgentLeaveCancelOptions(document),
     settings: {
       year: document.year,
       month: document.month,
@@ -204,6 +216,16 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       id: "addLeaveRequest",
       label: "休暇・希望を登録",
       enabled: canSolve,
+    },
+    {
+      id: "cancelPlannedLeave",
+      label: "事前休暇を取り消し",
+      enabled: true,
+    },
+    {
+      id: "cancelUrgentLeave",
+      label: "急遽休を取り消し",
+      enabled: true,
     },
     {
       id: "recover",
@@ -286,6 +308,11 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       enabled: true,
     },
     {
+      id: "exportAiDebugJson",
+      label: "AI向け出力",
+      enabled: true,
+    },
+    {
       id: "applyJson",
       label: "JSON反映",
       enabled: true,
@@ -311,4 +338,32 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       enabled: true,
     },
   ];
+}
+
+function buildPlannedLeaveCancelOptions(document: MonthlyScheduleDocument): AppSelectOptionViewModel[] {
+  const staffById = new Map(document.staff.map((staff) => [staff.id, staff.name]));
+  return document.requests
+    .map((request, index) => ({ request, index }))
+    .filter(({ request }) => request.type !== "当日急遽休")
+    .reverse()
+    .map(({ request, index }) => {
+      const staffName = staffById.get(request.staffId) || request.staffId;
+      const range = request.startDate === request.endDate ? request.startDate : `${request.startDate} - ${request.endDate}`;
+      const notes = request.notes ? ` / ${request.notes}` : "";
+      return {
+        value: String(index),
+        label: `${range} / ${staffName} / ${request.type}${notes}`,
+      };
+    });
+}
+
+function buildUrgentLeaveCancelOptions(document: MonthlyScheduleDocument): AppSelectOptionViewModel[] {
+  return (document.urgentLeaveHistory || [])
+    .map((entry, index) => ({ entry, index }))
+    .filter(({ entry }) => !entry.canceled)
+    .reverse()
+    .map(({ entry, index }) => ({
+      value: String(index),
+      label: `${entry.date} / ${entry.staffName} / 元:${entry.originalShift || "空欄"} -> ${entry.changedTo || ""}`,
+    }));
 }

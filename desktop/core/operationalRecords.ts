@@ -11,6 +11,10 @@ export interface LeaveRequestInput {
   notes?: string;
 }
 
+export interface CancelByIndexInput {
+  index?: number | string;
+}
+
 export function createOrRefreshActualSchedule(document: MonthlyScheduleDocument, now: Date = new Date()): MonthlyScheduleDocument {
   const actualSchedule = cloneScheduleRows(document.schedule.length ? document.schedule : document.staff.map((staff) => ({
     staffId: staff.id,
@@ -122,6 +126,71 @@ export function markUrgentLeaveToActual(
     beforeValue,
     afterValue: "公",
     notes,
+    executedAt: now.toISOString(),
+  });
+}
+
+export function cancelPlannedLeaveRequest(
+  document: MonthlyScheduleDocument,
+  input: CancelByIndexInput,
+  now: Date = new Date(),
+): MonthlyScheduleDocument {
+  const index = normalizeIndex(input.index);
+  const request = document.requests[index];
+  if (!request) throw new Error("取消対象が不正です。");
+  if (request.type === "当日急遽休") throw new Error("当日急遽休は急休取消で取り消してください。");
+  const staff = document.staff.find((item) => item.id === request.staffId);
+  const staffName = staff?.name || request.staffId;
+  const requests = document.requests.filter((_, itemIndex) => itemIndex !== index);
+  return appendChangeHistory({
+    ...document,
+    requests,
+    diagnostics: null,
+  }, {
+    category: "事前休暇取消",
+    leaveType: request.type,
+    staffName,
+    date: request.startDate,
+    beforeValue: mapLeaveTypeToShift(request.type),
+    afterValue: "",
+    notes: request.notes || "取消",
+    executedAt: now.toISOString(),
+  });
+}
+
+export function cancelUrgentLeave(
+  document: MonthlyScheduleDocument,
+  input: CancelByIndexInput,
+  now: Date = new Date(),
+): MonthlyScheduleDocument {
+  const index = normalizeIndex(input.index);
+  const entry = document.urgentLeaveHistory?.[index];
+  if (!entry) throw new Error("取消対象が不正です。");
+  if (entry.canceled) throw new Error("この急遽休はすでに取り消し済みです。");
+  if (!document.actualSchedule) throw new Error("勤務実績がありません。");
+  const dayIndex = dayIndexInMonth(entry.date, document.year, document.month);
+  if (dayIndex < 0) throw new Error("指定日が勤務実績の対象月ではありません。");
+  const actualSchedule = cloneScheduleRows(document.actualSchedule);
+  const row = actualSchedule.find((item) => item.name === entry.staffName);
+  if (!row) throw new Error("勤務実績上に該当スタッフが見つかりません。");
+  const beforeValue = row.shifts[dayIndex] || entry.changedTo || "公";
+  row.shifts[dayIndex] = entry.originalShift || "";
+  const urgentLeaveHistory = (document.urgentLeaveHistory || []).map((item, itemIndex) => (
+    itemIndex === index ? { ...item, canceled: true } : item
+  ));
+  return appendChangeHistory({
+    ...document,
+    actualSchedule,
+    urgentLeaveHistory,
+    diagnostics: null,
+  }, {
+    category: "急遽休取消",
+    leaveType: "当日急遽休",
+    staffName: entry.staffName,
+    date: entry.date,
+    beforeValue,
+    afterValue: entry.originalShift || "",
+    notes: entry.notes || "取消",
     executedAt: now.toISOString(),
   });
 }
@@ -280,6 +349,12 @@ function dayIndexInMonth(date: string, year: number, month: number): number {
   if (Number.isNaN(parsed.getTime())) return -1;
   if (parsed.getFullYear() !== year || parsed.getMonth() + 1 !== month) return -1;
   return parsed.getDate() - 1;
+}
+
+function normalizeIndex(value: number | string | undefined): number {
+  const index = Number(value);
+  if (!Number.isInteger(index) || index < 0) return -1;
+  return index;
 }
 
 function clean(value: string | undefined): string {

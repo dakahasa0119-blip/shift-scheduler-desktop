@@ -12,7 +12,16 @@ import { applyScheduleTsv } from "../core/scheduleTsv";
 import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
 import { parseUrgentLeaveTsv } from "../core/recoveryTsv";
 import { convertGasSolverInputToDocument, extractGasSolverInputPayload } from "../core/gasImport";
-import { addLeaveRequest, applyActualScheduleTsv, createOrRefreshActualSchedule, ensureChangeHistory, type LeaveRequestInput } from "../core/operationalRecords";
+import {
+  addLeaveRequest,
+  applyActualScheduleTsv,
+  cancelPlannedLeaveRequest,
+  cancelUrgentLeave,
+  createOrRefreshActualSchedule,
+  ensureChangeHistory,
+  type CancelByIndexInput,
+  type LeaveRequestInput,
+} from "../core/operationalRecords";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -187,6 +196,60 @@ export class AppController {
         viewModel: {
           ...buildAppViewModelFromDocument(document),
           status: { label: "休暇・希望勤務を登録しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: message,
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: message, tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  cancelPlannedLeave(input: CancelByIndexInput): AppControllerState {
+    try {
+      const document = cancelPlannedLeaveRequest(this.state.document, input);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "事前休暇を取り消しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: message,
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: message, tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  cancelUrgentLeave(input: CancelByIndexInput): AppControllerState {
+    try {
+      const document = cancelUrgentLeave(this.state.document, input);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "急遽休を取り消しました", tone: "ready" },
         },
         busy: false,
         lastError: "",

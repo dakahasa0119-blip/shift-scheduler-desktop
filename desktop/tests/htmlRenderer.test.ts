@@ -39,6 +39,10 @@ async function main(): Promise<void> {
   assertIncludes(html, '<select id="leave-staff-name"', "leave staff selector");
   assertIncludes(html, '<select id="leave-type"', "leave type selector");
   assertIncludes(html, '<button type="button" class="action action-addLeaveRequest" data-action="addLeaveRequest">休暇・希望を登録</button>', "leave request button");
+  assertIncludes(html, '<select id="cancel-planned-leave-index"', "planned leave cancel selector");
+  assertIncludes(html, '<select id="cancel-urgent-leave-index"', "urgent leave cancel selector");
+  assertIncludes(html, '<button type="button" class="action action-cancelPlannedLeave" data-action="cancelPlannedLeave">事前休暇を取り消し</button>', "planned cancel button");
+  assertIncludes(html, '<button type="button" class="action action-cancelUrgentLeave" data-action="cancelUrgentLeave">急遽休を取り消し</button>', "urgent cancel button");
   assertIncludes(html, '<input id="recovery-fixed-through-date"', "recovery fixed date");
   assertIncludes(html, '<textarea id="schedule-tsv"', "schedule tsv editor");
   assertIncludes(html, '<textarea id="actual-schedule-tsv"', "actual tsv editor");
@@ -49,6 +53,8 @@ async function main(): Promise<void> {
   assertIncludes(html, 'solve: actionBasePath + "/solve"', "solve endpoint");
   assertIncludes(html, 'recover: actionBasePath + "/recover"', "recover endpoint");
   assertIncludes(html, 'addLeaveRequest: actionBasePath + "/add-leave-request"', "leave endpoint");
+  assertIncludes(html, 'cancelPlannedLeave: actionBasePath + "/cancel-planned-leave"', "planned cancel endpoint");
+  assertIncludes(html, 'cancelUrgentLeave: actionBasePath + "/cancel-urgent-leave"', "urgent cancel endpoint");
   assertIncludes(html, 'save: actionBasePath + "/save"', "save endpoint");
   assertIncludes(html, 'load: actionBasePath + "/load"', "load endpoint");
   assertIncludes(html, 'backup: actionBasePath + "/backup"', "backup endpoint");
@@ -61,6 +67,7 @@ async function main(): Promise<void> {
   assertIncludes(html, 'exportScheduleTsv: actionBasePath + "/export/schedule-tsv"', "schedule tsv export endpoint");
   assertIncludes(html, 'applyActualScheduleTsv: actionBasePath + "/import/actual-schedule-tsv"', "actual tsv import endpoint");
   assertIncludes(html, 'exportChangeHistoryTsv: actionBasePath + "/export/change-history-tsv"', "history tsv export endpoint");
+  assertIncludes(html, 'exportAiDebugJson: actionBasePath + "/export/ai-debug-json"', "ai debug export endpoint");
   assertIncludes(html, 'applyJson: actionBasePath + "/import/json"', "json import endpoint");
   assertIncludes(html, 'exportJson: actionBasePath + "/export/json"', "json export endpoint");
   assertIncludes(html, 'exportExcel: actionBasePath + "/export/excel"', "export endpoint");

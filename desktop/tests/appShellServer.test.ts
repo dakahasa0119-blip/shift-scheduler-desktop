@@ -110,6 +110,11 @@ async function main(): Promise<void> {
     assertEqual(exportedJson.statusCode, 200, "json export status code");
     assertIncludes(exportedJson.body, '"month": 2', "json export month");
 
+    const aiDebug = await get(`${server.url}/app/export/ai-debug-json`);
+    assertEqual(aiDebug.statusCode, 200, "ai debug status code");
+    assertIncludes(aiDebug.body, '"schemaVersion": "desktop-shift-scheduler-ai-debug/v1"', "ai debug schema");
+    assertIncludes(aiDebug.body, '"source": "desktop-linux"', "ai debug source");
+
     const excel = await get(`${server.url}/app/export/excel`);
     assertEqual(excel.statusCode, 200, "excel status code");
     assertEqual(excel.body.charCodeAt(0), 0x50, "excel zip byte 1");

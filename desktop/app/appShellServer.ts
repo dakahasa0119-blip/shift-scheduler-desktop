@@ -1,4 +1,5 @@
 import type { MonthlyScheduleDocument } from "../core/domain";
+import { renderAiDebugBundleJson } from "../core/aiDebugBundle";
 import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
@@ -141,6 +142,20 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/cancel-planned-leave") {
+    const body = await readJsonBody(request, 1024 * 1024);
+    const state = controller.cancelPlannedLeave(body);
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/cancel-urgent-leave") {
+    const body = await readJsonBody(request, 1024 * 1024);
+    const state = controller.cancelUrgentLeave(body);
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/ensure-history") {
     const state = controller.ensureHistory();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
@@ -237,6 +252,11 @@ async function handleShellRequest(
     return;
   }
 
+  if ((method === "GET" || method === "POST") && path === "/app/export/ai-debug-json") {
+    sendJson(response, renderAiDebugBundleJson(controller.getState().document));
+    return;
+  }
+
   if ((method === "GET" || method === "POST") && path === "/app/export/json") {
     const body = `${JSON.stringify(controller.getState().document, null, 2)}\n`;
     response.writeHead(200, {
@@ -310,6 +330,15 @@ function renderQuitHtml(): string {
 function sendTsv(response: any, body: string): void {
   response.writeHead(200, {
     "content-type": "text/tab-separated-values; charset=utf-8",
+    "cache-control": "no-store",
+    "content-length": Buffer.byteLength(body, "utf8"),
+  });
+  response.end(body);
+}
+
+function sendJson(response: any, body: string): void {
+  response.writeHead(200, {
+    "content-type": "application/json; charset=utf-8",
     "cache-control": "no-store",
     "content-length": Buffer.byteLength(body, "utf8"),
   });

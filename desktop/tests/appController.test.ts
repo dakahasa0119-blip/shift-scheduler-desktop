@@ -72,6 +72,19 @@ async function main(): Promise<void> {
   assertEqual(urgentLeave.document.urgentLeaveHistory?.length, 1, "urgent leave history");
   assertEqual(urgentLeave.document.actualSchedule?.[0].shifts[4], "公", "urgent leave actual shift");
 
+  const urgentCanceled = controller.cancelUrgentLeave({ index: 0 });
+  assertEqual(urgentCanceled.viewModel.status.label, "急遽休を取り消しました", "urgent cancel status");
+  assertEqual(urgentCanceled.document.urgentLeaveHistory?.[0].canceled, true, "urgent canceled flag");
+  assertEqual(
+    urgentCanceled.document.actualSchedule?.[0].shifts[4],
+    urgentLeave.document.urgentLeaveHistory?.[0].originalShift,
+    "urgent cancel restored shift",
+  );
+
+  const plannedCanceled = controller.cancelPlannedLeave({ index: urgentCanceled.document.requests.length - 2 });
+  assertEqual(plannedCanceled.viewModel.status.label, "事前休暇を取り消しました", "planned cancel status");
+  assertEqual(plannedCanceled.document.changeHistory?.at(-1)?.category, "事前休暇取消", "planned cancel history");
+
   const excel = await controller.exportExcel();
   assertEqual(excel.ok, true, "excel export ok");
   if (!excel.ok) return;

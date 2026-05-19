@@ -89,8 +89,11 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     '<div class="operation-group">',
     '<h2>急休</h2>',
     renderLeaveRequestForm(viewModel),
+    renderLeaveCancelForms(viewModel),
     renderUrgentLeaveEditor(viewModel),
     renderActionById(viewModel, "addLeaveRequest"),
+    renderActionById(viewModel, "cancelPlannedLeave"),
+    renderActionById(viewModel, "cancelUrgentLeave"),
     renderActionById(viewModel, "recover"),
     "</div>",
     '<div class="operation-group">',
@@ -99,6 +102,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "backup"),
     renderActionById(viewModel, "exportExcel"),
     renderActionById(viewModel, "exportPdf"),
+    renderActionById(viewModel, "exportAiDebugJson"),
     renderActionById(viewModel, "exportJson"),
     "</div>",
     "</div>",
@@ -412,6 +416,29 @@ function renderLeaveRequestForm(viewModel: AppViewModel): string {
     "</div>",
     "</section>",
   ].join("");
+}
+
+function renderLeaveCancelForms(viewModel: AppViewModel): string {
+  const plannedOptions = renderSelectOptions(viewModel.plannedLeaveCancelOptions);
+  const urgentOptions = renderSelectOptions(viewModel.urgentLeaveCancelOptions);
+  return [
+    '<section class="leave-cancel" aria-label="休暇取消">',
+    '<div class="leave-grid">',
+    '<label class="wide"><span>事前休暇取消</span>',
+    `<select id="cancel-planned-leave-index">${plannedOptions || '<option value="">対象なし</option>'}</select>`,
+    "</label>",
+    '<label class="wide"><span>急遽休取消</span>',
+    `<select id="cancel-urgent-leave-index">${urgentOptions || '<option value="">対象なし</option>'}</select>`,
+    "</label>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderSelectOptions(options: { value: string; label: string }[]): string {
+  return options
+    .map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+    .join("");
 }
 
 function renderTopBar(viewModel: AppViewModel): string {
@@ -1306,6 +1333,8 @@ function renderClientScript(actionBasePath: string): string {
     solve: actionBasePath + "/solve",
     createActual: actionBasePath + "/create-actual",
     addLeaveRequest: actionBasePath + "/add-leave-request",
+    cancelPlannedLeave: actionBasePath + "/cancel-planned-leave",
+    cancelUrgentLeave: actionBasePath + "/cancel-urgent-leave",
     recover: actionBasePath + "/recover",
     save: actionBasePath + "/save",
     load: actionBasePath + "/load",
@@ -1322,6 +1351,7 @@ function renderClientScript(actionBasePath: string): string {
     ensureHistory: actionBasePath + "/ensure-history",
     exportChangeHistoryTsv: actionBasePath + "/export/change-history-tsv",
     exportUrgentLeaveHistoryTsv: actionBasePath + "/export/urgent-leave-history-tsv",
+    exportAiDebugJson: actionBasePath + "/export/ai-debug-json",
     applyJson: actionBasePath + "/import/json",
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
@@ -1335,7 +1365,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv" || action === "exportAiDebugJson") {
       window.location.href = endpoint;
       return;
     }
@@ -1348,6 +1378,10 @@ function renderClientScript(actionBasePath: string): string {
           }
       : action === "addLeaveRequest"
         ? collectLeaveRequest()
+      : action === "cancelPlannedLeave"
+        ? { index: document.querySelector("#cancel-planned-leave-index")?.value || "" }
+      : action === "cancelUrgentLeave"
+        ? { index: document.querySelector("#cancel-urgent-leave-index")?.value || "" }
       : action === "applySettings"
         ? collectSettings()
         : action === "applyStaffTsv"
