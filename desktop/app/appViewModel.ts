@@ -1,5 +1,5 @@
 import type { RecoverScheduleResponse, SolveScheduleResponse, ValidateScheduleResponse } from "../api/contracts";
-import type { MonthlyScheduleDocument } from "../core/domain";
+import type { CapacitySimulationPayload, MonthlyScheduleDocument } from "../core/domain";
 import { validateMonthlyScheduleDocument, type ValidationIssue } from "../core/validation";
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
@@ -19,6 +19,8 @@ export interface AppViewModel {
   actualScheduleTsv: string;
   changeHistoryTsv: string;
   urgentLeaveHistoryTsv: string;
+  capacitySimulationJson: string;
+  capacitySimulation: CapacitySimulationViewModel | null;
   plannedLeaveCancelOptions: AppSelectOptionViewModel[];
   urgentLeaveCancelOptions: AppSelectOptionViewModel[];
   settings: AppSettingsViewModel;
@@ -49,6 +51,12 @@ export interface AppSelectOptionViewModel {
   label: string;
 }
 
+export interface CapacitySimulationViewModel {
+  generatedAt: string;
+  summaries: CapacitySimulationPayload["planSummaries"];
+  results: CapacitySimulationPayload["results"];
+}
+
 export interface AppActionViewModel {
   id:
     | "validate"
@@ -75,6 +83,10 @@ export interface AppActionViewModel {
     | "exportChangeHistoryTsv"
     | "exportUrgentLeaveHistoryTsv"
     | "exportAiDebugJson"
+    | "runCapacitySimulation"
+    | "refreshCapacitySimulation"
+    | "importCapacitySimulationJson"
+    | "exportCapacitySimulationJson"
     | "applyJson"
     | "exportJson"
     | "exportExcel"
@@ -170,6 +182,14 @@ function buildAppViewModelFromParts(
     actualScheduleTsv: renderActualScheduleTsv(document),
     changeHistoryTsv: renderChangeHistoryTsv(document),
     urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
+    capacitySimulationJson: `${JSON.stringify(document.capacitySimulation || null, null, 2)}\n`,
+    capacitySimulation: document.capacitySimulation
+      ? {
+          generatedAt: document.capacitySimulation.generatedAt,
+          summaries: document.capacitySimulation.planSummaries,
+          results: document.capacitySimulation.results,
+        }
+      : null,
     plannedLeaveCancelOptions: buildPlannedLeaveCancelOptions(document),
     urgentLeaveCancelOptions: buildUrgentLeaveCancelOptions(document),
     settings: {
@@ -310,6 +330,26 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "exportAiDebugJson",
       label: "AI向け出力",
+      enabled: true,
+    },
+    {
+      id: "runCapacitySimulation",
+      label: "体制シミュレーション再計算",
+      enabled: true,
+    },
+    {
+      id: "refreshCapacitySimulation",
+      label: "体制表示を更新",
+      enabled: true,
+    },
+    {
+      id: "importCapacitySimulationJson",
+      label: "体制JSON取り込み",
+      enabled: true,
+    },
+    {
+      id: "exportCapacitySimulationJson",
+      label: "体制JSON出力",
       enabled: true,
     },
     {

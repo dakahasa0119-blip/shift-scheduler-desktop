@@ -19,6 +19,7 @@ export interface AiDebugBundle {
     actualRows: number;
     changeHistory: number;
     urgentLeaveHistory: number;
+    capacitySimulationResults: number;
   };
   requirements: MonthlyScheduleDocument["requirements"];
   diagnostics: MonthlyScheduleDocument["diagnostics"];
@@ -53,6 +54,7 @@ export function buildAiDebugBundle(document: MonthlyScheduleDocument, now: Date 
       actualRows: document.actualSchedule?.length || 0,
       changeHistory: document.changeHistory?.length || 0,
       urgentLeaveHistory: document.urgentLeaveHistory?.length || 0,
+      capacitySimulationResults: document.capacitySimulation?.results.length || 0,
     },
     requirements: document.requirements,
     diagnostics: document.diagnostics,

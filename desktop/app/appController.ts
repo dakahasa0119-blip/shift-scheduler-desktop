@@ -22,6 +22,7 @@ import {
   type CancelByIndexInput,
   type LeaveRequestInput,
 } from "../core/operationalRecords";
+import { importCapacitySimulationPayload, runCapacitySimulation } from "../core/capacitySimulation";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -250,6 +251,61 @@ export class AppController {
         viewModel: {
           ...buildAppViewModelFromDocument(document),
           status: { label: "急遽休を取り消しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: message,
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: message, tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  runCapacitySimulation(): AppControllerState {
+    const document = runCapacitySimulation(this.state.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "体制シミュレーションを再計算しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  refreshCapacitySimulation(): AppControllerState {
+    this.state = {
+      ...this.state,
+      viewModel: {
+        ...buildAppViewModelFromDocument(this.state.document),
+        status: this.state.document.capacitySimulation
+          ? { label: "体制シミュレーション表示を更新しました", tone: "ready" }
+          : { label: "体制シミュレーション結果がありません", tone: "warning" },
+      },
+      busy: false,
+    };
+    return this.state;
+  }
+
+  importCapacitySimulationJson(capacitySimulationText: string): AppControllerState {
+    try {
+      const document = importCapacitySimulationPayload(this.state.document, capacitySimulationText);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "体制シミュレーションJSONを取り込みました", tone: "ready" },
         },
         busy: false,
         lastError: "",

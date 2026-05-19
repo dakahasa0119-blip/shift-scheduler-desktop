@@ -113,6 +113,43 @@ export interface UrgentLeaveHistoryEntry {
   canceled: boolean;
 }
 
+export interface CapacitySimulationPayload {
+  schemaVersion: "capacity-simulation/v1";
+  generatedAt: string;
+  targetYear: number;
+  targetMonth: number;
+  caseIds: string[];
+  additionalCounts: number[];
+  planSummaries: CapacitySimulationPlanSummary[];
+  results: CapacitySimulationResult[];
+}
+
+export interface CapacitySimulationPlanSummary {
+  planId: string;
+  planLabel: string;
+  requiredShiftStaffing: Record<CoreRequiredShiftCode, number>;
+  minimumAdditionalStaff: number | null;
+  operationalAdditionalStaff: number | null;
+  stableAdditionalStaff: number | null;
+  mainBottlenecks: string[];
+}
+
+export interface CapacitySimulationResult {
+  planId: string;
+  planLabel: string;
+  caseId: string;
+  additionalStaffCount: number;
+  classification: "成立困難" | "最低成立" | "運用可能" | "安定目安";
+  shortageCount: number;
+  metrics: {
+    postRestEarly: number;
+    lateToRest: number;
+    shortNightGap: number;
+    sameShiftRun: number;
+  };
+  bottlenecks: string[];
+}
+
 export interface ShortageDiagnostic {
   date: string;
   shift: CoreRequiredShiftCode;
@@ -166,6 +203,7 @@ export interface MonthlyScheduleDocument {
   actualSchedule?: ScheduleRow[];
   changeHistory?: ChangeHistoryEntry[];
   urgentLeaveHistory?: UrgentLeaveHistoryEntry[];
+  capacitySimulation?: CapacitySimulationPayload | null;
   diagnostics: ScheduleDiagnostics | null;
 }
 

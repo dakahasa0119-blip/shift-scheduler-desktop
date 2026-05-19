@@ -85,6 +85,17 @@ async function main(): Promise<void> {
   assertEqual(plannedCanceled.viewModel.status.label, "事前休暇を取り消しました", "planned cancel status");
   assertEqual(plannedCanceled.document.changeHistory?.at(-1)?.category, "事前休暇取消", "planned cancel history");
 
+  const capacity = controller.runCapacitySimulation();
+  assertEqual(capacity.viewModel.status.label, "体制シミュレーションを再計算しました", "capacity status");
+  assertEqual(capacity.document.capacitySimulation?.schemaVersion, "capacity-simulation/v1", "capacity schema");
+  assertEqual(capacity.document.capacitySimulation?.planSummaries.length, 4, "capacity summary count");
+
+  const refreshedCapacity = controller.refreshCapacitySimulation();
+  assertEqual(refreshedCapacity.viewModel.status.label, "体制シミュレーション表示を更新しました", "capacity refresh");
+
+  const importedCapacity = controller.importCapacitySimulationJson(JSON.stringify(capacity.document.capacitySimulation));
+  assertEqual(importedCapacity.viewModel.status.label, "体制シミュレーションJSONを取り込みました", "capacity import");
+
   const excel = await controller.exportExcel();
   assertEqual(excel.ok, true, "excel export ok");
   if (!excel.ok) return;

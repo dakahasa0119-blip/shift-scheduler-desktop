@@ -115,6 +115,20 @@ async function main(): Promise<void> {
     assertIncludes(aiDebug.body, '"schemaVersion": "desktop-shift-scheduler-ai-debug/v1"', "ai debug schema");
     assertIncludes(aiDebug.body, '"source": "desktop-linux"', "ai debug source");
 
+    const capacityRun = await postJson(`${server.url}/app/run-capacity-simulation`, {});
+    assertEqual(capacityRun.statusCode, 200, "capacity run status code");
+    assertIncludes(capacityRun.body, "体制シミュレーションを再計算しました", "capacity run response");
+
+    const capacityJson = await get(`${server.url}/app/export/capacity-simulation-json`);
+    assertEqual(capacityJson.statusCode, 200, "capacity export status code");
+    assertIncludes(capacityJson.body, '"schemaVersion": "capacity-simulation/v1"', "capacity export schema");
+
+    const capacityImport = await postJson(`${server.url}/app/import/capacity-simulation-json`, {
+      capacitySimulationText: capacityJson.body,
+    });
+    assertEqual(capacityImport.statusCode, 200, "capacity import status code");
+    assertIncludes(capacityImport.body, "体制シミュレーションJSONを取り込みました", "capacity import response");
+
     const excel = await get(`${server.url}/app/export/excel`);
     assertEqual(excel.statusCode, 200, "excel status code");
     assertEqual(excel.body.charCodeAt(0), 0x50, "excel zip byte 1");

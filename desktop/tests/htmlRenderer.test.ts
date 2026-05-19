@@ -47,6 +47,7 @@ async function main(): Promise<void> {
   assertIncludes(html, '<textarea id="schedule-tsv"', "schedule tsv editor");
   assertIncludes(html, '<textarea id="actual-schedule-tsv"', "actual tsv editor");
   assertIncludes(html, '<textarea id="change-history-tsv"', "change history tsv editor");
+  assertIncludes(html, '<textarea id="capacity-simulation-json"', "capacity simulation editor");
   assertIncludes(html, 'data-settings-field="requirements.late"', "settings editor");
   assertIncludes(html, 'actions = {', "interactive script");
   assertIncludes(html, 'actionBasePath = "/preview"', "default action base path");
@@ -68,6 +69,9 @@ async function main(): Promise<void> {
   assertIncludes(html, 'applyActualScheduleTsv: actionBasePath + "/import/actual-schedule-tsv"', "actual tsv import endpoint");
   assertIncludes(html, 'exportChangeHistoryTsv: actionBasePath + "/export/change-history-tsv"', "history tsv export endpoint");
   assertIncludes(html, 'exportAiDebugJson: actionBasePath + "/export/ai-debug-json"', "ai debug export endpoint");
+  assertIncludes(html, 'runCapacitySimulation: actionBasePath + "/run-capacity-simulation"', "capacity run endpoint");
+  assertIncludes(html, 'importCapacitySimulationJson: actionBasePath + "/import/capacity-simulation-json"', "capacity import endpoint");
+  assertIncludes(html, 'exportCapacitySimulationJson: actionBasePath + "/export/capacity-simulation-json"', "capacity export endpoint");
   assertIncludes(html, 'applyJson: actionBasePath + "/import/json"', "json import endpoint");
   assertIncludes(html, 'exportJson: actionBasePath + "/export/json"', "json export endpoint");
   assertIncludes(html, 'exportExcel: actionBasePath + "/export/excel"', "export endpoint");

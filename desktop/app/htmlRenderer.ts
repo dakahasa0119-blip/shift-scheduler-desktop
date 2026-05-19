@@ -41,6 +41,7 @@ function renderWorkspace(viewModel: AppViewModel): string {
     '<aside class="side-rail" aria-label="操作と確認">',
     renderOperationPanel(viewModel),
     renderWorkflowPanel(viewModel),
+    renderCapacitySimulation(viewModel),
     renderDiagnostics(viewModel),
     "</aside>",
     "</section>",
@@ -136,6 +137,55 @@ function renderWorkflowPanel(viewModel: AppViewModel): string {
   ].join("");
 }
 
+function renderCapacitySimulation(viewModel: AppViewModel): string {
+  if (!viewModel.capacitySimulation) return "";
+  const summaries = viewModel.capacitySimulation.summaries.slice(0, 4);
+  const details = viewModel.capacitySimulation.results.slice(0, 8);
+  return [
+    '<section class="capacity-panel" aria-label="体制シミュレーション">',
+    "<h2>体制シミュレーション</h2>",
+    '<div class="capacity-table-wrap">',
+    '<table class="preview-table capacity-table">',
+    "<thead><tr><th>体制案</th><th>必要枠</th><th>最低成立</th><th>運用可能</th><th>安定目安</th><th>主な制約</th></tr></thead><tbody>",
+    summaries.map((item) => [
+      "<tr>",
+      `<td>${escapeHtml(item.planLabel)}</td>`,
+      `<td>${escapeHtml(formatRequired(item.requiredShiftStaffing))}</td>`,
+      `<td>${escapeHtml(formatAdditional(item.minimumAdditionalStaff))}</td>`,
+      `<td>${escapeHtml(formatAdditional(item.operationalAdditionalStaff))}</td>`,
+      `<td>${escapeHtml(formatAdditional(item.stableAdditionalStaff))}</td>`,
+      `<td>${escapeHtml(item.mainBottlenecks.join(" / "))}</td>`,
+      "</tr>",
+    ].join("")).join(""),
+    "</tbody></table>",
+    "</div>",
+    '<div class="capacity-table-wrap compact">',
+    '<table class="preview-table capacity-table">',
+    "<thead><tr><th>体制案</th><th>追加職員</th><th>判定</th><th>不足</th><th>主な制約</th></tr></thead><tbody>",
+    details.map((item) => [
+      "<tr>",
+      `<td>${escapeHtml(item.planLabel)}</td>`,
+      `<td>${escapeHtml(formatAdditional(item.additionalStaffCount))}</td>`,
+      `<td>${escapeHtml(item.classification)}</td>`,
+      `<td>${item.shortageCount}</td>`,
+      `<td>${escapeHtml(item.bottlenecks.join(" / "))}</td>`,
+      "</tr>",
+    ].join("")).join(""),
+    "</tbody></table>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function formatRequired(required: Record<string, number>): string {
+  return `早${required["早"] || 0} 日${required["日"] || 0} 遅${required["遅"] || 0} 夜${required["夜"] || 0}`;
+}
+
+function formatAdditional(value: number | null): string {
+  if (value === null || value === undefined) return "-";
+  return value === 0 ? "現在人員" : `+${value}名`;
+}
+
 function renderDataWorkspace(viewModel: AppViewModel): string {
   return [
     '<section class="data-workspace" aria-label="入力データ">',
@@ -145,6 +195,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<input class="tab-input" type="radio" name="data-tab" id="tab-schedule">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-actual">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-history">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-capacity">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-json">',
     '<div class="tab-list" role="tablist" aria-label="入力データ切替">',
     '<label class="tab-button" for="tab-settings" role="tab">基本設定</label>',
@@ -153,6 +204,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<label class="tab-button" for="tab-schedule" role="tab">勤務表TSV</label>',
     '<label class="tab-button" for="tab-actual" role="tab">勤務実績</label>',
     '<label class="tab-button" for="tab-history" role="tab">履歴</label>',
+    '<label class="tab-button" for="tab-capacity" role="tab">体制</label>',
     '<label class="tab-button" for="tab-json" role="tab">JSON</label>',
     "</div>",
     '<div class="tab-panels">',
@@ -162,6 +214,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     `<div class="tab-panel panel-schedule">${renderScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyScheduleTsv")}${renderActionById(viewModel, "exportScheduleTsv")}</div></div>`,
     `<div class="tab-panel panel-actual">${renderActualScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "createActual")}${renderActionById(viewModel, "applyActualScheduleTsv")}${renderActionById(viewModel, "exportActualScheduleTsv")}</div></div>`,
     `<div class="tab-panel panel-history">${renderHistoryTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "ensureHistory")}${renderActionById(viewModel, "exportChangeHistoryTsv")}${renderActionById(viewModel, "exportUrgentLeaveHistoryTsv")}</div></div>`,
+    `<div class="tab-panel panel-capacity">${renderCapacityJsonEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "runCapacitySimulation")}${renderActionById(viewModel, "refreshCapacitySimulation")}${renderActionById(viewModel, "importCapacitySimulationJson")}${renderActionById(viewModel, "exportCapacitySimulationJson")}</div></div>`,
     `<div class="tab-panel panel-json">${renderDocumentEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyJson")}${renderActionById(viewModel, "exportJson")}</div></div>`,
     "</div>",
     "</section>",
@@ -348,6 +401,15 @@ function renderHistoryTsvEditor(viewModel: AppViewModel): string {
     '<section class="tsv-editor" aria-label="急休履歴TSV">',
     '<h2>急休履歴</h2>',
     `<textarea id="urgent-leave-history-tsv" spellcheck="false" readonly>${escapeHtml(viewModel.urgentLeaveHistoryTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderCapacityJsonEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="体制シミュレーションJSON">',
+    '<h2>体制シミュレーションJSON</h2>',
+    `<textarea id="capacity-simulation-json" spellcheck="false">${escapeHtml(viewModel.capacitySimulationJson)}</textarea>`,
     "</section>",
   ].join("");
 }
@@ -994,6 +1056,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-schedule:checked ~ .tab-list label[for="tab-schedule"],
 #tab-actual:checked ~ .tab-list label[for="tab-actual"],
 #tab-history:checked ~ .tab-list label[for="tab-history"],
+#tab-capacity:checked ~ .tab-list label[for="tab-capacity"],
 #tab-json:checked ~ .tab-list label[for="tab-json"] {
   background: var(--surface-soft);
   border-color: var(--line);
@@ -1005,6 +1068,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-schedule:checked ~ .tab-panels .panel-schedule,
 #tab-actual:checked ~ .tab-panels .panel-actual,
 #tab-history:checked ~ .tab-panels .panel-history,
+#tab-capacity:checked ~ .tab-panels .panel-capacity,
 #tab-json:checked ~ .tab-panels .panel-json {
   display: block;
 }
@@ -1352,6 +1416,10 @@ function renderClientScript(actionBasePath: string): string {
     exportChangeHistoryTsv: actionBasePath + "/export/change-history-tsv",
     exportUrgentLeaveHistoryTsv: actionBasePath + "/export/urgent-leave-history-tsv",
     exportAiDebugJson: actionBasePath + "/export/ai-debug-json",
+    runCapacitySimulation: actionBasePath + "/run-capacity-simulation",
+    refreshCapacitySimulation: actionBasePath + "/refresh-capacity-simulation",
+    importCapacitySimulationJson: actionBasePath + "/import/capacity-simulation-json",
+    exportCapacitySimulationJson: actionBasePath + "/export/capacity-simulation-json",
     applyJson: actionBasePath + "/import/json",
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
@@ -1365,7 +1433,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv" || action === "exportAiDebugJson") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv" || action === "exportAiDebugJson" || action === "exportCapacitySimulationJson") {
       window.location.href = endpoint;
       return;
     }
@@ -1390,8 +1458,10 @@ function renderClientScript(actionBasePath: string): string {
           ? { requestsText: document.querySelector("#requests-tsv")?.value || "" }
         : action === "applyScheduleTsv"
           ? { scheduleText: document.querySelector("#schedule-tsv")?.value || "" }
-        : action === "applyActualScheduleTsv"
-          ? { actualScheduleText: document.querySelector("#actual-schedule-tsv")?.value || "" }
+      : action === "applyActualScheduleTsv"
+        ? { actualScheduleText: document.querySelector("#actual-schedule-tsv")?.value || "" }
+      : action === "importCapacitySimulationJson"
+        ? { capacitySimulationText: document.querySelector("#capacity-simulation-json")?.value || "" }
         : undefined;
     await runAction(endpoint, body);
   });

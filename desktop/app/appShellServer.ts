@@ -1,5 +1,6 @@
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { renderAiDebugBundleJson } from "../core/aiDebugBundle";
+import { renderCapacitySimulationJson } from "../core/capacitySimulation";
 import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
@@ -156,6 +157,25 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/run-capacity-simulation") {
+    const state = controller.runCapacitySimulation();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/refresh-capacity-simulation") {
+    const state = controller.refreshCapacitySimulation();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/import/capacity-simulation-json") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { capacitySimulationText?: string };
+    const state = controller.importCapacitySimulationJson(body.capacitySimulationText || "");
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/ensure-history") {
     const state = controller.ensureHistory();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
@@ -254,6 +274,11 @@ async function handleShellRequest(
 
   if ((method === "GET" || method === "POST") && path === "/app/export/ai-debug-json") {
     sendJson(response, renderAiDebugBundleJson(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/capacity-simulation-json") {
+    sendJson(response, renderCapacitySimulationJson(controller.getState().document));
     return;
   }
 
