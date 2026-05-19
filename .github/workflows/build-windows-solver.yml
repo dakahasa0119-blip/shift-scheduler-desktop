@@ -32,7 +32,7 @@ jobs:
         env:
           PYTHONPATH: solver_cli
         run: |
-          python -m PyInstaller --onefile --name shift-solver --distpath desktop\packaging\resources\solver\windows-x64 --clean --noconfirm desktop\solver\pyinstaller_entry.py
+          python -m PyInstaller --onefile --name shift-solver --distpath desktop\packaging\resources\solver\windows-x64 --clean --noconfirm --collect-all ortools desktop\solver\pyinstaller_entry.py
 
       - name: Verify executable starts
         run: |

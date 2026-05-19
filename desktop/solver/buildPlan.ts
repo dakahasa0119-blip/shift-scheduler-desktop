@@ -26,6 +26,8 @@ export function buildPyInstallerCommand(target: SolverBuildTarget): SolverBuildC
       target.outputDirectory,
       "--clean",
       "--noconfirm",
+      "--collect-all",
+      "ortools",
       target.entryScript,
     ],
     outputExecutablePath: joinPath(target.outputDirectory, target.executableName),
