@@ -92,6 +92,14 @@ export interface ScheduleDiff {
   labels: string[];
 }
 
+export interface SolverRecoveryDiff {
+  date?: string;
+  name?: string;
+  before?: string;
+  after?: string;
+  labels?: string[];
+}
+
 export type RecoverScheduleResponse = RecoverScheduleSuccessResponse | ApiErrorResponse;
 
 export interface ExportExcelRequest {

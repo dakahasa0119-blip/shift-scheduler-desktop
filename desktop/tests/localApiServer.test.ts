@@ -53,6 +53,16 @@ async function main(): Promise<void> {
       "solve user message",
     );
 
+    const recovery = await requestJson(server, "POST", "/schedule/recover", {
+      document: sampleMonthlyScheduleDocument,
+      urgentLeaves: [{ staffId: "staff_eto", date: "2026-06-05", reason: "急休", notes: "発熱" }],
+      options: { fixedThroughDate: "2026-06-04", timeLimitSeconds: 3 },
+    });
+    assertEqual(recovery.statusCode, 200, "recover status code");
+    assertEqual(recovery.body.ok, true, "recover response ok");
+    assertEqual(solver.calls[1].options.mode, "recovery", "recover mode");
+    assertEqual(solver.calls[1].input.recovery?.urgentLeaves[0].name, "江藤", "recover staff name");
+
     const exported = await requestJson(server, "POST", "/export/excel", {
       document: solve.body.document,
       destinationPath: "/tmp/local-api-export.tsv",

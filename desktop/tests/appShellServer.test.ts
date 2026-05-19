@@ -41,6 +41,13 @@ async function main(): Promise<void> {
     assertEqual(solve.statusCode, 200, "solve status code");
     assertIncludes(solve.body, "作成できました（確認事項あり）", "solve response");
 
+    const recovery = await postJson(`${server.url}/app/recover`, {
+      urgentLeaveText: "氏名\t日付\t理由\t備考\n江藤\t2026-06-05\t急休\t発熱\n",
+      fixedThroughDate: "2026-06-04",
+    });
+    assertEqual(recovery.statusCode, 200, "recovery status code");
+    assertIncludes(recovery.body, "急休リカバリーを反映しました", "recovery response");
+
     const save = await post(`${server.url}/app/save`);
     assertEqual(save.statusCode, 200, "save status code");
     assertIncludes(save.body, "保存しました", "save response");
@@ -131,6 +138,37 @@ async function main(): Promise<void> {
   } finally {
     await autoloadServer.close();
   }
+
+  const blankServer = await startAppShellServer({
+    runtimeOptions: {
+      appVersion: "0.1.0-test",
+      apiStarter: new FakeStarter(),
+      transportFactory: () => new FakeTransport(directory, {
+        loadMissing: true,
+      }),
+    },
+  });
+  try {
+    const initial = await get(blankServer.url);
+    assertEqual(initial.statusCode, 200, "blank status code");
+    assertIncludes(initial.body, "勤務表作成", "blank title");
+    assertNotIncludes(initial.body, "江藤", "blank does not show sample staff");
+    assertNotIncludes(initial.body, "有山", "blank does not show sample staff");
+  } finally {
+    await blankServer.close();
+  }
+
+  const quitServer = await startAppShellServer({
+    runtimeOptions: {
+      appVersion: "0.1.0-test",
+      apiStarter: new FakeStarter(),
+      transportFactory: () => new FakeTransport(directory),
+    },
+    document: sampleMonthlyScheduleDocument,
+  });
+  const quit = await post(`${quitServer.url}/app/quit`);
+  assertEqual(quit.statusCode, 200, "quit status code");
+  assertIncludes(quit.body, "勤務表作成を終了しました", "quit page");
 }
 
 class FakeStarter {
@@ -151,7 +189,7 @@ class FakeStarter {
 class FakeTransport implements DesktopApiClientTransport {
   constructor(
     private readonly directory: string,
-    private readonly options: { loadedDocument?: typeof sampleMonthlyScheduleDocument } = {},
+    private readonly options: { loadedDocument?: typeof sampleMonthlyScheduleDocument; loadMissing?: boolean } = {},
   ) {}
 
   async request(options: DesktopApiRequestOptions): Promise<DesktopApiResponse> {
@@ -190,6 +228,28 @@ class FakeTransport implements DesktopApiClientTransport {
         },
       };
     }
+    if (options.method === "POST" && options.path.endsWith("/schedule/recover")) {
+      const document = applySolverOutputToDocument(sampleMonthlyScheduleDocument, sampleSolverOutputWithAdvisory);
+      return {
+        statusCode: 200,
+        body: {
+          ok: true,
+          document,
+          diagnostics: document.diagnostics,
+          messages: document.diagnostics?.messages || [],
+          diffs: [
+            {
+              date: "6/5",
+              staffId: "staff_eto",
+              name: "江藤",
+              before: "早",
+              after: "休",
+              labels: ["急休"],
+            },
+          ],
+        },
+      };
+    }
     if (options.method === "POST" && options.path.endsWith("/export/excel")) {
       const filePath = path.join(this.directory, "schedule.xlsx");
       await fs.writeFile(filePath, new Uint8Array([0x50, 0x4b, 0x03, 0x04]));
@@ -223,6 +283,15 @@ class FakeTransport implements DesktopApiClientTransport {
       };
     }
     if (options.method === "GET" && options.path.endsWith("/document/load")) {
+      if (this.options.loadMissing) {
+        return {
+          statusCode: 404,
+          body: {
+            ok: false,
+            userMessage: "保存データがありません",
+          },
+        };
+      }
       const document = this.options.loadedDocument || sampleMonthlyScheduleDocument;
       return {
         statusCode: 200,
@@ -327,6 +396,12 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 function assertIncludes(text: string, expected: string, label: string): void {
   if (!text.includes(expected)) {
     throw new Error(`${label}: missing ${expected}`);
+  }
+}
+
+function assertNotIncludes(text: string, expected: string, label: string): void {
+  if (text.includes(expected)) {
+    throw new Error(`${label}: unexpectedly included ${expected}`);
   }
 }
 

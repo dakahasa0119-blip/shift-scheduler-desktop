@@ -2,10 +2,10 @@ import { buildPackageAssemblyPlan, checkPackageAssemblyPlan } from "../packaging
 
 function main(): void {
   const linux = buildPackageAssemblyPlan({ target: "linux-prototype", outputRoot: "/tmp/out" });
-  assertEqual(linux.outputDirectory, "/tmp/out/linux-prototype", "linux output");
-  assertTrue(linux.entries.some((entry) => entry.source === "desktop/packaging/linux/shift-scheduler-dev"), "linux launcher");
+  assertEqual(linux.outputDirectory, "/tmp/out/shift-scheduler-linux-x64", "linux output");
+  assertTrue(linux.entries.some((entry) => entry.source === "desktop/packaging/linux/start-shift-scheduler.sh"), "linux launcher");
   assertTrue(
-    linux.entries.some((entry) => entry.destination === "desktop/packaging/linux/shift-scheduler-dev"),
+    linux.entries.some((entry) => entry.destination === "start-shift-scheduler.sh"),
     "linux launcher destination",
   );
   assertTrue(
@@ -14,6 +14,12 @@ function main(): void {
   );
   assertTrue(linux.entries.some((entry) => entry.destination === "desktop/dist/shift-scheduler.cjs"), "runtime bundle");
   assertTrue(linux.entries.some((entry) => entry.destination === "desktop/packaging/runtime/node"), "node runtime");
+  assertTrue(linux.entries.some((entry) => entry.destination === "README.txt"), "start here readme");
+  assertTrue(linux.entries.some((entry) => entry.destination === "SUPPORT_INFO.txt"), "support info");
+  assertTrue(linux.entries.some((entry) => entry.destination === "docs/user-guide.md"), "user guide");
+  assertTrue(linux.entries.some((entry) => entry.destination === "docs/release-notes.md"), "release notes");
+  assertEqual(linux.entries.some((entry) => entry.destination === "docs/migration-plan.md"), false, "migration doc excluded");
+  assertEqual(linux.entries.some((entry) => entry.destination === "docs/packaging.md"), false, "packaging doc excluded");
   assertEqual(linux.entries.some((entry) => entry.destination.startsWith("desktop/app/")), false, "app source excluded");
   assertEqual(linux.entries.some((entry) => entry.destination.startsWith("desktop/api/")), false, "api source excluded");
   assertEqual(linux.entries.some((entry) => entry.destination.includes("mockSolverRunner")), false, "mock solver excluded");
@@ -21,12 +27,16 @@ function main(): void {
 
   const windows = buildPackageAssemblyPlan({ target: "windows-prototype", outputRoot: "C:/out" });
   assertTrue(
-    windows.entries.some((entry) => entry.source === "desktop/packaging/windows/shift-scheduler-dev.cmd"),
-    "windows launcher",
+    windows.entries.some((entry) => entry.source === "desktop/packaging/windows/start-shift-scheduler.cmd"),
+    "windows command launcher",
   );
   assertTrue(
-    windows.entries.some((entry) => entry.destination === "desktop/packaging/windows/shift-scheduler-dev.cmd"),
-    "windows launcher destination",
+    windows.entries.some((entry) => entry.destination === "start-shift-scheduler.cmd"),
+    "windows command launcher destination",
+  );
+  assertTrue(
+    windows.entries.some((entry) => entry.destination === "start-shift-scheduler.vbs"),
+    "windows hidden launcher destination",
   );
   assertTrue(
     windows.entries.some((entry) => entry.destination === "desktop/packaging/resources/solver/windows-x64/shift-solver.exe"),

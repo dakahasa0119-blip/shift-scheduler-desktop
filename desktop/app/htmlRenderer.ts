@@ -22,18 +22,88 @@ export function renderAppHtml(viewModel: AppViewModel, options: AppHtmlRenderOpt
     "<body>",
     '<main class="app-shell">',
     renderTopBar(viewModel),
-    renderDiagnostics(viewModel),
-    renderSettingsEditor(viewModel),
-    renderStaffTsvEditor(viewModel),
-    renderRequestsTsvEditor(viewModel),
-    renderScheduleTsvEditor(viewModel),
-    renderDocumentEditor(viewModel),
-    renderSchedule(viewModel),
+    renderWorkspace(viewModel),
     "</main>",
     options.interactive ? renderClientScript(options.actionBasePath || "/preview") : "",
     "</body>",
     "</html>",
   ].join("\n");
+}
+
+function renderWorkspace(viewModel: AppViewModel): string {
+  return [
+    '<section class="workspace" aria-label="勤務表作成ワークスペース">',
+    '<div class="primary-column">',
+    renderSchedule(viewModel),
+    renderDataWorkspace(viewModel),
+    "</div>",
+    '<aside class="side-rail" aria-label="操作と確認">',
+    renderOperationPanel(viewModel),
+    renderDiagnostics(viewModel),
+    "</aside>",
+    "</section>",
+  ].join("");
+}
+
+function renderOperationPanel(viewModel: AppViewModel): string {
+  return [
+    '<section class="operation-panel" aria-label="操作">',
+    '<div class="operation-group operation-primary">',
+    '<h2>月次作成</h2>',
+    '<div class="button-grid">',
+    renderActionById(viewModel, "validate"),
+    renderActionById(viewModel, "solve"),
+    renderActionById(viewModel, "save"),
+    renderActionById(viewModel, "load"),
+    "</div>",
+    "</div>",
+    '<div class="operation-group">',
+    '<h2>急休</h2>',
+    renderUrgentLeaveEditor(viewModel),
+    renderActionById(viewModel, "recover"),
+    "</div>",
+    '<div class="operation-group">',
+    '<h2>出力</h2>',
+    '<div class="button-grid">',
+    renderActionById(viewModel, "backup"),
+    renderActionById(viewModel, "exportExcel"),
+    renderActionById(viewModel, "exportPdf"),
+    renderActionById(viewModel, "exportJson"),
+    "</div>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderDataWorkspace(viewModel: AppViewModel): string {
+  return [
+    '<section class="data-workspace" aria-label="入力データ">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-settings" checked>',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-staff">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-requests">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-schedule">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-json">',
+    '<div class="tab-list" role="tablist" aria-label="入力データ切替">',
+    '<label class="tab-button" for="tab-settings" role="tab">基本設定</label>',
+    '<label class="tab-button" for="tab-staff" role="tab">職員</label>',
+    '<label class="tab-button" for="tab-requests" role="tab">希望</label>',
+    '<label class="tab-button" for="tab-schedule" role="tab">勤務表TSV</label>',
+    '<label class="tab-button" for="tab-json" role="tab">JSON</label>',
+    "</div>",
+    '<div class="tab-panels">',
+    `<div class="tab-panel panel-settings">${renderSettingsEditor(viewModel)}${renderActionById(viewModel, "applySettings")}</div>`,
+    `<div class="tab-panel panel-staff">${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}</div></div>`,
+    `<div class="tab-panel panel-requests">${renderRequestsTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyRequestsTsv")}${renderActionById(viewModel, "exportRequestsTsv")}</div></div>`,
+    `<div class="tab-panel panel-schedule">${renderScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyScheduleTsv")}${renderActionById(viewModel, "exportScheduleTsv")}</div></div>`,
+    `<div class="tab-panel panel-json">${renderDocumentEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyJson")}${renderActionById(viewModel, "exportJson")}</div></div>`,
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderActionById(viewModel: AppViewModel, id: AppActionViewModel["id"]): string {
+  const action = viewModel.actions.find((item) => item.id === id);
+  return action ? renderActionButton(action) : "";
 }
 
 function renderSettingsEditor(viewModel: AppViewModel): string {
@@ -92,6 +162,18 @@ function renderRequestsTsvEditor(viewModel: AppViewModel): string {
   ].join("");
 }
 
+function renderUrgentLeaveEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor recovery-editor" aria-label="急休リカバリー">',
+    '<h2>急休リカバリー</h2>',
+    '<div class="recovery-grid">',
+    `<label><span>固定終了日</span><input id="recovery-fixed-through-date" type="date" value=""></label>`,
+    "</div>",
+    `<textarea id="urgent-leave-tsv" spellcheck="false">${escapeHtml(viewModel.urgentLeaveTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
 function renderTopBar(viewModel: AppViewModel): string {
   return [
     '<header class="top-bar">',
@@ -99,8 +181,12 @@ function renderTopBar(viewModel: AppViewModel): string {
     `<h1>${escapeHtml(viewModel.title)}</h1>`,
     `<p class="status status-${viewModel.status.tone}">${escapeHtml(viewModel.status.label)}</p>`,
     "</div>",
-    '<nav class="action-bar" aria-label="操作">',
-    viewModel.actions.map(renderActionButton).join(""),
+    '<nav class="action-bar" aria-label="主要操作">',
+    renderActionById(viewModel, "validate"),
+    renderActionById(viewModel, "solve"),
+    renderActionById(viewModel, "exportExcel"),
+    renderActionById(viewModel, "exportPdf"),
+    renderActionById(viewModel, "quit"),
     "</nav>",
     "</header>",
   ].join("");
@@ -209,11 +295,15 @@ function renderCss(): string {
   return `
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
+  --bg: #f4f6f8;
   --surface: #ffffff;
+  --surface-soft: #f9fafb;
   --line: #d7dce2;
+  --line-strong: #aeb8c2;
   --text: #17202a;
   --muted: #5e6a75;
+  --accent: #245a7a;
+  --accent-soft: #e5f0f6;
   --ready: #1d6f42;
   --note: #8a5b12;
   --warning: #9a4d13;
@@ -236,13 +326,20 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
 }
-.app-shell { padding: 18px; }
+.app-shell {
+  min-height: 100vh;
+  padding: 16px;
+}
 .top-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
 }
 h1, h2, h3, p { margin: 0; }
 h1 { font-size: 22px; font-weight: 700; }
@@ -254,6 +351,24 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 .status-warning { color: var(--warning); }
 .status-blocked { color: var(--blocked); }
 .action-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 12px;
+  align-items: start;
+}
+.primary-column {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+}
+.side-rail {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  position: sticky;
+  top: 12px;
+}
 .action {
   min-height: 34px;
   padding: 0 12px;
@@ -263,18 +378,54 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   color: var(--text);
   font-weight: 700;
 }
+.action-solve {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+.action-exportExcel,
+.action-exportPdf {
+  background: var(--accent-soft);
+  border-color: #bdd3df;
+  color: #153f57;
+}
 .action:disabled { color: #9aa3ad; background: #eef1f4; }
 .action:not(:disabled) { cursor: pointer; }
+.operation-panel,
 .diagnostics {
-  margin-bottom: 14px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
 }
+.operation-panel {
+  display: grid;
+  gap: 12px;
+}
+.operation-group {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.operation-group:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
 .diagnostic-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr;
   gap: 10px;
 }
 .diagnostic-section {
@@ -299,19 +450,83 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   border-radius: 8px;
   padding: 12px;
 }
-.settings-editor,
-.tsv-editor,
-.document-editor {
-  margin-bottom: 14px;
+.data-workspace {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
 }
+.tab-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.tab-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.tab-button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 6px 6px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+}
+.tab-panel { display: none; }
+#tab-settings:checked ~ .tab-list label[for="tab-settings"],
+#tab-staff:checked ~ .tab-list label[for="tab-staff"],
+#tab-requests:checked ~ .tab-list label[for="tab-requests"],
+#tab-schedule:checked ~ .tab-list label[for="tab-schedule"],
+#tab-json:checked ~ .tab-list label[for="tab-json"] {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--text);
+}
+#tab-settings:checked ~ .tab-panels .panel-settings,
+#tab-staff:checked ~ .tab-panels .panel-staff,
+#tab-requests:checked ~ .tab-panels .panel-requests,
+#tab-schedule:checked ~ .tab-panels .panel-schedule,
+#tab-json:checked ~ .tab-panels .panel-json {
+  display: block;
+}
+.settings-editor,
+.tsv-editor,
+.document-editor {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
   gap: 8px;
+}
+.recovery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.recovery-grid label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.recovery-grid input {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
 }
 .settings-grid label {
   display: grid;
@@ -329,7 +544,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 .tsv-editor textarea {
   width: 100%;
   min-height: 120px;
-  max-height: 30vh;
+  max-height: 34vh;
   resize: vertical;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -355,7 +570,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 6px;
-  max-height: 70vh;
+  max-height: calc(100vh - 170px);
 }
 .schedule-table {
   border-collapse: separate;
@@ -376,7 +591,7 @@ thead th {
   position: sticky;
   top: 0;
   z-index: 3;
-  background: #eef3f7;
+  background: #eaf0f4;
   font-weight: 700;
 }
 thead tr:nth-child(2) th { top: 32px; }
@@ -411,6 +626,9 @@ thead .sticky { z-index: 5; background: #e7edf2; }
   .app-shell { padding: 10px; }
   .top-bar { align-items: flex-start; flex-direction: column; }
   .action-bar { justify-content: flex-start; }
+  .workspace { grid-template-columns: 1fr; }
+  .side-rail { position: static; }
+  .button-grid { grid-template-columns: 1fr; }
   .role-col { min-width: 92px; }
   .name-col { left: 92px; min-width: 82px; }
 }
@@ -424,6 +642,7 @@ function renderClientScript(actionBasePath: string): string {
   const actions = {
     validate: actionBasePath + "/validate",
     solve: actionBasePath + "/solve",
+    recover: actionBasePath + "/recover",
     save: actionBasePath + "/save",
     load: actionBasePath + "/load",
     backup: actionBasePath + "/backup",
@@ -437,7 +656,8 @@ function renderClientScript(actionBasePath: string): string {
     applyJson: actionBasePath + "/import/json",
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
-    exportPdf: actionBasePath + "/export/pdf"
+    exportPdf: actionBasePath + "/export/pdf",
+    quit: actionBasePath + "/quit"
   };
 
   document.addEventListener("click", async (event) => {
@@ -452,6 +672,11 @@ function renderClientScript(actionBasePath: string): string {
     }
     const body = action === "applyJson"
       ? { documentText: document.querySelector("#document-json")?.value || "" }
+      : action === "recover"
+        ? {
+            urgentLeaveText: document.querySelector("#urgent-leave-tsv")?.value || "",
+            fixedThroughDate: document.querySelector("#recovery-fixed-through-date")?.value || ""
+          }
       : action === "applySettings"
         ? collectSettings()
         : action === "applyStaffTsv"

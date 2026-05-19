@@ -22,8 +22,8 @@ export function buildPackageSmokePlan(options: BuildPackageSmokePlanOptions): Pa
     outputDirectory: options.outputDirectory,
     launcherPath:
       options.target === "windows-prototype"
-        ? joinPath(options.outputDirectory, "desktop/packaging/windows/shift-scheduler-dev.cmd")
-        : joinPath(options.outputDirectory, "desktop/packaging/linux/shift-scheduler-dev"),
+        ? joinPath(options.outputDirectory, "start-shift-scheduler.cmd")
+        : joinPath(options.outputDirectory, "start-shift-scheduler.sh"),
     port,
     expectedBaseUrl: `http://127.0.0.1:${port}`,
     dataDirectory: joinPath(options.outputDirectory, ".smoke-data"),

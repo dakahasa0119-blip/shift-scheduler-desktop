@@ -7,6 +7,8 @@ import type {
   ExportPdfRequest,
   ExportPdfResponse,
   LoadDocumentResponse,
+  RecoverScheduleRequest,
+  RecoverScheduleResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
   SolveScheduleRequest,
@@ -57,6 +59,14 @@ export class DesktopApiClient {
     return this.request<SolveScheduleResponse>({
       method: "POST",
       path: "/schedule/solve",
+      body: request,
+    });
+  }
+
+  recoverSchedule(request: RecoverScheduleRequest): Promise<RecoverScheduleResponse> {
+    return this.request<RecoverScheduleResponse>({
+      method: "POST",
+      path: "/schedule/recover",
       body: request,
     });
   }

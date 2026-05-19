@@ -1,6 +1,28 @@
 import type { MonthlyScheduleDocument } from "./domain";
 import type { SolverOutputPayload } from "./solverOutput";
 
+export function createBlankMonthlyScheduleDocument(date: Date = new Date()): MonthlyScheduleDocument {
+  const target = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  return {
+    schemaVersion: "desktop-shift-schedule/v1",
+    year: target.getFullYear(),
+    month: target.getMonth() + 1,
+    staff: [],
+    requests: [],
+    requirements: {
+      early: 1,
+      day: 0,
+      late: 1,
+      night: 1,
+      allowedShortageShifts: ["遅"],
+      femaleRequiredWeekdays: [],
+    },
+    previousMonthTail: {},
+    schedule: [],
+    diagnostics: null,
+  };
+}
+
 export const sampleMonthlyScheduleDocument: MonthlyScheduleDocument = {
   schemaVersion: "desktop-shift-schedule/v1",
   year: 2026,

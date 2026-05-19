@@ -1,0 +1,93 @@
+name: Build Desktop Release
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build-desktop-release.yml"
+      - "desktop/**"
+      - "solver_cli/**"
+      - "package.json"
+
+jobs:
+  linux-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install solver dependencies
+        working-directory: solver_cli
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Run desktop tests
+        run: npm test
+
+      - name: Build Linux release archive
+        run: npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=linux-prototype --force --archive-out=release-archives --verify-out=release-verify
+
+      - name: Upload Linux release
+        uses: actions/upload-artifact@v4
+        with:
+          name: shift-scheduler-linux-x64
+          path: |
+            release-archives/shift-scheduler-linux-x64.tar.gz
+            release-archives/shift-scheduler-linux-x64.tar.gz.sha256.txt
+            release-archives/shift-scheduler-linux-x64.manifest.txt
+          if-no-files-found: error
+
+  windows-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install solver dependencies
+        working-directory: solver_cli
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Run desktop tests
+        shell: bash
+        run: npm test
+
+      - name: Build Windows release archive
+        shell: bash
+        run: npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=windows-prototype --force --archive-out=release-archives --verify-out=release-verify
+
+      - name: Upload Windows release
+        uses: actions/upload-artifact@v4
+        with:
+          name: shift-scheduler-windows-x64
+          path: |
+            release-archives/shift-scheduler-windows-x64.zip
+            release-archives/shift-scheduler-windows-x64.zip.sha256.txt
+            release-archives/shift-scheduler-windows-x64.manifest.txt
+          if-no-files-found: error

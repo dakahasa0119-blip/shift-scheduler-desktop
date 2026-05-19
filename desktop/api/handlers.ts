@@ -7,6 +7,10 @@ import type {
   ExportPdfResponse,
   HealthResponse,
   LoadDocumentResponse,
+  RecoverScheduleRequest,
+  RecoverScheduleResponse,
+  ScheduleDiff,
+  SolverRecoveryDiff,
   SaveDocumentRequest,
   SaveDocumentResponse,
   SolveScheduleRequest,
@@ -49,7 +53,7 @@ export interface SolverRunner {
 
 export interface SolverRunOptions {
   timeLimitSeconds: number;
-  mode: "create" | "recreate";
+  mode: "create" | "recreate" | "recovery";
 }
 
 export interface ApiLogger {
@@ -103,6 +107,51 @@ export async function handleSolveSchedule(
     };
   } catch (error) {
     deps.logger?.error("solve schedule failed", error);
+    return internalError(error instanceof Error ? { message: error.message } : error);
+  }
+}
+
+export async function handleRecoverSchedule(
+  request: RecoverScheduleRequest,
+  deps: ApiHandlerDependencies,
+): Promise<RecoverScheduleResponse> {
+  try {
+    const validation = validateMonthlyScheduleDocument(request.document);
+    if (!validation.ok) {
+      return validationFailed({ issues: validation.issues });
+    }
+    if (!request.urgentLeaves?.length) {
+      return validationFailed({ issues: [{ severity: "error", path: "urgentLeaves", message: "急休対象を入力してください" }] });
+    }
+
+    const solverInput = buildSolverInputPayload(request.document, formatGeneratedAt(deps.now()), {
+      fixedThroughDate: request.options?.fixedThroughDate,
+      urgentLeaves: request.urgentLeaves.map((entry) => ({
+        staffId: entry.staffId,
+        date: entry.date,
+        reason: entry.reason,
+        notes: entry.notes,
+      })),
+    });
+    const solverOutput = await deps.solver.solve(solverInput, {
+      timeLimitSeconds: normalizeTimeLimit(request.options?.timeLimitSeconds),
+      mode: "recovery",
+    });
+    const document = applySolverOutputToDocument(request.document, solverOutput);
+
+    if (!document.diagnostics) {
+      return solverFailed({ reason: "missing diagnostics" });
+    }
+
+    return {
+      ok: true,
+      document,
+      diagnostics: document.diagnostics,
+      messages: document.diagnostics.messages,
+      diffs: normalizeRecoveryDiffs(request.document, solverOutput.diagnostics?.recoveryDiffs || []),
+    };
+  } catch (error) {
+    deps.logger?.error("recover schedule failed", error);
     return internalError(error instanceof Error ? { message: error.message } : error);
   }
 }
@@ -263,4 +312,20 @@ function formatGeneratedAt(date: Date): string {
     ":",
     pad(date.getSeconds()),
   ].join("");
+}
+
+function normalizeRecoveryDiffs(document: RecoverScheduleRequest["document"], diffs: SolverRecoveryDiff[]): ScheduleDiff[] {
+  const staffByName = new Map(document.staff.map((staff) => [staff.name, staff]));
+  return diffs.map((diff) => {
+    const name = String(diff.name || "");
+    const staff = staffByName.get(name);
+    return {
+      date: String(diff.date || ""),
+      staffId: staff?.id || `unmatched:${name}`,
+      name,
+      before: String(diff.before || ""),
+      after: String(diff.after || ""),
+      labels: (diff.labels || []).map(String),
+    };
+  });
 }

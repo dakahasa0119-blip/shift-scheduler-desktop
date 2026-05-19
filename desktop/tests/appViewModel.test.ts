@@ -11,9 +11,11 @@ async function main(): Promise<void> {
   assertEqual(initial.settings.requirements.late, 1, "settings late requirement");
   assertEqual(initial.staffTsv.includes("氏名\t職種"), true, "staff tsv");
   assertEqual(initial.requestsTsv.includes("氏名\t区分"), true, "requests tsv");
+  assertEqual(initial.urgentLeaveTsv.includes("氏名\t日付\t理由"), true, "urgent leave tsv");
   assertEqual(initial.scheduleTsv.includes("職種\t氏名"), true, "schedule tsv");
   assertEqual(initial.schedule.rows.length, sampleMonthlyScheduleDocument.staff.length, "initial rows");
   assertEqual(findAction(initial, "solve").enabled, true, "solve initially enabled");
+  assertEqual(findAction(initial, "recover").enabled, true, "recover initially enabled");
   assertEqual(findAction(initial, "save").enabled, true, "save initially enabled");
   assertEqual(findAction(initial, "load").enabled, true, "load initially enabled");
   assertEqual(findAction(initial, "backup").enabled, true, "backup initially enabled");

@@ -3,6 +3,7 @@ import type {
   BackupDocumentRequest,
   ExportExcelRequest,
   ExportPdfRequest,
+  RecoverScheduleRequest,
   SaveDocumentRequest,
   SolveScheduleRequest,
   ValidateScheduleRequest,
@@ -14,6 +15,7 @@ import {
   handleExportPdf,
   handleHealth,
   handleLoadDocument,
+  handleRecoverSchedule,
   handleSaveDocument,
   handleSolveSchedule,
   handleValidateSchedule,
@@ -107,6 +109,13 @@ async function routeRequest(
   if (method === "POST" && path === "/schedule/solve") {
     const body = await readJsonBody(request, maxBodyBytes);
     const result = await handleSolveSchedule(body as SolveScheduleRequest, deps);
+    sendJson(response, result.ok ? 200 : 400, result);
+    return;
+  }
+
+  if (method === "POST" && path === "/schedule/recover") {
+    const body = await readJsonBody(request, maxBodyBytes);
+    const result = await handleRecoverSchedule(body as RecoverScheduleRequest, deps);
     sendJson(response, result.ok ? 200 : 400, result);
     return;
   }

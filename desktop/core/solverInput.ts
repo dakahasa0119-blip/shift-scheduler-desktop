@@ -45,6 +45,30 @@ export interface SolverScheduleRow {
   shifts: ShiftCode[];
 }
 
+export interface SolverRecoveryUrgentLeave {
+  name: string;
+  date: string;
+  originalShift: ShiftCode;
+  reason: string;
+  notes: string;
+}
+
+export interface SolverRecoverySettings {
+  enabled: boolean;
+  fixedThroughDay?: number;
+  urgentLeaves: SolverRecoveryUrgentLeave[];
+}
+
+export interface SolverRecoveryInput {
+  fixedThroughDate?: string;
+  urgentLeaves: {
+    staffId: string;
+    date: string;
+    reason: string;
+    notes?: string;
+  }[];
+}
+
 export interface SolverInputPayload {
   schemaVersion: "gas-shift-solver-input/v1";
   generatedAt: string;
@@ -64,14 +88,19 @@ export interface SolverInputPayload {
   supplyExclusions: SolverSupplyExclusion[];
   previousMonthTailByName: Record<string, ShiftCode[]>;
   currentSchedule: SolverScheduleRow[];
+  recovery?: SolverRecoverySettings;
 }
 
-export function buildSolverInputPayload(document: MonthlyScheduleDocument, generatedAt: string): SolverInputPayload {
+export function buildSolverInputPayload(
+  document: MonthlyScheduleDocument,
+  generatedAt: string,
+  recovery?: SolverRecoveryInput,
+): SolverInputPayload {
   const daysInMonth = getDaysInMonth(document.year, document.month);
   const staffById = new Map(document.staff.map((staff) => [staff.id, staff]));
   const leaveEntries = expandRequestsToLeaveEntries(document, staffById);
 
-  return {
+  const payload: SolverInputPayload = {
     schemaVersion: "gas-shift-solver-input/v1",
     generatedAt,
     source: "desktop",
@@ -108,6 +137,41 @@ export function buildSolverInputPayload(document: MonthlyScheduleDocument, gener
       name: row.name,
       shifts: row.shifts.slice(0, daysInMonth),
     })),
+  };
+  const recoverySettings = recovery ? buildRecoverySettings(document, recovery, staffById, daysInMonth) : null;
+  if (recoverySettings) payload.recovery = recoverySettings;
+  return payload;
+}
+
+function buildRecoverySettings(
+  document: MonthlyScheduleDocument,
+  recovery: SolverRecoveryInput,
+  staffById: Map<string, StaffMember>,
+  daysInMonth: number,
+): SolverRecoverySettings | null {
+  const scheduleByStaffId = new Map(document.schedule.map((row) => [row.staffId, row]));
+  const urgentLeaves = recovery.urgentLeaves
+    .map((entry) => {
+      const staff = staffById.get(entry.staffId);
+      const day = dayOfTargetMonth(entry.date, document.year, document.month);
+      if (!staff || !day || day > daysInMonth) return null;
+      const currentRow = scheduleByStaffId.get(entry.staffId);
+      return {
+        name: staff.name,
+        date: `${document.month}/${day}`,
+        originalShift: currentRow?.shifts[day - 1] || "",
+        reason: entry.reason,
+        notes: entry.notes || "",
+      } satisfies SolverRecoveryUrgentLeave;
+    })
+    .filter((entry): entry is SolverRecoveryUrgentLeave => Boolean(entry));
+
+  if (!urgentLeaves.length) return null;
+  const fixedThroughDay = dayOfTargetMonth(recovery.fixedThroughDate || "", document.year, document.month);
+  return {
+    enabled: true,
+    fixedThroughDay: fixedThroughDay ? Math.max(0, Math.min(daysInMonth, fixedThroughDay)) : undefined,
+    urgentLeaves,
   };
 }
 
@@ -206,6 +270,12 @@ function parseLocalDate(value: string): Date | null {
   const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!match) return null;
   return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function dayOfTargetMonth(value: string, year: number, month: number): number | null {
+  const date = parseLocalDate(value);
+  if (!date || date.getFullYear() !== year || date.getMonth() + 1 !== month) return null;
+  return date.getDate();
 }
 
 function getDaysInMonth(year: number, month: number): number {

@@ -1,8 +1,9 @@
-import type { SolveScheduleResponse, ValidateScheduleResponse } from "../api/contracts";
+import type { RecoverScheduleResponse, SolveScheduleResponse, ValidateScheduleResponse } from "../api/contracts";
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { validateMonthlyScheduleDocument, type ValidationIssue } from "../core/validation";
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
+import { renderUrgentLeaveTsv } from "../core/recoveryTsv";
 import { buildDiagnosticPanelViewModel, type DiagnosticPanelViewModel } from "./diagnosticViewModel";
 import { buildScheduleTableViewModel, type ScheduleTableViewModel } from "./scheduleTableViewModel";
 
@@ -12,6 +13,7 @@ export interface AppViewModel {
   documentJson: string;
   staffTsv: string;
   requestsTsv: string;
+  urgentLeaveTsv: string;
   scheduleTsv: string;
   settings: AppSettingsViewModel;
   schedule: ScheduleTableViewModel;
@@ -40,6 +42,7 @@ export interface AppActionViewModel {
   id:
     | "validate"
     | "solve"
+    | "recover"
     | "save"
     | "load"
     | "backup"
@@ -53,7 +56,8 @@ export interface AppActionViewModel {
     | "applyJson"
     | "exportJson"
     | "exportExcel"
-    | "exportPdf";
+    | "exportPdf"
+    | "quit";
   label: string;
   enabled: boolean;
 }
@@ -97,6 +101,23 @@ export function buildAppViewModelFromSolveResponse(
   return buildAppViewModelFromParts(response.document, [], buildDiagnosticPanelViewModel(response.diagnostics), true);
 }
 
+export function buildAppViewModelFromRecoverResponse(
+  fallbackDocument: MonthlyScheduleDocument,
+  response: RecoverScheduleResponse,
+): AppViewModel {
+  if (!response.ok) {
+    return buildAppViewModelFromParts(fallbackDocument, [], null, false, {
+      label: response.userMessage,
+      tone: "blocked",
+    });
+  }
+
+  return buildAppViewModelFromParts(response.document, [], buildDiagnosticPanelViewModel(response.diagnostics), true, {
+    label: response.diffs.length ? `急休リカバリーを反映しました（変更 ${response.diffs.length}件）` : "急休リカバリーを反映しました",
+    tone: "ready",
+  });
+}
+
 function buildAppViewModelFromParts(
   document: MonthlyScheduleDocument,
   validationIssues: ValidationIssue[],
@@ -122,6 +143,7 @@ function buildAppViewModelFromParts(
     documentJson: JSON.stringify(document, null, 2),
     staffTsv: renderStaffTsv(document),
     requestsTsv: renderRequestsTsv(document),
+    urgentLeaveTsv: renderUrgentLeaveTsv(),
     scheduleTsv: renderScheduleTsv(document),
     settings: {
       year: document.year,
@@ -151,6 +173,11 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "solve",
       label: "勤務表作成",
+      enabled: canSolve,
+    },
+    {
+      id: "recover",
+      label: "急休リカバリー",
       enabled: canSolve,
     },
     {
@@ -222,6 +249,11 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       id: "exportPdf",
       label: "PDF出力",
       enabled: canExport,
+    },
+    {
+      id: "quit",
+      label: "終了",
+      enabled: true,
     },
   ];
 }

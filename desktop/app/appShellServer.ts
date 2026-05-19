@@ -1,5 +1,5 @@
 import type { MonthlyScheduleDocument } from "../core/domain";
-import { sampleMonthlyScheduleDocument } from "../core/fixtures";
+import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { AppController } from "./appController";
@@ -42,11 +42,17 @@ export async function startAppShellServer(options: AppShellServerOptions): Promi
   }
 
   const client = runtime.getClient();
-  const initialDocument = options.document || (await loadInitialDocument(client)) || sampleMonthlyScheduleDocument;
+  const initialDocument = options.document || (await loadInitialDocument(client)) || createBlankMonthlyScheduleDocument();
   const controller = new AppController(initialDocument, client);
+  let closing = false;
+  const closeShell = async () => {
+    if (closing) return;
+    closing = true;
+    await shell.close();
+  };
   const server = http.createServer((request: any, response: any) => {
     const path = String(request.url || "/").split("?")[0];
-    handleShellRequest(path, request, response, controller).catch((error) => {
+    handleShellRequest(path, request, response, controller, closeShell).catch((error) => {
       response.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
       response.end(error instanceof Error ? error.message : String(error));
     });
@@ -63,7 +69,7 @@ export async function startAppShellServer(options: AppShellServerOptions): Promi
   const address = server.address();
   const port = typeof address === "object" && address ? address.port : options.port || 0;
 
-  return {
+  const shell: AppShellServer = {
     host,
     port,
     url: `http://${host}:${port}`,
@@ -77,9 +83,16 @@ export async function startAppShellServer(options: AppShellServerOptions): Promi
       await runtime.stop();
     },
   };
+  return shell;
 }
 
-async function handleShellRequest(path: string, request: any, response: any, controller: AppController): Promise<void> {
+async function handleShellRequest(
+  path: string,
+  request: any,
+  response: any,
+  controller: AppController,
+  closeShell: () => Promise<void>,
+): Promise<void> {
   const method = String(request.method || "GET").toUpperCase();
   if (method === "GET" && path === "/") {
     sendHtml(response, renderAppHtml(controller.getState().viewModel, { interactive: true, actionBasePath: "/app" }));
@@ -94,6 +107,16 @@ async function handleShellRequest(path: string, request: any, response: any, con
 
   if (method === "POST" && path === "/app/solve") {
     const state = await controller.solve();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/recover") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as {
+      urgentLeaveText?: string;
+      fixedThroughDate?: string;
+    };
+    const state = await controller.recover(body.urgentLeaveText || "", body.fixedThroughDate || "");
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
     return;
   }
@@ -199,8 +222,41 @@ async function handleShellRequest(path: string, request: any, response: any, con
     return;
   }
 
+  if (method === "POST" && path === "/app/quit") {
+    sendHtml(response, renderQuitHtml());
+    setTimeout(() => {
+      closeShell().catch(() => {});
+    }, 25);
+    return;
+  }
+
   response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
   response.end("not found");
+}
+
+function renderQuitHtml(): string {
+  return [
+    "<!doctype html>",
+    '<html lang="ja">',
+    "<head>",
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    "<title>勤務表作成 - 終了</title>",
+    "<style>",
+    "body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6f8;color:#17202a;display:grid;place-items:center;min-height:100vh}",
+    "main{background:#fff;border:1px solid #d7dce2;border-radius:8px;padding:24px;max-width:420px}",
+    "h1{font-size:20px;margin:0 0 8px}",
+    "p{margin:0;color:#5e6a75;line-height:1.6}",
+    "</style>",
+    "</head>",
+    "<body>",
+    "<main>",
+    "<h1>勤務表作成を終了しました</h1>",
+    "<p>このブラウザタブを閉じてください。</p>",
+    "</main>",
+    "</body>",
+    "</html>",
+  ].join("\n");
 }
 
 function sendTsv(response: any, body: string): void {

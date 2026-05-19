@@ -74,6 +74,7 @@ function main(): void {
   fs.rmSync(archivePlan.archivePath, { force: true });
   fs.rmSync(archivePlan.checksumPath, { force: true });
   fs.rmSync(archivePlan.manifestPath, { force: true });
+  cleanReleaseOnlyArtifacts(archivePlan.assembledDirectory);
 
   const archive = createArchive(archivePlan.archiveFormat, archivePlan.archivePath, archivePlan.assembledDirectory);
   if (archive.error) {
@@ -137,6 +138,10 @@ function createArchive(format: "tar.gz" | "zip", archivePath: string, assembledD
     ["-czf", archivePath, "-C", path.dirname(assembledDirectory), path.basename(assembledDirectory)],
     { stdio: "inherit" },
   );
+}
+
+function cleanReleaseOnlyArtifacts(assembledDirectory: string): void {
+  fs.rmSync(path.join(assembledDirectory, ".smoke-data"), { recursive: true, force: true });
 }
 
 function sha256File(filePath: string): string {

@@ -89,8 +89,8 @@ function main(): void {
   }
   const launcherPath =
     releaseTarget === "windows-prototype"
-      ? path.join(archivePlan.verifyExtractedDirectory, "desktop/packaging/windows/shift-scheduler-dev.cmd")
-      : path.join(archivePlan.verifyExtractedDirectory, "desktop/packaging/linux/shift-scheduler-dev");
+      ? path.join(archivePlan.verifyExtractedDirectory, "start-shift-scheduler.vbs")
+      : path.join(archivePlan.verifyExtractedDirectory, "start-shift-scheduler.sh");
   if (!fs.existsSync(launcherPath)) {
     console.error(`extracted launcher missing: ${archivePlan.verifyExtractedDirectory}`);
     process.exitCode = 1;

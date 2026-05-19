@@ -1,4 +1,5 @@
 import type { ReleaseTarget } from "./releaseManifest";
+import { packageDirectoryName } from "./packageAssembly";
 
 export interface PackageArchivePlan {
   target: ReleaseTarget;
@@ -21,7 +22,7 @@ export interface BuildPackageArchivePlanOptions {
 
 export function buildPackageArchivePlan(options: BuildPackageArchivePlanOptions): PackageArchivePlan {
   const archiveRoot = options.archiveRoot || "/tmp/shift-scheduler-archives";
-  const archiveBaseName = `shift-scheduler-${options.target}`;
+  const archiveBaseName = packageDirectoryName(options.target);
   const archiveFormat = options.target === "windows-prototype" ? "zip" : "tar.gz";
   const archivePath = `${archiveRoot}/${archiveBaseName}.${archiveFormat}`;
   const verifyExtractRoot = options.verifyRoot || "/tmp/shift-scheduler-archive-verify";
@@ -34,7 +35,7 @@ export function buildPackageArchivePlan(options: BuildPackageArchivePlanOptions)
     manifestPath: `${archiveRoot}/${archiveBaseName}.manifest.txt`,
     archiveBaseName,
     verifyExtractRoot,
-    verifyExtractedDirectory: `${verifyExtractRoot}/${options.target}`,
+    verifyExtractedDirectory: `${verifyExtractRoot}/${packageDirectoryName(options.target)}`,
   };
 }
 

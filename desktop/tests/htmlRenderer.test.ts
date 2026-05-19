@@ -35,11 +35,14 @@ async function main(): Promise<void> {
   assertIncludes(html, '<textarea id="document-json"', "document json editor");
   assertIncludes(html, '<textarea id="staff-tsv"', "staff tsv editor");
   assertIncludes(html, '<textarea id="requests-tsv"', "requests tsv editor");
+  assertIncludes(html, '<textarea id="urgent-leave-tsv"', "urgent leave tsv editor");
+  assertIncludes(html, '<input id="recovery-fixed-through-date"', "recovery fixed date");
   assertIncludes(html, '<textarea id="schedule-tsv"', "schedule tsv editor");
   assertIncludes(html, 'data-settings-field="requirements.late"', "settings editor");
   assertIncludes(html, 'actions = {', "interactive script");
   assertIncludes(html, 'actionBasePath = "/preview"', "default action base path");
   assertIncludes(html, 'solve: actionBasePath + "/solve"', "solve endpoint");
+  assertIncludes(html, 'recover: actionBasePath + "/recover"', "recover endpoint");
   assertIncludes(html, 'save: actionBasePath + "/save"', "save endpoint");
   assertIncludes(html, 'load: actionBasePath + "/load"', "load endpoint");
   assertIncludes(html, 'backup: actionBasePath + "/backup"', "backup endpoint");

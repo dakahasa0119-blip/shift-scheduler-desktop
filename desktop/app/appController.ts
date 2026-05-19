@@ -2,6 +2,7 @@ import type { DesktopApiClient } from "./desktopApiClient";
 import type { AppViewModel } from "./appViewModel";
 import {
   buildAppViewModelFromDocument,
+  buildAppViewModelFromRecoverResponse,
   buildAppViewModelFromSolveResponse,
   buildAppViewModelFromValidateResponse,
   buildInitialAppViewModel,
@@ -9,6 +10,7 @@ import {
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { applyScheduleTsv } from "../core/scheduleTsv";
 import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
+import { parseUrgentLeaveTsv } from "../core/recoveryTsv";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -36,6 +38,7 @@ export class AppController {
     private readonly api: Pick<
       DesktopApiClient,
       "validateSchedule" | "solveSchedule" | "exportExcel" | "exportPdf" | "saveDocument" | "loadDocument" | "backupDocument"
+      | "recoverSchedule"
     >,
   ) {
     this.state = {
@@ -77,6 +80,32 @@ export class AppController {
         ...this.state,
         document: nextDocument,
         viewModel: buildAppViewModelFromSolveResponse(this.state.document, response),
+        lastError: response.ok ? "" : response.userMessage,
+      };
+    });
+  }
+
+  async recover(urgentLeaveText: string, fixedThroughDate?: string): Promise<AppControllerState> {
+    return this.run(async () => {
+      const urgentLeaves = parseUrgentLeaveTsv(
+        urgentLeaveText,
+        this.state.document.staff,
+        this.state.document.year,
+        this.state.document.month,
+      );
+      const response = await this.api.recoverSchedule({
+        document: this.state.document,
+        urgentLeaves,
+        options: {
+          fixedThroughDate: fixedThroughDate || undefined,
+          timeLimitSeconds: 120,
+        },
+      });
+      const nextDocument = response.ok ? response.document : this.state.document;
+      return {
+        ...this.state,
+        document: nextDocument,
+        viewModel: buildAppViewModelFromRecoverResponse(this.state.document, response),
         lastError: response.ok ? "" : response.userMessage,
       };
     });

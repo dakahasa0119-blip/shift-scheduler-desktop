@@ -1,0 +1,29 @@
+勤務表作成アプリ サポート情報
+
+保存場所
+
+Windows:
+  %APPDATA%\ShiftScheduler
+
+Linux:
+  ${XDG_DATA_HOME}/shift-scheduler
+  XDG_DATA_HOME が未設定の場合は ~/.local/share/shift-scheduler
+
+同梱ファイル
+
+- desktop/dist/shift-scheduler.cjs
+  アプリ本体です。
+
+- desktop/packaging/runtime/
+  同梱Node.js runtimeです。
+
+- desktop/packaging/resources/solver/
+  勤務表作成Solverです。
+
+トラブル時
+
+1. アプリを終了します。
+2. 保存場所の current-schedule.json を退避します。
+3. 再起動します。
+4. 必要なら JSON タブから退避したデータを確認します。
+

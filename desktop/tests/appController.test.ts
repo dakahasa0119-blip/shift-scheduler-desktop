@@ -11,6 +11,8 @@ import type {
   SaveDocumentRequest,
   SaveDocumentResponse,
   LoadDocumentResponse,
+  RecoverScheduleRequest,
+  RecoverScheduleResponse,
   BackupDocumentRequest,
   BackupDocumentResponse,
 } from "../api/contracts";
@@ -36,6 +38,14 @@ async function main(): Promise<void> {
   assertEqual(solved.viewModel.status.label, "作成できました（確認事項あり）", "solved status");
   assertEqual(solved.viewModel.diagnostics?.sections[0].title, "確認事項", "diagnostics shown");
   assertEqual(solved.document.diagnostics?.summary.allowedShortageCount, 1, "document updated");
+
+  const recovered = await controller.recover("氏名\t日付\t理由\t備考\n江藤\t2026-06-05\t急休\t発熱\n", "2026-06-04");
+  assertEqual(recovered.busy, false, "recovered busy");
+  assertEqual(api.recoverCalls.length, 1, "recover call count");
+  assertEqual(api.recoverCalls[0].urgentLeaves[0].staffId, "staff_eto", "recover staff id");
+  assertEqual(api.recoverCalls[0].urgentLeaves[0].date, "2026-06-05", "recover date");
+  assertEqual(api.recoverCalls[0].options?.fixedThroughDate, "2026-06-04", "recover fixed date");
+  assertEqual(recovered.viewModel.status.label, "急休リカバリーを反映しました（変更 1件）", "recover status");
 
   const excel = await controller.exportExcel();
   assertEqual(excel.ok, true, "excel export ok");
@@ -101,6 +111,7 @@ class FakeApiClient {
   saveCalls: SaveDocumentRequest[] = [];
   loadCalls = 0;
   backupCalls: BackupDocumentRequest[] = [];
+  recoverCalls: RecoverScheduleRequest[] = [];
 
   async validateSchedule(request: ValidateScheduleRequest): Promise<ValidateScheduleResponse> {
     this.validateCalls.push(request);
@@ -121,6 +132,27 @@ class FakeApiClient {
       document,
       diagnostics: document.diagnostics!,
       messages: document.diagnostics!.messages,
+    };
+  }
+
+  async recoverSchedule(request: RecoverScheduleRequest): Promise<RecoverScheduleResponse> {
+    this.recoverCalls.push(request);
+    const document = applySolverOutputToDocument(sampleMonthlyScheduleDocument, sampleSolverOutputWithAdvisory);
+    return {
+      ok: true,
+      document,
+      diagnostics: document.diagnostics!,
+      messages: document.diagnostics!.messages,
+      diffs: [
+        {
+          date: "6/5",
+          staffId: "staff_eto",
+          name: "江藤",
+          before: "早",
+          after: "休",
+          labels: ["急休"],
+        },
+      ],
     };
   }
 

@@ -1,0 +1,10 @@
+{
+  "name": "shift-scheduler-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "for f in desktop/tests/*.test.ts; do npx -y -p tsx tsx \"$f\" || exit 1; done",
+    "release:linux": "npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=linux-prototype",
+    "release:windows": "npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=windows-prototype"
+  }
+}

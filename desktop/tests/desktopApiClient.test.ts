@@ -46,6 +46,16 @@ async function main(): Promise<void> {
     assertEqual(solver.calls.length, 1, "solver call count");
     assertEqual(solve.diagnostics.summary.allowedShortageCount, 1, "allowed shortage count");
 
+    const recovery = await client.recoverSchedule({
+      document: sampleMonthlyScheduleDocument,
+      urgentLeaves: [{ staffId: "staff_eto", date: "2026-06-05", reason: "急休", notes: "発熱" }],
+      options: { fixedThroughDate: "2026-06-04", timeLimitSeconds: 3 },
+    });
+    assertEqual(recovery.ok, true, "recover response ok");
+    if (!recovery.ok) return;
+    assertEqual(solver.calls.length, 2, "recover solver call count");
+    assertEqual(solver.calls[1].options.mode, "recovery", "recover solver mode");
+
     const exported = await client.exportExcel({
       document: solve.document,
       destinationPath: "/tmp/client-export.tsv",

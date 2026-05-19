@@ -34,6 +34,13 @@ export interface SolverOutputDiagnostics {
   };
   objectiveValue?: number;
   shortageCount?: number;
+  recoveryDiffs?: {
+    date?: string;
+    name?: string;
+    before?: string;
+    after?: string;
+    labels?: string[];
+  }[];
   fallback?: string;
   reason?: string;
 }
