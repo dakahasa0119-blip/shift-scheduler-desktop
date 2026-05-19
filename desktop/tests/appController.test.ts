@@ -48,7 +48,7 @@ async function main(): Promise<void> {
   assertEqual(api.recoverCalls[0].urgentLeaves[0].staffId, "staff_eto", "recover staff id");
   assertEqual(api.recoverCalls[0].urgentLeaves[0].date, "2026-06-05", "recover date");
   assertEqual(api.recoverCalls[0].options?.fixedThroughDate, "2026-06-04", "recover fixed date");
-  assertEqual(recovered.viewModel.status.label, "急休リカバリーを反映しました（変更 1件）", "recover status");
+  assertEqual(recovered.viewModel.status.label, "急休再調整を反映しました（変更 1件）", "recover status");
 
   const actual = controller.createActualSchedule();
   assertEqual(actual.viewModel.status.label, "勤務実績を作成 / 更新しました", "actual status");
@@ -97,7 +97,7 @@ async function main(): Promise<void> {
   assertEqual(refreshedCapacity.viewModel.status.label, "体制シミュレーション表示を更新しました", "capacity refresh");
 
   const importedCapacity = controller.importCapacitySimulationJson(JSON.stringify(capacity.document.capacitySimulation));
-  assertEqual(importedCapacity.viewModel.status.label, "体制シミュレーションJSONを取り込みました", "capacity import");
+  assertEqual(importedCapacity.viewModel.status.label, "体制シミュレーション結果を取り込みました", "capacity import");
 
   const excel = await controller.exportExcel();
   assertEqual(excel.ok, true, "excel export ok");
@@ -147,7 +147,7 @@ async function main(): Promise<void> {
   assertEqual(clearedSettings.document.requirements.femaleRequiredWeekdays.length, 0, "settings female weekdays cleared");
 
   const tsv = controller.importScheduleTsv("介護リーダー\t江藤\t日\t日\t公\n介護\t有山\t早\t早\t遅\n");
-  assertEqual(tsv.viewModel.status.label, "勤務表TSVを反映しました（自動再判定済み）", "tsv status");
+  assertEqual(tsv.viewModel.status.label, "勤務表を反映しました（自動再判定済み）", "tsv status");
   assertEqual(tsv.document.schedule[0].shifts[0], "日", "tsv shift");
   assertEqual(Boolean(tsv.document.diagnostics), true, "tsv auto diagnostics");
 
@@ -181,10 +181,10 @@ async function main(): Promise<void> {
   assertEqual(dropdowns.viewModel.status.label, "プルダウンリストを修復しました", "dropdown status");
 
   const solverCheck = await controller.checkSolverConnection();
-  assertEqual(solverCheck.viewModel.status.label, "Solver接続を確認しました", "solver check status");
+  assertEqual(solverCheck.viewModel.status.label, "作成機能を確認しました", "solver check status");
 
   const solverOutputImported = controller.importSolverOutputJson(JSON.stringify(sampleSolverOutputWithAdvisory));
-  assertEqual(solverOutputImported.viewModel.status.label, "Solver結果JSONを反映しました", "solver output import");
+  assertEqual(solverOutputImported.viewModel.status.label, "作成結果を反映しました", "solver output import");
   assertEqual(solverOutputImported.document.schedule[0].name, "江藤", "solver output schedule");
 
   const staff = controller.importStaffTsv(tsv.viewModel.staffTsv.replace("介護リーダー", "主任"));

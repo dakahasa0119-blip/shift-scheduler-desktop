@@ -212,7 +212,7 @@ export class AppController {
         viewModel: {
           ...buildAppViewModelFromDocument(this.state.document),
           status: response.ok
-            ? { label: "Solver接続を確認しました", tone: "ready" }
+            ? { label: "作成機能を確認しました", tone: "ready" }
             : { label: response.userMessage, tone: "blocked" },
         },
         lastError: response.ok ? "" : response.userMessage,
@@ -227,7 +227,7 @@ export class AppController {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "Solver結果JSONを反映しました", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
+          status: { label: "作成結果を反映しました", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
         },
         busy: false,
         lastError: "",
@@ -240,7 +240,7 @@ export class AppController {
         lastError: message,
         viewModel: {
           ...this.state.viewModel,
-          status: { label: "Solver結果JSONを反映できませんでした", tone: "blocked" },
+          status: { label: "作成結果を反映できませんでした", tone: "blocked" },
         },
       };
     }
@@ -460,7 +460,7 @@ export class AppController {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "体制シミュレーションJSONを取り込みました", tone: "ready" },
+          status: { label: "体制シミュレーション結果を取り込みました", tone: "ready" },
         },
         busy: false,
         lastError: "",
@@ -552,7 +552,7 @@ export class AppController {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: gasPayload ? "GASデータを取り込みました" : "JSONを反映しました", tone: "ready" },
+          status: { label: gasPayload ? "GASデータを取り込みました" : "詳細データを反映しました", tone: "ready" },
         },
         busy: false,
         lastError: "",
@@ -564,7 +564,7 @@ export class AppController {
         lastError: error instanceof Error ? error.message : String(error),
         viewModel: {
           ...this.state.viewModel,
-          status: { label: "JSONを反映できませんでした", tone: "blocked" },
+          status: { label: "詳細データを反映できませんでした", tone: "blocked" },
         },
       };
     }
@@ -607,7 +607,7 @@ export class AppController {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "勤務表TSVを反映しました（自動再判定済み）", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
+          status: { label: "勤務表を反映しました（自動再判定済み）", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
         },
         busy: false,
         lastError: "",
@@ -619,7 +619,7 @@ export class AppController {
         lastError: error instanceof Error ? error.message : String(error),
         viewModel: {
           ...this.state.viewModel,
-          status: { label: "勤務表TSVを反映できませんでした", tone: "blocked" },
+          status: { label: "勤務表を反映できませんでした", tone: "blocked" },
         },
       };
     }
@@ -633,7 +633,7 @@ export class AppController {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "勤務実績TSVを反映しました（体制表示更新済み）", tone: "ready" },
+          status: { label: "勤務実績を反映しました（体制表示更新済み）", tone: "ready" },
         },
         busy: false,
         lastError: "",
@@ -645,7 +645,7 @@ export class AppController {
         lastError: error instanceof Error ? error.message : String(error),
         viewModel: {
           ...this.state.viewModel,
-          status: { label: "勤務実績TSVを反映できませんでした", tone: "blocked" },
+          status: { label: "勤務実績を反映できませんでした", tone: "blocked" },
         },
       };
     }

@@ -46,7 +46,7 @@ async function main(): Promise<void> {
       fixedThroughDate: "2026-06-04",
     });
     assertEqual(recovery.statusCode, 200, "recovery status code");
-    assertIncludes(recovery.body, "急休リカバリーを反映しました", "recovery response");
+    assertIncludes(recovery.body, "急休再調整を反映しました", "recovery response");
 
     const save = await post(`${server.url}/app/save`);
     assertEqual(save.statusCode, 200, "save status code");
@@ -64,7 +64,7 @@ async function main(): Promise<void> {
       documentText: JSON.stringify({ ...sampleMonthlyScheduleDocument, month: 7 }),
     });
     assertEqual(imported.statusCode, 200, "json import status code");
-    assertIncludes(imported.body, "JSONを反映しました", "json import response");
+    assertIncludes(imported.body, "詳細データを反映しました", "json import response");
 
     const settings = await postJson(`${server.url}/app/import/settings`, {
       year: 2027,
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
       scheduleText: "介護リーダー\t江藤\t日\t日\t公\n介護\t有山\t早\t早\t遅\n",
     });
     assertEqual(importedTsv.statusCode, 200, "schedule tsv import status code");
-    assertIncludes(importedTsv.body, "勤務表TSVを反映しました", "schedule tsv import response");
+    assertIncludes(importedTsv.body, "勤務表を反映しました", "schedule tsv import response");
 
     const postEdit = await post(`${server.url}/app/post-edit-recheck`);
     assertEqual(postEdit.statusCode, 200, "post edit status code");
@@ -131,7 +131,7 @@ async function main(): Promise<void> {
       capacitySimulationText: capacityJson.body,
     });
     assertEqual(capacityImport.statusCode, 200, "capacity import status code");
-    assertIncludes(capacityImport.body, "体制シミュレーションJSONを取り込みました", "capacity import response");
+    assertIncludes(capacityImport.body, "体制シミュレーション結果を取り込みました", "capacity import response");
 
     const monthlyArchive = await post(`${server.url}/app/monthly-archive`);
     assertEqual(monthlyArchive.statusCode, 200, "monthly archive status code");
@@ -163,7 +163,7 @@ async function main(): Promise<void> {
 
     const solverCheck = await post(`${server.url}/app/check-solver-connection`);
     assertEqual(solverCheck.statusCode, 200, "solver check status code");
-    assertIncludes(solverCheck.body, "Solver接続を確認しました", "solver check response");
+    assertIncludes(solverCheck.body, "作成機能を確認しました", "solver check response");
 
     const solverInput = await get(`${server.url}/app/export/solver-input-json`);
     assertEqual(solverInput.statusCode, 200, "solver input status code");
@@ -173,7 +173,7 @@ async function main(): Promise<void> {
       solverOutputText: JSON.stringify(sampleSolverOutputWithAdvisory),
     });
     assertEqual(solverOutput.statusCode, 200, "solver output import status code");
-    assertIncludes(solverOutput.body, "Solver結果JSONを反映しました", "solver output import response");
+    assertIncludes(solverOutput.body, "作成結果を反映しました", "solver output import response");
 
     const excel = await get(`${server.url}/app/export/excel`);
     assertEqual(excel.statusCode, 200, "excel status code");

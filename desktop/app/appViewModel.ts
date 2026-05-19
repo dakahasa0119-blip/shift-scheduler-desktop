@@ -174,7 +174,7 @@ export function buildAppViewModelFromRecoverResponse(
   }
 
   return buildAppViewModelFromParts(response.document, [], buildDiagnosticPanelViewModel(response.diagnostics), true, {
-    label: response.diffs.length ? `急休リカバリーを反映しました（変更 ${response.diffs.length}件）` : "急休リカバリーを反映しました",
+    label: response.diffs.length ? `急休再調整を反映しました（変更 ${response.diffs.length}件）` : "急休再調整を反映しました",
     tone: "ready",
   });
 }
@@ -302,17 +302,17 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "checkSolverConnection",
-      label: "Solver接続確認",
+      label: "作成機能確認",
       enabled: true,
     },
     {
       id: "importSolverOutputJson",
-      label: "Solver結果取り込み",
+      label: "作成結果取り込み",
       enabled: true,
     },
     {
       id: "exportSolverInputJson",
-      label: "Solver入力JSON出力",
+      label: "作成用データ出力",
       enabled: true,
     },
     {
@@ -347,7 +347,7 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "recover",
-      label: "急休リカバリー",
+      label: "急休再調整",
       enabled: canSolve,
     },
     {
@@ -377,7 +377,7 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "exportStaffTsv",
-      label: "職員TSV出力",
+      label: "職員出力",
       enabled: true,
     },
     {
@@ -387,7 +387,7 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "exportRequestsTsv",
-      label: "希望TSV出力",
+      label: "希望出力",
       enabled: true,
     },
     {
@@ -397,7 +397,7 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "exportScheduleTsv",
-      label: "勤務表TSV出力",
+      label: "勤務表出力",
       enabled: true,
     },
     {
@@ -407,7 +407,7 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "exportActualScheduleTsv",
-      label: "実績TSV出力",
+      label: "実績出力",
       enabled: true,
     },
     {
@@ -417,17 +417,17 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "exportChangeHistoryTsv",
-      label: "変更履歴TSV出力",
+      label: "変更履歴出力",
       enabled: true,
     },
     {
       id: "exportUrgentLeaveHistoryTsv",
-      label: "急休履歴TSV出力",
+      label: "急休履歴出力",
       enabled: true,
     },
     {
       id: "exportAiDebugJson",
-      label: "AI向け出力",
+      label: "調査用データ出力",
       enabled: true,
     },
     {
@@ -442,22 +442,22 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     },
     {
       id: "importCapacitySimulationJson",
-      label: "体制JSON取り込み",
+      label: "体制結果取り込み",
       enabled: true,
     },
     {
       id: "exportCapacitySimulationJson",
-      label: "体制JSON出力",
+      label: "体制結果出力",
       enabled: true,
     },
     {
       id: "applyJson",
-      label: "JSON反映",
+      label: "詳細データ反映",
       enabled: true,
     },
     {
       id: "exportJson",
-      label: "JSON出力",
+      label: "詳細データ出力",
       enabled: true,
     },
     {

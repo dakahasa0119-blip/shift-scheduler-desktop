@@ -118,7 +118,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "cancelUrgentLeave"),
     "</div>",
     '<details class="operation-details">',
-    "<summary>急休リカバリーTSV</summary>",
+    "<summary>急休再調整入力</summary>",
     renderUrgentLeaveEditor(viewModel),
     renderActionById(viewModel, "recover"),
     "</details>",
@@ -156,7 +156,7 @@ function renderWorkflowPanel(viewModel: AppViewModel): string {
   const blocked = viewModel.status.tone === "blocked";
   const steps = [
     { label: "入力確認", detail: "職員条件、希望、勤務表の形式を確認", state: "ready" },
-    { label: "勤務表作成", detail: "Solverで作成し、停止理由と注意事項を確認", state: hasDiagnostics ? (blocked ? "blocked" : "ready") : "pending" },
+    { label: "勤務表作成", detail: "作成機能で勤務表を作り、停止理由と注意事項を確認", state: hasDiagnostics ? (blocked ? "blocked" : "ready") : "pending" },
     { label: "配布前確認", detail: "不足、未充足希望、修正候補を確認", state: hasDiagnostics ? (blocked ? "blocked" : "ready") : "pending" },
     { label: "勤務実績作成", detail: "配布用勤務表を実績シートへコピー", state: "pending" },
     { label: "急休対応", detail: "当日急休は実績へ反映し、必要時にリカバリー", state: "pending" },
@@ -243,12 +243,12 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<label class="tab-button" for="tab-settings" role="tab">基本設定</label>',
     '<label class="tab-button" for="tab-staff" role="tab">職員</label>',
     '<label class="tab-button" for="tab-requests" role="tab">希望</label>',
-    '<label class="tab-button" for="tab-schedule" role="tab">勤務表TSV</label>',
+    '<label class="tab-button" for="tab-schedule" role="tab">勤務表編集</label>',
     '<label class="tab-button" for="tab-actual" role="tab">勤務実績</label>',
     '<label class="tab-button" for="tab-history" role="tab">履歴</label>',
     '<label class="tab-button" for="tab-capacity" role="tab">体制</label>',
-    '<label class="tab-button" for="tab-solver" role="tab">Solver</label>',
-    '<label class="tab-button" for="tab-json" role="tab">JSON</label>',
+    '<label class="tab-button" for="tab-solver" role="tab">作成データ</label>',
+    '<label class="tab-button" for="tab-json" role="tab">詳細データ</label>',
     "</div>",
     '<div class="tab-panels">',
     `<div class="tab-panel panel-settings">${renderSettingsEditor(viewModel)}${renderActionById(viewModel, "applySettings")}</div>`,
@@ -453,8 +453,8 @@ function renderDocumentEditor(viewModel: AppViewModel): string {
 
 function renderScheduleTsvEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="勤務表TSV">',
-    '<h2>勤務表TSV</h2>',
+    '<section class="tsv-editor" aria-label="勤務表編集">',
+    '<h2>勤務表編集</h2>',
     `<textarea id="schedule-tsv" spellcheck="false">${escapeHtml(viewModel.scheduleTsv)}</textarea>`,
     "</section>",
   ].join("");
@@ -462,7 +462,7 @@ function renderScheduleTsvEditor(viewModel: AppViewModel): string {
 
 function renderActualScheduleTsvEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="勤務実績TSV">',
+    '<section class="tsv-editor" aria-label="勤務実績編集">',
     '<h2>勤務実績</h2>',
     `<textarea id="actual-schedule-tsv" spellcheck="false">${escapeHtml(viewModel.actualScheduleTsv)}</textarea>`,
     "</section>",
@@ -471,11 +471,11 @@ function renderActualScheduleTsvEditor(viewModel: AppViewModel): string {
 
 function renderHistoryTsvEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="変更履歴TSV">',
+    '<section class="tsv-editor" aria-label="変更履歴">',
     '<h2>変更履歴</h2>',
     `<textarea id="change-history-tsv" spellcheck="false" readonly>${escapeHtml(viewModel.changeHistoryTsv)}</textarea>`,
     "</section>",
-    '<section class="tsv-editor" aria-label="急休履歴TSV">',
+    '<section class="tsv-editor" aria-label="急休履歴">',
     '<h2>急休履歴</h2>',
     `<textarea id="urgent-leave-history-tsv" spellcheck="false" readonly>${escapeHtml(viewModel.urgentLeaveHistoryTsv)}</textarea>`,
     "</section>",
@@ -484,8 +484,8 @@ function renderHistoryTsvEditor(viewModel: AppViewModel): string {
 
 function renderCapacityJsonEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="体制シミュレーションJSON">',
-    '<h2>体制シミュレーションJSON</h2>',
+    '<section class="tsv-editor" aria-label="体制シミュレーション結果">',
+    '<h2>体制シミュレーション結果</h2>',
     `<textarea id="capacity-simulation-json" spellcheck="false">${escapeHtml(viewModel.capacitySimulationJson)}</textarea>`,
     "</section>",
   ].join("");
@@ -493,12 +493,12 @@ function renderCapacityJsonEditor(viewModel: AppViewModel): string {
 
 function renderSolverJsonEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="Solver入力JSON">',
-    '<h2>Solver入力JSON</h2>',
+    '<section class="tsv-editor" aria-label="作成用データ">',
+    '<h2>作成用データ</h2>',
     `<textarea id="solver-input-json" spellcheck="false" readonly>${escapeHtml(viewModel.solverInputJson)}</textarea>`,
     "</section>",
-    '<section class="tsv-editor" aria-label="Solver結果JSON">',
-    '<h2>Solver結果JSON</h2>',
+    '<section class="tsv-editor" aria-label="作成結果データ">',
+    '<h2>作成結果データ</h2>',
     '<textarea id="solver-output-json" spellcheck="false"></textarea>',
     "</section>",
   ].join("");
@@ -506,7 +506,7 @@ function renderSolverJsonEditor(viewModel: AppViewModel): string {
 
 function renderStaffTsvEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="職員一覧TSV">',
+    '<section class="tsv-editor" aria-label="職員一覧編集">',
     '<h2>職員一覧</h2>',
     `<textarea id="staff-tsv" spellcheck="false">${escapeHtml(viewModel.staffTsv)}</textarea>`,
     "</section>",
@@ -515,7 +515,7 @@ function renderStaffTsvEditor(viewModel: AppViewModel): string {
 
 function renderRequestsTsvEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor" aria-label="希望休・希望勤務TSV">',
+    '<section class="tsv-editor" aria-label="希望休・希望勤務編集">',
     '<h2>希望休・希望勤務</h2>',
     `<textarea id="requests-tsv" spellcheck="false">${escapeHtml(viewModel.requestsTsv)}</textarea>`,
     "</section>",
@@ -524,8 +524,8 @@ function renderRequestsTsvEditor(viewModel: AppViewModel): string {
 
 function renderUrgentLeaveEditor(viewModel: AppViewModel): string {
   return [
-    '<section class="tsv-editor recovery-editor" aria-label="急休リカバリー">',
-    '<h2>急休リカバリー</h2>',
+    '<section class="tsv-editor recovery-editor" aria-label="急休再調整">',
+    '<h2>急休再調整</h2>',
     '<div class="recovery-grid">',
     `<label><span>固定終了日</span><input id="recovery-fixed-through-date" type="date" value=""></label>`,
     "</div>",
