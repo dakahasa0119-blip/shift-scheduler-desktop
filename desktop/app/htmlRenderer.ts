@@ -79,6 +79,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     '<h2>月次作成</h2>',
     '<div class="button-grid">',
     renderActionById(viewModel, "validate"),
+    renderActionById(viewModel, "monthlyPrecheck"),
     renderActionById(viewModel, "solve"),
     renderActionById(viewModel, "save"),
     renderActionById(viewModel, "load"),
@@ -1215,6 +1216,7 @@ function renderClientScript(actionBasePath: string): string {
   const actionBasePath = "${escapeScriptString(actionBasePath)}";
   const actions = {
     validate: actionBasePath + "/validate",
+    monthlyPrecheck: actionBasePath + "/monthly-precheck",
     solve: actionBasePath + "/solve",
     recover: actionBasePath + "/recover",
     save: actionBasePath + "/save",

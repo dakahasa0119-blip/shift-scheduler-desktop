@@ -67,6 +67,44 @@ export class AppController {
     });
   }
 
+  runMonthlyTransitionPrecheck(): AppControllerState {
+    const blockers: string[] = [];
+    const warnings: string[] = [];
+    if (!this.state.document.year || !this.state.document.month) blockers.push("対象年月が未設定");
+    if (!this.state.document.staff.length) blockers.push("職員が未登録");
+    if (!this.state.document.schedule.length) blockers.push("勤務表が未作成");
+    const activeScheduleRows = this.state.document.schedule.filter((row) => row.name && row.shifts.some(Boolean));
+    if (!activeScheduleRows.length) warnings.push("勤務が入力された職員行がありません");
+    const diagnostics = this.state.document.diagnostics;
+    if (diagnostics) {
+      if (diagnostics.summary.requiredFixCount > 0) blockers.push(`修正必須 ${diagnostics.summary.requiredFixCount}件`);
+      if (diagnostics.summary.blockingShortageCount > 0) blockers.push(`停止対象不足 ${diagnostics.summary.blockingShortageCount}件`);
+      if (diagnostics.summary.unmetLeaveRequestCount > 0) blockers.push(`休暇未充足 ${diagnostics.summary.unmetLeaveRequestCount}件`);
+      if (diagnostics.summary.allowedShortageCount > 0) warnings.push(`許容内不足 ${diagnostics.summary.allowedShortageCount}件`);
+      if (diagnostics.summary.unmetShiftRequestCount > 0) warnings.push(`勤務希望未充足 ${diagnostics.summary.unmetShiftRequestCount}件`);
+    } else {
+      warnings.push("勤務表作成後の診断がありません");
+    }
+    const label = blockers.length
+      ? `月次切替前チェック: NG（${blockers.slice(0, 2).join(" / ")}）`
+      : warnings.length
+        ? `月次切替前チェック: 確認あり（${warnings.slice(0, 2).join(" / ")}）`
+        : "月次切替前チェック: OK";
+    this.state = {
+      ...this.state,
+      busy: false,
+      lastError: blockers.join(" / "),
+      viewModel: {
+        ...buildAppViewModelFromDocument(this.state.document),
+        status: {
+          label,
+          tone: blockers.length ? "blocked" : warnings.length ? "warning" : "ready",
+        },
+      },
+    };
+    return this.state;
+  }
+
   async solve(): Promise<AppControllerState> {
     return this.run(async () => {
       const response = await this.api.solveSchedule({

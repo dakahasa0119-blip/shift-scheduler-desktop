@@ -41,6 +41,7 @@ export interface AppStatusViewModel {
 export interface AppActionViewModel {
   id:
     | "validate"
+    | "monthlyPrecheck"
     | "solve"
     | "recover"
     | "save"
@@ -168,6 +169,11 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "validate",
       label: "入力確認",
+      enabled: true,
+    },
+    {
+      id: "monthlyPrecheck",
+      label: "月次切替前チェック",
       enabled: true,
     },
     {
