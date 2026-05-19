@@ -114,6 +114,36 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/monthly-transition") {
+    const state = controller.runMonthlyTransition();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/monthly-archive") {
+    const state = controller.runMonthlyArchiveForCurrentOperationMonth();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/start-next-month-planning") {
+    const state = controller.startNextMonthPlanning();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/promote-operation-month") {
+    const state = controller.promoteTargetMonthToOperationMonth();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/repair-calendar") {
+    const state = controller.repairCurrentShiftCalendar();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/post-edit-recheck") {
     const state = controller.runPostEditScheduleRecheck();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));

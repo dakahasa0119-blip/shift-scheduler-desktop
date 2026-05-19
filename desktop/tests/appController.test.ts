@@ -138,6 +138,21 @@ async function main(): Promise<void> {
   const postEdit = controller.runPostEditScheduleRecheck();
   assertEqual(postEdit.viewModel.status.label.startsWith("手修正後の再判定:"), true, "post edit status");
 
+  const archived = controller.runMonthlyArchiveForCurrentOperationMonth();
+  assertEqual(archived.document.operation?.lastArchivedYearMonth, "2027-02", "monthly archive ym");
+  assertEqual(archived.document.operation?.archives.length, 1, "monthly archive count");
+
+  const nextPlanning = controller.startNextMonthPlanning();
+  assertEqual(nextPlanning.document.year, 2027, "next planning year");
+  assertEqual(nextPlanning.document.month, 3, "next planning month");
+
+  const promoted = controller.promoteTargetMonthToOperationMonth();
+  assertEqual(promoted.document.operation?.currentOperationYearMonth, "2027-03", "promoted operation month");
+  assertEqual(promoted.document.operation?.currentTargetYearMonth, "2027-04", "promoted target month");
+
+  const repaired = controller.repairCurrentShiftCalendar();
+  assertEqual(repaired.viewModel.status.label, "勤務表カレンダーを修復しました", "repair calendar status");
+
   const staff = controller.importStaffTsv(tsv.viewModel.staffTsv.replace("介護リーダー", "主任"));
   assertEqual(staff.viewModel.status.label, "職員一覧を反映しました（自動再判定済み）", "staff tsv status");
   assertEqual(staff.document.staff[0].role, "主任", "staff role");

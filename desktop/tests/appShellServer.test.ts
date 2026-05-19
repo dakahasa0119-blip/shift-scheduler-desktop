@@ -133,6 +133,22 @@ async function main(): Promise<void> {
     assertEqual(capacityImport.statusCode, 200, "capacity import status code");
     assertIncludes(capacityImport.body, "体制シミュレーションJSONを取り込みました", "capacity import response");
 
+    const monthlyArchive = await post(`${server.url}/app/monthly-archive`);
+    assertEqual(monthlyArchive.statusCode, 200, "monthly archive status code");
+    assertIncludes(monthlyArchive.body, "月次アーカイブを実行しました", "monthly archive response");
+
+    const nextMonth = await post(`${server.url}/app/start-next-month-planning`);
+    assertEqual(nextMonth.statusCode, 200, "next month status code");
+    assertIncludes(nextMonth.body, "次月勤務表作成を実行しました", "next month response");
+
+    const promoted = await post(`${server.url}/app/promote-operation-month`);
+    assertEqual(promoted.statusCode, 200, "promote status code");
+    assertIncludes(promoted.body, "運用月を更新しました", "promote response");
+
+    const repaired = await post(`${server.url}/app/repair-calendar`);
+    assertEqual(repaired.statusCode, 200, "repair calendar status code");
+    assertIncludes(repaired.body, "勤務表カレンダーを修復しました", "repair calendar response");
+
     const excel = await get(`${server.url}/app/export/excel`);
     assertEqual(excel.statusCode, 200, "excel status code");
     assertEqual(excel.body.charCodeAt(0), 0x50, "excel zip byte 1");

@@ -150,6 +150,21 @@ export interface CapacitySimulationResult {
   bottlenecks: string[];
 }
 
+export interface MonthlyArchiveEntry {
+  yearMonth: string;
+  archivedAt: string;
+  schedule: ScheduleRow[];
+  actualSchedule: ScheduleRow[];
+  changeHistory: ChangeHistoryEntry[];
+}
+
+export interface MonthlyOperationState {
+  currentOperationYearMonth: string;
+  currentTargetYearMonth: string;
+  lastArchivedYearMonth: string;
+  archives: MonthlyArchiveEntry[];
+}
+
 export interface ShortageDiagnostic {
   date: string;
   shift: CoreRequiredShiftCode;
@@ -204,6 +219,7 @@ export interface MonthlyScheduleDocument {
   changeHistory?: ChangeHistoryEntry[];
   urgentLeaveHistory?: UrgentLeaveHistoryEntry[];
   capacitySimulation?: CapacitySimulationPayload | null;
+  operation?: MonthlyOperationState;
   diagnostics: ScheduleDiagnostics | null;
 }
 

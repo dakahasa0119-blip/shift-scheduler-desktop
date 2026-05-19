@@ -24,6 +24,14 @@ import {
 } from "../core/operationalRecords";
 import { importCapacitySimulationPayload, runCapacitySimulation } from "../core/capacitySimulation";
 import { runPostEditRecheck } from "../core/postEditRecheck";
+import {
+  initializeOperationMonths,
+  promoteTargetMonthToOperationMonth,
+  repairCurrentShiftCalendar,
+  runMonthlyArchive,
+  runMonthlyTransition,
+  startNextMonthPlanning,
+} from "../core/monthlyTransition";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -113,6 +121,36 @@ export class AppController {
           tone: blockers.length ? "blocked" : warnings.length ? "warning" : "ready",
         },
       },
+    };
+    return this.state;
+  }
+
+  runMonthlyTransition(): AppControllerState {
+    return this.applyMonthlyResult(runMonthlyTransition(this.state.document), "月次切替をまとめて実行しました");
+  }
+
+  runMonthlyArchiveForCurrentOperationMonth(): AppControllerState {
+    return this.applyMonthlyResult(runMonthlyArchive(this.state.document), "月次アーカイブを実行しました");
+  }
+
+  startNextMonthPlanning(): AppControllerState {
+    return this.applyMonthlyResult(startNextMonthPlanning(this.state.document), "次月勤務表作成を実行しました");
+  }
+
+  promoteTargetMonthToOperationMonth(): AppControllerState {
+    return this.applyMonthlyResult(promoteTargetMonthToOperationMonth(this.state.document), "運用月を更新しました");
+  }
+
+  repairCurrentShiftCalendar(): AppControllerState {
+    const document = this.applyEditSideEffects(repairCurrentShiftCalendar(initializeOperationMonths(this.state.document)));
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "勤務表カレンダーを修復しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
     };
     return this.state;
   }
@@ -595,6 +633,20 @@ export class AppController {
   private applyEditSideEffects(document: MonthlyScheduleDocument): MonthlyScheduleDocument {
     const rechecked = runPostEditRecheck(document);
     return rechecked.capacitySimulation ? runCapacitySimulation(rechecked) : rechecked;
+  }
+
+  private applyMonthlyResult(result: { document: MonthlyScheduleDocument; message: string }, statusLabel: string): AppControllerState {
+    const document = this.applyEditSideEffects(result.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: `${statusLabel}: ${result.message}`, tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
   }
 
   private async run(operation: () => Promise<AppControllerState>): Promise<AppControllerState> {

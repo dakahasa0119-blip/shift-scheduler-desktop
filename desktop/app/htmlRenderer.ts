@@ -81,6 +81,11 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     '<div class="button-grid">',
     renderActionById(viewModel, "validate"),
     renderActionById(viewModel, "monthlyPrecheck"),
+    renderActionById(viewModel, "runMonthlyTransition"),
+    renderActionById(viewModel, "archiveCurrentMonth"),
+    renderActionById(viewModel, "startNextMonthPlanning"),
+    renderActionById(viewModel, "promoteOperationMonth"),
+    renderActionById(viewModel, "repairCalendar"),
     renderActionById(viewModel, "postEditRecheck"),
     renderActionById(viewModel, "solve"),
     renderActionById(viewModel, "createActual"),
@@ -126,6 +131,7 @@ function renderWorkflowPanel(viewModel: AppViewModel): string {
   return [
     '<section class="workflow-panel" aria-label="運用フロー">',
     "<h2>運用フロー</h2>",
+    `<p class="operation-status">運用 ${escapeHtml(viewModel.operation.currentOperationYearMonth)} / 作成 ${escapeHtml(viewModel.operation.currentTargetYearMonth)} / 保存 ${escapeHtml(viewModel.operation.lastArchivedYearMonth || "-")} / アーカイブ ${viewModel.operation.archiveCount}件</p>`,
     '<div class="workflow-list">',
     steps
       .map(
@@ -882,6 +888,12 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   display: grid;
   gap: 8px;
 }
+.operation-status {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
 .workflow-step {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr);
@@ -1395,6 +1407,11 @@ function renderClientScript(actionBasePath: string): string {
   const actions = {
     validate: actionBasePath + "/validate",
     monthlyPrecheck: actionBasePath + "/monthly-precheck",
+    runMonthlyTransition: actionBasePath + "/monthly-transition",
+    archiveCurrentMonth: actionBasePath + "/monthly-archive",
+    startNextMonthPlanning: actionBasePath + "/start-next-month-planning",
+    promoteOperationMonth: actionBasePath + "/promote-operation-month",
+    repairCalendar: actionBasePath + "/repair-calendar",
     postEditRecheck: actionBasePath + "/post-edit-recheck",
     solve: actionBasePath + "/solve",
     createActual: actionBasePath + "/create-actual",

@@ -21,6 +21,7 @@ export interface AppViewModel {
   urgentLeaveHistoryTsv: string;
   capacitySimulationJson: string;
   capacitySimulation: CapacitySimulationViewModel | null;
+  operation: OperationStateViewModel;
   plannedLeaveCancelOptions: AppSelectOptionViewModel[];
   urgentLeaveCancelOptions: AppSelectOptionViewModel[];
   settings: AppSettingsViewModel;
@@ -51,6 +52,13 @@ export interface AppSelectOptionViewModel {
   label: string;
 }
 
+export interface OperationStateViewModel {
+  currentOperationYearMonth: string;
+  currentTargetYearMonth: string;
+  lastArchivedYearMonth: string;
+  archiveCount: number;
+}
+
 export interface CapacitySimulationViewModel {
   generatedAt: string;
   summaries: CapacitySimulationPayload["planSummaries"];
@@ -61,6 +69,11 @@ export interface AppActionViewModel {
   id:
     | "validate"
     | "monthlyPrecheck"
+    | "runMonthlyTransition"
+    | "archiveCurrentMonth"
+    | "startNextMonthPlanning"
+    | "promoteOperationMonth"
+    | "repairCalendar"
     | "postEditRecheck"
     | "solve"
     | "createActual"
@@ -191,6 +204,12 @@ function buildAppViewModelFromParts(
           results: document.capacitySimulation.results,
         }
       : null,
+    operation: {
+      currentOperationYearMonth: document.operation?.currentOperationYearMonth || `${document.year}-${String(document.month).padStart(2, "0")}`,
+      currentTargetYearMonth: document.operation?.currentTargetYearMonth || nextYearMonth(document.year, document.month),
+      lastArchivedYearMonth: document.operation?.lastArchivedYearMonth || "",
+      archiveCount: document.operation?.archives.length || 0,
+    },
     plannedLeaveCancelOptions: buildPlannedLeaveCancelOptions(document),
     urgentLeaveCancelOptions: buildUrgentLeaveCancelOptions(document),
     settings: {
@@ -221,6 +240,31 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "monthlyPrecheck",
       label: "月次切替前チェック",
+      enabled: true,
+    },
+    {
+      id: "runMonthlyTransition",
+      label: "月次切替まとめて実行",
+      enabled: true,
+    },
+    {
+      id: "archiveCurrentMonth",
+      label: "月次アーカイブ",
+      enabled: true,
+    },
+    {
+      id: "startNextMonthPlanning",
+      label: "次月勤務表作成",
+      enabled: true,
+    },
+    {
+      id: "promoteOperationMonth",
+      label: "運用月更新",
+      enabled: true,
+    },
+    {
+      id: "repairCalendar",
+      label: "勤務表カレンダー修復",
       enabled: true,
     },
     {
@@ -384,6 +428,10 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       enabled: true,
     },
   ];
+}
+
+function nextYearMonth(year: number, month: number): string {
+  return month === 12 ? `${year + 1}-01` : `${year}-${String(month + 1).padStart(2, "0")}`;
 }
 
 function buildPlannedLeaveCancelOptions(document: MonthlyScheduleDocument): AppSelectOptionViewModel[] {
