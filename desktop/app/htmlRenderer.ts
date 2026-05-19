@@ -77,11 +77,25 @@ function renderOperationPanel(viewModel: AppViewModel): string {
   return [
     '<section class="operation-panel" aria-label="操作">',
     '<div class="operation-group operation-primary">',
-    '<h2>月次作成</h2>',
-    '<div class="button-grid">',
+    '<div class="section-heading compact"><h2>通常操作</h2><span>作成から配布前確認まで</span></div>',
+    '<div class="button-grid action-stack">',
     renderActionById(viewModel, "validate"),
+    renderActionById(viewModel, "solve"),
+    renderActionById(viewModel, "postEditRecheck"),
+    renderActionById(viewModel, "createActual"),
+    renderActionById(viewModel, "save"),
+    renderActionById(viewModel, "load"),
+    "</div>",
+    "</div>",
+    '<div class="operation-group">',
+    '<div class="section-heading compact"><h2>月次運用</h2><span>切替と保守</span></div>',
+    '<div class="button-grid">',
     renderActionById(viewModel, "monthlyPrecheck"),
     renderActionById(viewModel, "runMonthlyTransition"),
+    "</div>",
+    '<details class="operation-details">',
+    "<summary>分割実行・保守</summary>",
+    '<div class="button-grid">',
     renderActionById(viewModel, "archiveCurrentMonth"),
     renderActionById(viewModel, "startNextMonthPlanning"),
     renderActionById(viewModel, "promoteOperationMonth"),
@@ -90,25 +104,26 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "normalizeStaffColumns"),
     renderActionById(viewModel, "fixDropdownLists"),
     renderActionById(viewModel, "checkSolverConnection"),
-    renderActionById(viewModel, "postEditRecheck"),
-    renderActionById(viewModel, "solve"),
-    renderActionById(viewModel, "createActual"),
-    renderActionById(viewModel, "save"),
-    renderActionById(viewModel, "load"),
     "</div>",
+    "</details>",
     "</div>",
     '<div class="operation-group">',
-    '<h2>急休</h2>',
+    '<div class="section-heading compact"><h2>休暇・急休</h2><span>入力と取消</span></div>',
     renderLeaveRequestForm(viewModel),
     renderLeaveCancelForms(viewModel),
-    renderUrgentLeaveEditor(viewModel),
+    '<div class="button-grid">',
     renderActionById(viewModel, "addLeaveRequest"),
     renderActionById(viewModel, "cancelPlannedLeave"),
     renderActionById(viewModel, "cancelUrgentLeave"),
+    "</div>",
+    '<details class="operation-details">',
+    "<summary>急休リカバリーTSV</summary>",
+    renderUrgentLeaveEditor(viewModel),
     renderActionById(viewModel, "recover"),
+    "</details>",
     "</div>",
     '<div class="operation-group">',
-    '<h2>出力</h2>',
+    '<div class="section-heading compact"><h2>出力</h2><span>保存と配布</span></div>',
     '<div class="button-grid">',
     renderActionById(viewModel, "backup"),
     renderActionById(viewModel, "exportExcel"),
@@ -995,6 +1010,31 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+.action-stack {
+  grid-template-columns: 1fr;
+}
+.operation-details {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbfcfd;
+}
+.operation-details summary {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--muted);
+  font-weight: 800;
+  cursor: pointer;
+}
+.operation-details .button-grid,
+.operation-details .recovery-editor {
+  margin: 0 8px 8px;
+}
+.operation-details .action-recover {
+  width: calc(100% - 16px);
+  margin: 0 8px 8px;
 }
 .button-row {
   display: flex;
