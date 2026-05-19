@@ -20,6 +20,8 @@ function main(): void {
   const outputArg = process.argv.find((arg) => arg.startsWith("--out="));
   const archiveOutArg = process.argv.find((arg) => arg.startsWith("--archive-out="));
   const verifyOutArg = process.argv.find((arg) => arg.startsWith("--verify-out="));
+  const skipPrepare = process.argv.includes("--skip-prepare");
+  const skipSmoke = process.argv.includes("--skip-smoke");
   let target: ReleaseTarget | undefined;
   try {
     target = targetArg ? parseReleaseTarget(targetArg.replace("--target=", "")) : undefined;
@@ -29,24 +31,26 @@ function main(): void {
     return;
   }
 
-  let releasePlan;
-  try {
-    releasePlan = buildPrepareReleasePlan({
-      nodePlatform: process.platform,
-      requestedTarget: target,
-    });
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
-    return;
+  const releaseTarget = resolveReleaseTarget(target);
+  if (!skipPrepare) {
+    try {
+      buildPrepareReleasePlan({
+        nodePlatform: process.platform,
+        requestedTarget: target,
+      });
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+      process.exitCode = 1;
+      return;
+    }
   }
 
   const assemblyPlan = buildPackageAssemblyPlan({
-    target: releasePlan.target,
+    target: releaseTarget,
     outputRoot: outputArg ? outputArg.replace("--out=", "") : undefined,
   });
   const archivePlan = buildPackageArchivePlan({
-    target: releasePlan.target,
+    target: releaseTarget,
     assembledDirectory: assemblyPlan.outputDirectory,
     archiveRoot: archiveOutArg ? archiveOutArg.replace("--archive-out=", "") : undefined,
     verifyRoot: verifyOutArg ? verifyOutArg.replace("--verify-out=", "") : undefined,
@@ -73,25 +77,28 @@ function main(): void {
 
   fs.rmSync(archivePlan.verifyExtractRoot, { recursive: true, force: true });
   fs.mkdirSync(archivePlan.verifyExtractRoot, { recursive: true });
-  const tar = childProcess.spawnSync("tar", ["-xzf", archivePlan.archivePath, "-C", archivePlan.verifyExtractRoot], {
-    stdio: "inherit",
-  });
-  if (tar.error) {
-    console.error(tar.error.message);
+  const extract = extractArchive(archivePlan.archiveFormat, archivePlan.archivePath, archivePlan.verifyExtractRoot);
+  if (extract.error) {
+    console.error(extract.error.message);
     process.exitCode = 1;
     return;
   }
-  if (tar.status !== 0) {
-    process.exitCode = tar.status || 1;
+  if (extract.status !== 0) {
+    process.exitCode = extract.status || 1;
     return;
   }
   const launcherPath =
-    releasePlan.target === "windows-prototype"
+    releaseTarget === "windows-prototype"
       ? path.join(archivePlan.verifyExtractedDirectory, "desktop/packaging/windows/shift-scheduler-dev.cmd")
       : path.join(archivePlan.verifyExtractedDirectory, "desktop/packaging/linux/shift-scheduler-dev");
   if (!fs.existsSync(launcherPath)) {
     console.error(`extracted launcher missing: ${archivePlan.verifyExtractedDirectory}`);
     process.exitCode = 1;
+    return;
+  }
+
+  if (skipSmoke) {
+    console.log(`archive verified: ${archivePlan.archivePath}`);
     return;
   }
 
@@ -101,7 +108,7 @@ function main(): void {
     "tsx",
     "tsx",
     "desktop/packaging/nodeSmokeAssembledRelease.ts",
-    `--target=${releasePlan.target}`,
+    `--target=${releaseTarget}`,
     `--out=${archivePlan.verifyExtractRoot}`,
     "--port=45982",
   ];
@@ -118,6 +125,22 @@ function main(): void {
     return;
   }
   console.log(`archive verified: ${archivePlan.archivePath}`);
+}
+
+function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget {
+  if (target) return target;
+  return buildPrepareReleasePlan({ nodePlatform: process.platform }).target;
+}
+
+function extractArchive(format: "tar.gz" | "zip", archivePath: string, outputDirectory: string): { error?: Error; status: number | null } {
+  if (format === "zip") {
+    return childProcess.spawnSync("python3", ["-m", "zipfile", "-e", archivePath, outputDirectory], {
+      stdio: "inherit",
+    });
+  }
+  return childProcess.spawnSync("tar", ["-xzf", archivePath, "-C", outputDirectory], {
+    stdio: "inherit",
+  });
 }
 
 function sha256File(filePath: string): string {

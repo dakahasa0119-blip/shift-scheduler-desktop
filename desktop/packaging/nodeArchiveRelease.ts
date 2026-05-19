@@ -75,18 +75,14 @@ function main(): void {
   fs.rmSync(archivePlan.checksumPath, { force: true });
   fs.rmSync(archivePlan.manifestPath, { force: true });
 
-  const tar = childProcess.spawnSync(
-    "tar",
-    ["-czf", archivePlan.archivePath, "-C", path.dirname(archivePlan.assembledDirectory), path.basename(archivePlan.assembledDirectory)],
-    { stdio: "inherit" },
-  );
-  if (tar.error) {
-    console.error(tar.error.message);
+  const archive = createArchive(archivePlan.archiveFormat, archivePlan.archivePath, archivePlan.assembledDirectory);
+  if (archive.error) {
+    console.error(archive.error.message);
     process.exitCode = 1;
     return;
   }
-  if (tar.status !== 0) {
-    process.exitCode = tar.status || 1;
+  if (archive.status !== 0) {
+    process.exitCode = archive.status || 1;
     return;
   }
 
@@ -127,6 +123,20 @@ function main(): void {
 function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget {
   if (target) return target;
   return buildPrepareReleasePlan({ nodePlatform: process.platform }).target;
+}
+
+function createArchive(format: "tar.gz" | "zip", archivePath: string, assembledDirectory: string): { error?: Error; status: number | null } {
+  if (format === "zip") {
+    return childProcess.spawnSync("python3", ["-m", "zipfile", "-c", archivePath, path.basename(assembledDirectory)], {
+      cwd: path.dirname(assembledDirectory),
+      stdio: "inherit",
+    });
+  }
+  return childProcess.spawnSync(
+    "tar",
+    ["-czf", archivePath, "-C", path.dirname(assembledDirectory), path.basename(assembledDirectory)],
+    { stdio: "inherit" },
+  );
 }
 
 function sha256File(filePath: string): string {

@@ -7,6 +7,7 @@ function main(): void {
     archiveRoot: "/tmp/archives",
   });
   assertEqual(plan.archivePath, "/tmp/archives/shift-scheduler-linux-prototype.tar.gz", "archive path");
+  assertEqual(plan.archiveFormat, "tar.gz", "linux archive format");
   assertEqual(plan.checksumPath, "/tmp/archives/shift-scheduler-linux-prototype.tar.gz.sha256.txt", "checksum path");
   assertEqual(plan.manifestPath, "/tmp/archives/shift-scheduler-linux-prototype.manifest.txt", "manifest path");
   assertEqual(plan.verifyExtractRoot, "/tmp/shift-scheduler-archive-verify", "verify root");
@@ -17,6 +18,15 @@ function main(): void {
   assertIncludes(manifest, "sizeBytes: 123", "manifest size");
   assertIncludes(manifest, "sha256: abc123", "manifest checksum");
   assertIncludes(manifest, "verifyExtractedDirectory: /tmp/shift-scheduler-archive-verify/linux-prototype", "manifest verify");
+
+  const windows = buildPackageArchivePlan({
+    target: "windows-prototype",
+    assembledDirectory: "/tmp/release/windows-prototype",
+    archiveRoot: "/tmp/archives",
+  });
+  assertEqual(windows.archiveFormat, "zip", "windows archive format");
+  assertEqual(windows.archivePath, "/tmp/archives/shift-scheduler-windows-prototype.zip", "windows archive path");
+  assertEqual(windows.checksumPath, "/tmp/archives/shift-scheduler-windows-prototype.zip.sha256.txt", "windows checksum path");
 }
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
