@@ -1,0 +1,55 @@
+name: Build Windows Solver
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/build-windows-solver.yml"
+      - "solver_cli/**"
+      - "desktop/solver/**"
+
+jobs:
+  build-windows-solver:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install solver dependencies
+        working-directory: solver_cli
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install pyinstaller
+
+      - name: Build solver executable
+        working-directory: solver_cli
+        run: |
+          python -m PyInstaller --onefile --name shift-solver --distpath ..\desktop\packaging\resources\solver\windows-x64 --clean --noconfirm -m shift_solver
+
+      - name: Verify executable starts
+        run: |
+          .\desktop\packaging\resources\solver\windows-x64\shift-solver.exe --help
+
+      - name: Create checksum
+        shell: pwsh
+        run: |
+          $exe = "desktop\packaging\resources\solver\windows-x64\shift-solver.exe"
+          $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          "$hash  shift-solver.exe" | Out-File -Encoding ascii "desktop\packaging\resources\solver\windows-x64\shift-solver.exe.sha256.txt"
+          Write-Host "sha256=$hash"
+
+      - name: Upload solver artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shift-solver-windows-x64
+          path: |
+            desktop/packaging/resources/solver/windows-x64/shift-solver.exe
+            desktop/packaging/resources/solver/windows-x64/shift-solver.exe.sha256.txt
+          if-no-files-found: error

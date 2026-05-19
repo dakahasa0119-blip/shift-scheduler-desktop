@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.solver_runs/
+node_modules/
+dist/
+build/
+*.log
+desktop/packaging/resources/solver/**/shift-solver
+desktop/packaging/resources/solver/**/shift-solver.exe
+desktop/packaging/resources/solver/**/*.sha256.txt
