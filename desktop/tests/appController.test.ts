@@ -153,6 +153,17 @@ async function main(): Promise<void> {
   const repaired = controller.repairCurrentShiftCalendar();
   assertEqual(repaired.viewModel.status.label, "勤務表カレンダーを修復しました", "repair calendar status");
 
+  const initialized = controller.setupInitialSettings();
+  assertEqual(initialized.viewModel.status.label, "初期設定を実行しました", "initial setup status");
+  assertEqual(Boolean(initialized.document.operation?.currentOperationYearMonth), true, "initial setup operation");
+
+  const normalizedStaff = controller.normalizeStaffColumns();
+  assertEqual(normalizedStaff.viewModel.status.label, "職員一覧の標準列を整えました", "normalize staff status");
+  assertEqual(normalizedStaff.document.staff[0].allowedWeekdays.length > 0, true, "normalize staff weekdays");
+
+  const dropdowns = controller.fixDropdownLists();
+  assertEqual(dropdowns.viewModel.status.label, "プルダウンリストを修復しました", "dropdown status");
+
   const solverCheck = await controller.checkSolverConnection();
   assertEqual(solverCheck.viewModel.status.label, "Solver接続を確認しました", "solver check status");
 

@@ -60,6 +60,9 @@ async function main(): Promise<void> {
   assertIncludes(html, 'startNextMonthPlanning: actionBasePath + "/start-next-month-planning"', "next month planning endpoint");
   assertIncludes(html, 'promoteOperationMonth: actionBasePath + "/promote-operation-month"', "promote operation endpoint");
   assertIncludes(html, 'repairCalendar: actionBasePath + "/repair-calendar"', "repair calendar endpoint");
+  assertIncludes(html, 'setupInitialSettings: actionBasePath + "/setup-initial-settings"', "initial setup endpoint");
+  assertIncludes(html, 'normalizeStaffColumns: actionBasePath + "/normalize-staff-columns"', "normalize staff endpoint");
+  assertIncludes(html, 'fixDropdownLists: actionBasePath + "/fix-dropdown-lists"', "dropdown repair endpoint");
   assertIncludes(html, 'checkSolverConnection: actionBasePath + "/check-solver-connection"', "solver check endpoint");
   assertIncludes(html, 'importSolverOutputJson: actionBasePath + "/import/solver-output-json"', "solver output import endpoint");
   assertIncludes(html, 'exportSolverInputJson: actionBasePath + "/export/solver-input-json"', "solver input export endpoint");

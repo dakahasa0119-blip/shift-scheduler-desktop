@@ -86,6 +86,9 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "startNextMonthPlanning"),
     renderActionById(viewModel, "promoteOperationMonth"),
     renderActionById(viewModel, "repairCalendar"),
+    renderActionById(viewModel, "setupInitialSettings"),
+    renderActionById(viewModel, "normalizeStaffColumns"),
+    renderActionById(viewModel, "fixDropdownLists"),
     renderActionById(viewModel, "checkSolverConnection"),
     renderActionById(viewModel, "postEditRecheck"),
     renderActionById(viewModel, "solve"),
@@ -219,7 +222,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     "</div>",
     '<div class="tab-panels">',
     `<div class="tab-panel panel-settings">${renderSettingsEditor(viewModel)}${renderActionById(viewModel, "applySettings")}</div>`,
-    `<div class="tab-panel panel-staff">${renderStaffOverview(viewModel)}${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}</div></div>`,
+    `<div class="tab-panel panel-staff">${renderStaffOverview(viewModel)}${renderStaffDropdownGuide(viewModel)}${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}${renderActionById(viewModel, "normalizeStaffColumns")}${renderActionById(viewModel, "fixDropdownLists")}</div></div>`,
     `<div class="tab-panel panel-requests">${renderRequestsOverview(viewModel)}${renderRequestsTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyRequestsTsv")}${renderActionById(viewModel, "exportRequestsTsv")}</div></div>`,
     `<div class="tab-panel panel-schedule">${renderScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyScheduleTsv")}${renderActionById(viewModel, "exportScheduleTsv")}</div></div>`,
     `<div class="tab-panel panel-actual">${renderActualScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "createActual")}${renderActionById(viewModel, "applyActualScheduleTsv")}${renderActionById(viewModel, "exportActualScheduleTsv")}</div></div>`,
@@ -265,6 +268,24 @@ function renderStaffOverview(viewModel: AppViewModel): string {
     "</div>",
     "</section>",
   ].join("");
+}
+
+function renderStaffDropdownGuide(viewModel: AppViewModel): string {
+  return [
+    '<section class="data-preview staff-dropdown-guide" aria-label="職員入力候補">',
+    '<div class="section-heading compact"><h2>入力候補</h2></div>',
+    '<div class="request-legend">',
+    renderOptionGroup("職種", viewModel.staffDropdowns.roles),
+    renderOptionGroup("性別", viewModel.staffDropdowns.genders),
+    renderOptionGroup("可能勤務", viewModel.staffDropdowns.allowedShiftSets),
+    renderOptionGroup("固定休", viewModel.staffDropdowns.fixedOffs),
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderOptionGroup(label: string, options: string[]): string {
+  return `<div class="legend-group"><strong>${escapeHtml(label)}</strong>${options.map((option) => `<span>${escapeHtml(option)}</span>`).join("")}</div>`;
 }
 
 function renderRequestsOverview(viewModel: AppViewModel): string {
@@ -1431,6 +1452,9 @@ function renderClientScript(actionBasePath: string): string {
     startNextMonthPlanning: actionBasePath + "/start-next-month-planning",
     promoteOperationMonth: actionBasePath + "/promote-operation-month",
     repairCalendar: actionBasePath + "/repair-calendar",
+    setupInitialSettings: actionBasePath + "/setup-initial-settings",
+    normalizeStaffColumns: actionBasePath + "/normalize-staff-columns",
+    fixDropdownLists: actionBasePath + "/fix-dropdown-lists",
     checkSolverConnection: actionBasePath + "/check-solver-connection",
     postEditRecheck: actionBasePath + "/post-edit-recheck",
     solve: actionBasePath + "/solve",

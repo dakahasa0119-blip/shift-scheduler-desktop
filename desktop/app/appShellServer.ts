@@ -145,6 +145,24 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/setup-initial-settings") {
+    const state = controller.setupInitialSettings();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/normalize-staff-columns") {
+    const state = controller.normalizeStaffColumns();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/fix-dropdown-lists") {
+    const state = controller.fixDropdownLists();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/check-solver-connection") {
     const state = await controller.checkSolverConnection();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));

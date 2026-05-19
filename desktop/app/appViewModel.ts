@@ -6,6 +6,7 @@ import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderUrgentLeaveTsv } from "../core/recoveryTsv";
 import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
 import { renderSolverInputJson } from "../core/solverJsonExchange";
+import { staffDropdownOptions } from "../core/initialSetup";
 import { buildDiagnosticPanelViewModel, type DiagnosticPanelViewModel } from "./diagnosticViewModel";
 import { buildScheduleTableViewModel, type ScheduleTableViewModel } from "./scheduleTableViewModel";
 
@@ -24,6 +25,7 @@ export interface AppViewModel {
   solverInputJson: string;
   capacitySimulation: CapacitySimulationViewModel | null;
   operation: OperationStateViewModel;
+  staffDropdowns: typeof staffDropdownOptions;
   plannedLeaveCancelOptions: AppSelectOptionViewModel[];
   urgentLeaveCancelOptions: AppSelectOptionViewModel[];
   settings: AppSettingsViewModel;
@@ -76,6 +78,9 @@ export interface AppActionViewModel {
     | "startNextMonthPlanning"
     | "promoteOperationMonth"
     | "repairCalendar"
+    | "setupInitialSettings"
+    | "normalizeStaffColumns"
+    | "fixDropdownLists"
     | "checkSolverConnection"
     | "importSolverOutputJson"
     | "exportSolverInputJson"
@@ -216,6 +221,7 @@ function buildAppViewModelFromParts(
       lastArchivedYearMonth: document.operation?.lastArchivedYearMonth || "",
       archiveCount: document.operation?.archives.length || 0,
     },
+    staffDropdowns: staffDropdownOptions,
     plannedLeaveCancelOptions: buildPlannedLeaveCancelOptions(document),
     urgentLeaveCancelOptions: buildUrgentLeaveCancelOptions(document),
     settings: {
@@ -271,6 +277,21 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "repairCalendar",
       label: "勤務表カレンダー修復",
+      enabled: true,
+    },
+    {
+      id: "setupInitialSettings",
+      label: "初期設定を実行",
+      enabled: true,
+    },
+    {
+      id: "normalizeStaffColumns",
+      label: "職員列を整える",
+      enabled: true,
+    },
+    {
+      id: "fixDropdownLists",
+      label: "プルダウン修復",
       enabled: true,
     },
     {

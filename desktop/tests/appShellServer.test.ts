@@ -149,6 +149,18 @@ async function main(): Promise<void> {
     assertEqual(repaired.statusCode, 200, "repair calendar status code");
     assertIncludes(repaired.body, "勤務表カレンダーを修復しました", "repair calendar response");
 
+    const initialSetup = await post(`${server.url}/app/setup-initial-settings`);
+    assertEqual(initialSetup.statusCode, 200, "initial setup status code");
+    assertIncludes(initialSetup.body, "初期設定を実行しました", "initial setup response");
+
+    const normalizedStaff = await post(`${server.url}/app/normalize-staff-columns`);
+    assertEqual(normalizedStaff.statusCode, 200, "normalize staff status code");
+    assertIncludes(normalizedStaff.body, "職員一覧の標準列を整えました", "normalize staff response");
+
+    const dropdowns = await post(`${server.url}/app/fix-dropdown-lists`);
+    assertEqual(dropdowns.statusCode, 200, "dropdown status code");
+    assertIncludes(dropdowns.body, "プルダウンリストを修復しました", "dropdown response");
+
     const solverCheck = await post(`${server.url}/app/check-solver-connection`);
     assertEqual(solverCheck.statusCode, 200, "solver check status code");
     assertIncludes(solverCheck.body, "Solver接続を確認しました", "solver check response");

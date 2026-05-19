@@ -33,6 +33,7 @@ import {
   startNextMonthPlanning,
 } from "../core/monthlyTransition";
 import { importSolverOutputJson } from "../core/solverJsonExchange";
+import { normalizeStaffListForDropdowns, setupInitialDocument } from "../core/initialSetup";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -149,6 +150,48 @@ export class AppController {
       viewModel: {
         ...buildAppViewModelFromDocument(document),
         status: { label: "勤務表カレンダーを修復しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  setupInitialSettings(): AppControllerState {
+    const document = setupInitialDocument(this.state.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "初期設定を実行しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  normalizeStaffColumns(): AppControllerState {
+    const document = normalizeStaffListForDropdowns(repairCurrentShiftCalendar(this.state.document));
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "職員一覧の標準列を整えました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  fixDropdownLists(): AppControllerState {
+    const document = normalizeStaffListForDropdowns(this.state.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "プルダウンリストを修復しました", tone: "ready" },
       },
       busy: false,
       lastError: "",

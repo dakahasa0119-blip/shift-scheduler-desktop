@@ -156,14 +156,18 @@ function clean(value: string | undefined): string {
 }
 
 function parseShifts(value: string | undefined, fallback: CoreRequiredShiftCode[]): CoreRequiredShiftCode[] {
-  const shifts = clean(value).split(/[,\s、]+/).filter((item): item is CoreRequiredShiftCode =>
+  const shifts = clean(value).split(/[,\s、・]+/).filter((item): item is CoreRequiredShiftCode =>
     item === "早" || item === "日" || item === "遅" || item === "夜",
   );
   return shifts.length ? shifts : fallback;
 }
 
 function parseNumbers(value: string | undefined, fallback: number[]): number[] {
-  const numbers = clean(value).split(/[,\s、]+/).map(Number).filter((item) => Number.isInteger(item));
+  const weekdayMap: Record<string, number> = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+  const numbers = clean(value).split(/[,\s、・]+/).map((item) => {
+    if (Object.prototype.hasOwnProperty.call(weekdayMap, item)) return weekdayMap[item];
+    return Number(item);
+  }).filter((item) => Number.isInteger(item) && item >= 0 && item <= 6);
   return numbers.length ? numbers : fallback;
 }
 
