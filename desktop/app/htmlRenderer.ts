@@ -95,6 +95,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "backup"),
     renderActionById(viewModel, "exportExcel"),
     renderActionById(viewModel, "exportPdf"),
+    renderActionById(viewModel, "exportStaffMessages"),
     renderActionById(viewModel, "exportJson"),
     "</div>",
     "</div>",
@@ -1231,6 +1232,7 @@ function renderClientScript(actionBasePath: string): string {
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
     exportPdf: actionBasePath + "/export/pdf",
+    exportStaffMessages: actionBasePath + "/export/staff-messages",
     quit: actionBasePath + "/quit"
   };
 
@@ -1240,7 +1242,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportStaffMessages") {
       window.location.href = endpoint;
       return;
     }
