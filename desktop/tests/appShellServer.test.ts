@@ -86,6 +86,10 @@ async function main(): Promise<void> {
     assertEqual(importedTsv.statusCode, 200, "schedule tsv import status code");
     assertIncludes(importedTsv.body, "勤務表TSVを反映しました", "schedule tsv import response");
 
+    const postEdit = await post(`${server.url}/app/post-edit-recheck`);
+    assertEqual(postEdit.statusCode, 200, "post edit status code");
+    assertIncludes(postEdit.body, "手修正後の再判定", "post edit response");
+
     const exportedStaff = await get(`${server.url}/app/export/staff-tsv`);
     assertEqual(exportedStaff.statusCode, 200, "staff tsv export status code");
     assertIncludes(exportedStaff.body, "氏名\t職種", "staff tsv export");

@@ -114,6 +114,12 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/post-edit-recheck") {
+    const state = controller.runPostEditScheduleRecheck();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/solve") {
     const state = await controller.solve();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));

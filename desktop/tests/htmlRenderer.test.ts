@@ -52,6 +52,7 @@ async function main(): Promise<void> {
   assertIncludes(html, 'actions = {', "interactive script");
   assertIncludes(html, 'actionBasePath = "/preview"', "default action base path");
   assertIncludes(html, 'solve: actionBasePath + "/solve"', "solve endpoint");
+  assertIncludes(html, 'postEditRecheck: actionBasePath + "/post-edit-recheck"', "post edit endpoint");
   assertIncludes(html, 'recover: actionBasePath + "/recover"', "recover endpoint");
   assertIncludes(html, 'addLeaveRequest: actionBasePath + "/add-leave-request"', "leave endpoint");
   assertIncludes(html, 'cancelPlannedLeave: actionBasePath + "/cancel-planned-leave"', "planned cancel endpoint");

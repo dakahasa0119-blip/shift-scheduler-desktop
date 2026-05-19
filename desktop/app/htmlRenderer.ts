@@ -81,6 +81,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     '<div class="button-grid">',
     renderActionById(viewModel, "validate"),
     renderActionById(viewModel, "monthlyPrecheck"),
+    renderActionById(viewModel, "postEditRecheck"),
     renderActionById(viewModel, "solve"),
     renderActionById(viewModel, "createActual"),
     renderActionById(viewModel, "save"),
@@ -1394,6 +1395,7 @@ function renderClientScript(actionBasePath: string): string {
   const actions = {
     validate: actionBasePath + "/validate",
     monthlyPrecheck: actionBasePath + "/monthly-precheck",
+    postEditRecheck: actionBasePath + "/post-edit-recheck",
     solve: actionBasePath + "/solve",
     createActual: actionBasePath + "/create-actual",
     addLeaveRequest: actionBasePath + "/add-leave-request",

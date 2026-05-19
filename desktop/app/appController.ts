@@ -23,6 +23,7 @@ import {
   type LeaveRequestInput,
 } from "../core/operationalRecords";
 import { importCapacitySimulationPayload, runCapacitySimulation } from "../core/capacitySimulation";
+import { runPostEditRecheck } from "../core/postEditRecheck";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -112,6 +113,28 @@ export class AppController {
           tone: blockers.length ? "blocked" : warnings.length ? "warning" : "ready",
         },
       },
+    };
+    return this.state;
+  }
+
+  runPostEditScheduleRecheck(): AppControllerState {
+    const document = this.applyEditSideEffects(this.state.document);
+    const requiredFixCount = document.diagnostics?.summary.requiredFixCount || 0;
+    const advisoryCount =
+      (document.diagnostics?.summary.allowedShortageCount || 0) +
+      (document.diagnostics?.summary.unmetShiftRequestCount || 0);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: requiredFixCount
+          ? { label: `手修正後の再判定: 要対応 ${requiredFixCount}件`, tone: "blocked" }
+          : advisoryCount
+            ? { label: `手修正後の再判定: 確認あり ${advisoryCount}件`, tone: "warning" }
+            : { label: "手修正後の再判定: OK", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
     };
     return this.state;
   }
@@ -418,10 +441,10 @@ export class AppController {
 
   updateSettings(input: unknown): AppControllerState {
     const settings = normalizeSettingsInput(input);
-    const document: MonthlyScheduleDocument = {
-      ...this.state.document,
-      year: settings.year ?? this.state.document.year,
-      month: settings.month ?? this.state.document.month,
+      const document: MonthlyScheduleDocument = this.applyEditSideEffects({
+        ...this.state.document,
+        year: settings.year ?? this.state.document.year,
+        month: settings.month ?? this.state.document.month,
       requirements: {
         ...this.state.document.requirements,
         early: settings.requirements?.early ?? this.state.document.requirements.early,
@@ -429,8 +452,8 @@ export class AppController {
         late: settings.requirements?.late ?? this.state.document.requirements.late,
         night: settings.requirements?.night ?? this.state.document.requirements.night,
       },
-      diagnostics: null,
-    };
+        diagnostics: null,
+      });
     this.state = {
       document,
       viewModel: {
@@ -445,12 +468,12 @@ export class AppController {
 
   importScheduleTsv(scheduleText: string): AppControllerState {
     try {
-      const document = applyScheduleTsv(this.state.document, scheduleText);
+      const document = this.applyEditSideEffects(applyScheduleTsv(this.state.document, scheduleText));
       this.state = {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "勤務表TSVを反映しました", tone: "ready" },
+          status: { label: "勤務表TSVを反映しました（自動再判定済み）", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
         },
         busy: false,
         lastError: "",
@@ -471,12 +494,12 @@ export class AppController {
 
   importActualScheduleTsv(actualScheduleText: string): AppControllerState {
     try {
-      const document = applyActualScheduleTsv(this.state.document, actualScheduleText);
+      const document = this.applyEditSideEffects(applyActualScheduleTsv(this.state.document, actualScheduleText));
       this.state = {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "勤務実績TSVを反映しました", tone: "ready" },
+          status: { label: "勤務実績TSVを反映しました（体制表示更新済み）", tone: "ready" },
         },
         busy: false,
         lastError: "",
@@ -497,12 +520,12 @@ export class AppController {
 
   importStaffTsv(staffText: string): AppControllerState {
     try {
-      const document = applyStaffTsv(this.state.document, staffText);
+      const document = this.applyEditSideEffects(applyStaffTsv(this.state.document, staffText));
       this.state = {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "職員一覧を反映しました", tone: "ready" },
+          status: { label: "職員一覧を反映しました（自動再判定済み）", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
         },
         busy: false,
         lastError: "",
@@ -523,12 +546,12 @@ export class AppController {
 
   importRequestsTsv(requestsText: string): AppControllerState {
     try {
-      const document = applyRequestsTsv(this.state.document, requestsText);
+      const document = this.applyEditSideEffects(applyRequestsTsv(this.state.document, requestsText));
       this.state = {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "希望休・希望勤務を反映しました", tone: "ready" },
+          status: { label: "希望休・希望勤務を反映しました（自動再判定済み）", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
         },
         busy: false,
         lastError: "",
@@ -567,6 +590,11 @@ export class AppController {
     return this.api.exportPdf({
       document: this.state.document,
     });
+  }
+
+  private applyEditSideEffects(document: MonthlyScheduleDocument): MonthlyScheduleDocument {
+    const rechecked = runPostEditRecheck(document);
+    return rechecked.capacitySimulation ? runCapacitySimulation(rechecked) : rechecked;
   }
 
   private async run(operation: () => Promise<AppControllerState>): Promise<AppControllerState> {

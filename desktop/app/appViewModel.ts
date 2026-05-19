@@ -61,6 +61,7 @@ export interface AppActionViewModel {
   id:
     | "validate"
     | "monthlyPrecheck"
+    | "postEditRecheck"
     | "solve"
     | "createActual"
     | "addLeaveRequest"
@@ -220,6 +221,11 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "monthlyPrecheck",
       label: "月次切替前チェック",
+      enabled: true,
+    },
+    {
+      id: "postEditRecheck",
+      label: "手修正後の再判定",
       enabled: true,
     },
     {

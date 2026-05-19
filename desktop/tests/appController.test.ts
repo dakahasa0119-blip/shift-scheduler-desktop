@@ -131,15 +131,19 @@ async function main(): Promise<void> {
   assertEqual(settings.document.requirements.late, 2, "settings late");
 
   const tsv = controller.importScheduleTsv("介護リーダー\t江藤\t日\t日\t公\n介護\t有山\t早\t早\t遅\n");
-  assertEqual(tsv.viewModel.status.label, "勤務表TSVを反映しました", "tsv status");
+  assertEqual(tsv.viewModel.status.label, "勤務表TSVを反映しました（自動再判定済み）", "tsv status");
   assertEqual(tsv.document.schedule[0].shifts[0], "日", "tsv shift");
+  assertEqual(Boolean(tsv.document.diagnostics), true, "tsv auto diagnostics");
+
+  const postEdit = controller.runPostEditScheduleRecheck();
+  assertEqual(postEdit.viewModel.status.label.startsWith("手修正後の再判定:"), true, "post edit status");
 
   const staff = controller.importStaffTsv(tsv.viewModel.staffTsv.replace("介護リーダー", "主任"));
-  assertEqual(staff.viewModel.status.label, "職員一覧を反映しました", "staff tsv status");
+  assertEqual(staff.viewModel.status.label, "職員一覧を反映しました（自動再判定済み）", "staff tsv status");
   assertEqual(staff.document.staff[0].role, "主任", "staff role");
 
   const requests = controller.importRequestsTsv("氏名\t区分\t開始日\t終了日\t備考\n江藤\t希望夜勤\t2027-02-10\t2027-02-10\t確認\n");
-  assertEqual(requests.viewModel.status.label, "希望休・希望勤務を反映しました", "requests tsv status");
+  assertEqual(requests.viewModel.status.label, "希望休・希望勤務を反映しました（自動再判定済み）", "requests tsv status");
   assertEqual(requests.document.requests[0].type, "希望夜勤", "request type");
 
   const gasImported = controller.importJson(
