@@ -49,6 +49,11 @@ function main(): void {
     }
   }
 
+  const bundled = buildRuntimeBundle(releaseTarget);
+  if (!bundled) return;
+  const nodeRuntime = prepareNodeRuntime(releaseTarget);
+  if (!nodeRuntime) return;
+
   const plan = buildPackageAssemblyPlan({
     target: releaseTarget,
     outputRoot: outputArg ? outputArg.replace("--out=", "") : undefined,
@@ -133,6 +138,59 @@ function prepareRelease(target: ReleaseTarget | undefined, force: boolean): bool
   }
   if (prepare.status !== 0) {
     process.exitCode = prepare.status || 1;
+    return false;
+  }
+  return true;
+}
+
+function buildRuntimeBundle(target: ReleaseTarget): boolean {
+  const entryPoint = target === "windows-prototype" ? "desktop/app/windowsLauncher.ts" : "desktop/app/linuxLauncher.ts";
+  const bundle = childProcess.spawnSync(
+    "npx",
+    [
+      "-y",
+      "-p",
+      "tsx",
+      "tsx",
+      "desktop/packaging/nodeBuildRuntimeBundle.ts",
+      `--entry=${entryPoint}`,
+      "--out=desktop/dist/shift-scheduler.cjs",
+    ],
+    { stdio: "inherit" },
+  );
+  if (bundle.error) {
+    console.error(bundle.error.message);
+    process.exitCode = 1;
+    return false;
+  }
+  if (bundle.status !== 0) {
+    process.exitCode = bundle.status || 1;
+    return false;
+  }
+  return true;
+}
+
+function prepareNodeRuntime(target: ReleaseTarget): boolean {
+  const platform = target === "windows-prototype" ? "windows-x64" : "linux-x64";
+  const result = childProcess.spawnSync(
+    "npx",
+    [
+      "-y",
+      "-p",
+      "tsx",
+      "tsx",
+      "desktop/packaging/nodePrepareNodeRuntime.ts",
+      `--platform=${platform}`,
+    ],
+    { stdio: "inherit" },
+  );
+  if (result.error) {
+    console.error(result.error.message);
+    process.exitCode = 1;
+    return false;
+  }
+  if (result.status !== 0) {
+    process.exitCode = result.status || 1;
     return false;
   }
   return true;

@@ -8,8 +8,10 @@ function main(): void {
   const launcherPath = "desktop/packaging/linux/shift-scheduler-dev";
   assertTrue(fs.existsSync(launcherPath), "launcher exists");
   const launcher = fs.readFileSync(launcherPath, "utf8");
-  assertIncludes(launcher, "desktop/app/linuxLauncher.ts", "launcher target");
-  assertIncludes(launcher, "npx -y -p tsx tsx", "launcher command");
+  assertIncludes(launcher, "desktop/dist/shift-scheduler.cjs", "runtime bundle target");
+  assertIncludes(launcher, "../runtime/node", "bundled node preferred");
+  assertIncludes(launcher, "exec node desktop/dist/shift-scheduler.cjs", "node fallback");
+  assertNotIncludes(launcher, "npx -y -p tsx tsx", "npx removed from launcher");
 
   const entry = renderLinuxDesktopEntry({
     appName: "勤務表作成",
@@ -35,6 +37,12 @@ function assertIncludes(text: string, expected: string, label: string): void {
 function assertTrue(value: boolean, label: string): void {
   if (!value) {
     throw new Error(`${label}: expected true`);
+  }
+}
+
+function assertNotIncludes(text: string, expected: string, label: string): void {
+  if (text.includes(expected)) {
+    throw new Error(`${label}: unexpected ${expected}`);
   }
 }
 

@@ -12,7 +12,12 @@ function main(): void {
     linux.entries.some((entry) => entry.destination === "desktop/packaging/resources/solver/linux-x64/shift-solver"),
     "linux solver resource",
   );
-  assertTrue(linux.entries.some((entry) => entry.destination === "desktop/storage"), "storage module");
+  assertTrue(linux.entries.some((entry) => entry.destination === "desktop/dist/shift-scheduler.cjs"), "runtime bundle");
+  assertTrue(linux.entries.some((entry) => entry.destination === "desktop/packaging/runtime/node"), "node runtime");
+  assertEqual(linux.entries.some((entry) => entry.destination.startsWith("desktop/app/")), false, "app source excluded");
+  assertEqual(linux.entries.some((entry) => entry.destination.startsWith("desktop/api/")), false, "api source excluded");
+  assertEqual(linux.entries.some((entry) => entry.destination.includes("mockSolverRunner")), false, "mock solver excluded");
+  assertEqual(linux.entries.some((entry) => entry.destination.includes("previewServer")), false, "preview server excluded");
 
   const windows = buildPackageAssemblyPlan({ target: "windows-prototype", outputRoot: "C:/out" });
   assertTrue(
@@ -26,6 +31,10 @@ function main(): void {
   assertTrue(
     windows.entries.some((entry) => entry.destination === "desktop/packaging/resources/solver/windows-x64/shift-solver.exe"),
     "windows solver resource",
+  );
+  assertTrue(
+    windows.entries.some((entry) => entry.destination === "desktop/packaging/runtime/node.exe"),
+    "windows node runtime",
   );
 
   const ok = checkPackageAssemblyPlan(linux, { exists: () => true });

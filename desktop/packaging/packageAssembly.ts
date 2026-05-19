@@ -32,6 +32,7 @@ export function buildPackageAssemblyPlan(options: BuildPackageAssemblyPlanOption
   const outputDirectory = joinPath(outputRoot, options.target);
   const solverPlatform = solverPlatformForReleaseTarget(options.target);
   const solverExecutable = solverPlatform === "windows-x64" ? "shift-solver.exe" : "shift-solver";
+  const nodeExecutable = solverPlatform === "windows-x64" ? "node.exe" : "node";
   const launcher =
     options.target === "windows-prototype"
       ? {
@@ -51,33 +52,13 @@ export function buildPackageAssemblyPlan(options: BuildPackageAssemblyPlanOption
     entries: [
       launcher,
       {
-        source: "desktop/app",
-        destination: "desktop/app",
+        source: "desktop/dist/shift-scheduler.cjs",
+        destination: "desktop/dist/shift-scheduler.cjs",
         required: true,
       },
       {
-        source: "desktop/api",
-        destination: "desktop/api",
-        required: true,
-      },
-      {
-        source: "desktop/core",
-        destination: "desktop/core",
-        required: true,
-      },
-      {
-        source: "desktop/exports",
-        destination: "desktop/exports",
-        required: true,
-      },
-      {
-        source: "desktop/storage",
-        destination: "desktop/storage",
-        required: true,
-      },
-      {
-        source: "desktop/solver",
-        destination: "desktop/solver",
+        source: `desktop/packaging/resources/node/${solverPlatform}/${nodeExecutable}`,
+        destination: `desktop/packaging/runtime/${nodeExecutable}`,
         required: true,
       },
       {

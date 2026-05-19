@@ -82,7 +82,15 @@ const defaultShellStarter: AppShellStarter = {
   start: startAppShellServer,
 };
 
-if (process.argv.some((arg) => arg.endsWith("desktop/app/windowsLauncher.ts") || arg.endsWith("windowsLauncher.ts"))) {
+if (
+  process.argv.some(
+    (arg) =>
+      arg.endsWith("desktop/app/windowsLauncher.ts") ||
+      arg.endsWith("windowsLauncher.ts") ||
+      arg.endsWith("desktop/dist/shift-scheduler.cjs") ||
+      arg.endsWith("shift-scheduler.cjs"),
+  )
+) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;

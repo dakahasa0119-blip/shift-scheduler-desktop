@@ -5,7 +5,11 @@ set "SCRIPT_DIR=%~dp0"
 pushd "%SCRIPT_DIR%\..\..\.." >nul
 if errorlevel 1 exit /b 1
 
-npx -y -p tsx tsx desktop/app/windowsLauncher.ts %*
+if exist "%SCRIPT_DIR%\..\runtime\node.exe" (
+  "%SCRIPT_DIR%\..\runtime\node.exe" desktop\dist\shift-scheduler.cjs %*
+) else (
+  node desktop\dist\shift-scheduler.cjs %*
+)
 set "EXIT_CODE=%ERRORLEVEL%"
 
 popd >nul

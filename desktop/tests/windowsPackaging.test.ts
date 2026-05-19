@@ -6,8 +6,10 @@ function main(): void {
   const launcherPath = "desktop/packaging/windows/shift-scheduler-dev.cmd";
   assertTrue(fs.existsSync(launcherPath), "windows launcher exists");
   const launcher = fs.readFileSync(launcherPath, "utf8");
-  assertIncludes(launcher, "desktop/app/windowsLauncher.ts", "windows launcher target");
-  assertIncludes(launcher, "npx -y -p tsx tsx", "launcher command");
+  assertIncludes(launcher, "desktop\\dist\\shift-scheduler.cjs", "windows runtime bundle target");
+  assertIncludes(launcher, "runtime\\node.exe", "bundled node preferred");
+  assertIncludes(launcher, "node desktop\\dist\\shift-scheduler.cjs", "node fallback");
+  assertNotIncludes(launcher, "npx -y -p tsx tsx", "npx removed from launcher");
 }
 
 function assertIncludes(text: string, expected: string, label: string): void {
@@ -19,6 +21,12 @@ function assertIncludes(text: string, expected: string, label: string): void {
 function assertTrue(value: boolean, label: string): void {
   if (!value) {
     throw new Error(`${label}: expected true`);
+  }
+}
+
+function assertNotIncludes(text: string, expected: string, label: string): void {
+  if (text.includes(expected)) {
+    throw new Error(`${label}: unexpected ${expected}`);
   }
 }
 

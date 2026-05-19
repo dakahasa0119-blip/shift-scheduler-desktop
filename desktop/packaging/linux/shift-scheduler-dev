@@ -5,4 +5,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../.." && pwd)"
 
 cd "${REPO_ROOT}"
-exec npx -y -p tsx tsx desktop/app/linuxLauncher.ts "$@"
+if [[ -x "${SCRIPT_DIR}/../runtime/node" ]]; then
+  exec "${SCRIPT_DIR}/../runtime/node" desktop/dist/shift-scheduler.cjs "$@"
+fi
+
+exec node desktop/dist/shift-scheduler.cjs "$@"

@@ -4,6 +4,7 @@ function main(): void {
   const linux = buildReleaseManifest({ target: "linux-prototype" });
   assertEqual(linux.target, "linux-prototype", "linux target");
   assertTrue(linux.files.some((file) => file.path.endsWith("solver/linux-x64/shift-solver")), "linux solver");
+  assertTrue(linux.files.some((file) => file.path.endsWith("node/linux-x64/node")), "linux node runtime");
   assertTrue(linux.files.some((file) => file.id === "linux-dev-launcher" && file.required), "linux launcher required");
 
   const ready = checkReleaseReadiness(linux, {
@@ -20,6 +21,7 @@ function main(): void {
 
   const windows = buildReleaseManifest({ target: "windows-prototype" });
   assertTrue(windows.files.some((file) => file.path.endsWith("solver/windows-x64/shift-solver.exe")), "windows solver");
+  assertTrue(windows.files.some((file) => file.path.endsWith("node/windows-x64/node.exe")), "windows node runtime");
   assertTrue(windows.files.some((file) => file.id === "windows-dev-launcher" && file.required), "windows launcher required");
   assertTrue(windows.files.some((file) => file.id === "linux-dev-launcher" && !file.required), "linux launcher optional for windows");
   assertEqual(parseReleaseTarget("windows-prototype"), "windows-prototype", "parse windows target");

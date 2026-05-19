@@ -61,6 +61,12 @@ export function buildReleaseManifest(options: BuildReleaseManifestOptions): Rele
         description: "Bundled solver executable",
       },
       {
+        id: "node-runtime",
+        path: `desktop/packaging/resources/node/${platform}/${platform === "windows-x64" ? "node.exe" : "node"}`,
+        required: true,
+        description: "Bundled Node.js runtime",
+      },
+      {
         id: "linux-dev-launcher",
         path: "desktop/packaging/linux/shift-scheduler-dev",
         required: options.target === "linux-prototype",
