@@ -11,6 +11,7 @@ import type { MonthlyScheduleDocument } from "../core/domain";
 import { applyScheduleTsv } from "../core/scheduleTsv";
 import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
 import { parseUrgentLeaveTsv } from "../core/recoveryTsv";
+import { convertGasSolverInputToDocument, isGasSolverInputPayload } from "../core/gasImport";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -174,12 +175,15 @@ export class AppController {
 
   importJson(documentText: string): AppControllerState {
     try {
-      const document = JSON.parse(documentText) as MonthlyScheduleDocument;
+      const payload = JSON.parse(documentText);
+      const document = isGasSolverInputPayload(payload)
+        ? convertGasSolverInputToDocument(payload)
+        : (payload as MonthlyScheduleDocument);
       this.state = {
         document,
         viewModel: {
           ...buildAppViewModelFromDocument(document),
-          status: { label: "JSONを反映しました", tone: "ready" },
+          status: { label: isGasSolverInputPayload(payload) ? "GASデータを取り込みました" : "JSONを反映しました", tone: "ready" },
         },
         busy: false,
         lastError: "",

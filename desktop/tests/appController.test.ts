@@ -93,6 +93,46 @@ async function main(): Promise<void> {
   assertEqual(requests.viewModel.status.label, "希望休・希望勤務を反映しました", "requests tsv status");
   assertEqual(requests.document.requests[0].type, "希望夜勤", "request type");
 
+  const gasImported = controller.importJson(
+    JSON.stringify({
+      schemaVersion: "gas-shift-solver-input/v1",
+      generatedAt: "2026-05-20 09:00:00",
+      source: "gas",
+      targetYear: 2026,
+      targetMonth: 6,
+      daysInMonth: 30,
+      requiredShiftStaffing: { "早": 1, "日": 0, "遅": 1, "夜": 1 },
+      requiredCoreShiftTypes: ["早", "遅", "夜"],
+      optionalShiftTypes: ["日"],
+      femaleRequiredWeekdays: [],
+      allowedShortagePolicy: { allowedShortageShifts: ["遅"] },
+      staffConditions: [
+        {
+          staffType: "介護",
+          name: "北富",
+          condition: "月2回",
+          allowedShift: "早・日・遅・夜",
+          monday: true,
+          tuesday: true,
+          wednesday: true,
+          thursday: true,
+          friday: true,
+          saturday: true,
+          sunday: true,
+          fixedOff: "",
+          gender: "女性",
+        },
+      ],
+      leaveEntries: [{ name: "北富", type: "希望日勤", date: "6/6", notes: "" }],
+      supplyExclusions: [],
+      previousMonthTailByName: {},
+      currentSchedule: [{ role: "介護", name: "北富", shifts: ["日"] }],
+    }),
+  );
+  assertEqual(gasImported.viewModel.status.label, "GASデータを取り込みました", "gas import status");
+  assertEqual(gasImported.document.staff[0].name, "北富", "gas import staff");
+  assertEqual(gasImported.document.requests[0].startDate, "2026-06-06", "gas import request");
+
   const updated = controller.updateDocument({
     ...sampleMonthlyScheduleDocument,
     month: 7,
