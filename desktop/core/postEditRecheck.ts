@@ -2,10 +2,12 @@ import type {
   CoreRequiredShiftCode,
   MonthlyScheduleDocument,
   ScheduleDiagnostics,
+  StaffMember,
   ShiftCode,
+  ShortageDiagnostic,
   UnmetRequestDiagnostic,
 } from "./domain";
-import { HARD_LEAVE_TYPES, REQUESTED_WORK_TYPES } from "./domain";
+import { HARD_LEAVE_TYPES, REQUESTED_WORK_TYPES, SUPPLY_EXCLUSION_TYPES } from "./domain";
 import { buildUserFacingDiagnosticMessages } from "./diagnosticMessages";
 
 const requiredShifts: CoreRequiredShiftCode[] = ["早", "日", "遅", "夜"];
@@ -38,7 +40,7 @@ export function buildPostEditDiagnostics(document: MonthlyScheduleDocument): Sch
     messages: [],
     shortages,
     unmetRequests,
-    suggestions: buildSuggestions(blockingShortageCount, unmetLeaveRequestCount, allowedShortageCount, unmetShiftRequestCount),
+    suggestions: buildSuggestions(document, shortages, unmetRequests),
   };
   diagnostics.messages = buildUserFacingDiagnosticMessages(diagnostics);
   return diagnostics;
@@ -115,12 +117,20 @@ function unmet(
 }
 
 function buildSuggestions(
-  blockingShortageCount: number,
-  unmetLeaveRequestCount: number,
-  allowedShortageCount: number,
-  unmetShiftRequestCount: number,
+  document: MonthlyScheduleDocument,
+  shortages: ShortageDiagnostic[],
+  unmetRequests: UnmetRequestDiagnostic[],
 ): ScheduleDiagnostics["suggestions"] {
   const suggestions: ScheduleDiagnostics["suggestions"] = [];
+  const blockingShortageCount = shortages.filter((item) => !item.allowed).length;
+  const allowedShortageCount = shortages.filter((item) => item.allowed).length;
+  const unmetLeaveRequestCount = unmetRequests.filter((item) => item.blocking).length;
+  const unmetShiftRequestCount = unmetRequests.filter((item) => !item.blocking).length;
+
+  shortages.slice(0, 5).forEach((shortage) => {
+    suggestions.push(buildShortageSuggestion(document, shortage));
+  });
+
   if (blockingShortageCount > 0) {
     suggestions.push({
       type: "post_edit_shortage",
@@ -148,7 +158,137 @@ function buildSuggestions(
       remainingIssueSummary: `許容不足 ${allowedShortageCount}件 / 勤務希望未充足 ${unmetShiftRequestCount}件`,
     });
   }
-  return suggestions;
+
+  suggestions.push(...buildWorkloadSuggestions(document));
+  return dedupeSuggestions(suggestions).slice(0, 8);
+}
+
+function buildShortageSuggestion(
+  document: MonthlyScheduleDocument,
+  shortage: ShortageDiagnostic,
+): ScheduleDiagnostics["suggestions"][number] {
+  const candidates = evaluateShortageCandidates(document, shortage);
+  const target = `${displayDate(shortage.date)} ${shortage.shift} ${shortage.count}名不足`;
+  const priority = shortage.allowed ? "中" : "高";
+
+  if (!candidates.length) {
+    return {
+      type: "legacy_improvement_shortage",
+      priority,
+      target,
+      message: "このシフトを担当できる職員設定がありません。可能勤務または人員配置を確認してください。",
+      remainingIssueSummary: "候補なし",
+    };
+  }
+
+  const available = candidates.filter((item) => item.blockers.length === 0);
+  if (available.length) {
+    return {
+      type: "legacy_improvement_shortage",
+      priority,
+      target,
+      message: "候補者を不足シフトへ振り替えると解消できる可能性があります。",
+      remainingIssueSummary: `候補: ${available.slice(0, 5).map((item) => item.staff.name).join("、")}`,
+    };
+  }
+
+  const groupedBlockers = summarizeCandidateBlockers(candidates);
+  const lightlyBlocked = candidates
+    .filter((item) => item.blockers.length <= 2)
+    .slice(0, 4)
+    .map((item) => `${item.staff.name}(${item.blockers.join("・")})`);
+  return {
+    type: "legacy_improvement_shortage",
+    priority,
+    target,
+    message: "曜日制限・固定休・希望休・当日他シフトを確認し、候補者の勤務入替または応援追加を検討してください。",
+    remainingIssueSummary: lightlyBlocked.length ? lightlyBlocked.join("、") : groupedBlockers,
+  };
+}
+
+function evaluateShortageCandidates(
+  document: MonthlyScheduleDocument,
+  shortage: ShortageDiagnostic,
+): { staff: StaffMember; blockers: string[] }[] {
+  const day = Number(shortage.date.slice(-2));
+  const dayIndex = day - 1;
+  const weekday = new Date(document.year, document.month - 1, day).getDay();
+  const scheduleByStaff = new Map(document.schedule.map((row) => [row.staffId, row]));
+  return document.staff
+    .filter((staff) => staff.allowedShifts.includes(shortage.shift))
+    .map((staff) => {
+      const blockers: string[] = [];
+      const row = scheduleByStaff.get(staff.id);
+      const assignedShift = row?.shifts[dayIndex] || "";
+      if (staff.allowedWeekdays.length > 0 && !staff.allowedWeekdays.includes(weekday)) blockers.push("曜日不可");
+      if (staff.fixedOffWeekday === weekday) blockers.push("固定休");
+      if (hasBlockingRequest(document, staff.id, shortage.date)) blockers.push("休暇/除外");
+      if (isWorkShift(assignedShift)) blockers.push(`当日${assignedShift}`);
+      if (isOverMonthlyWorkLimit(staff, row?.shifts || [])) blockers.push("月間上限");
+      return { staff, blockers };
+    });
+}
+
+function hasBlockingRequest(document: MonthlyScheduleDocument, staffId: string, date: string): boolean {
+  return document.requests.some((request) => {
+    if (request.staffId !== staffId) return false;
+    if (![...HARD_LEAVE_TYPES, ...SUPPLY_EXCLUSION_TYPES].includes(request.type)) return false;
+    return expandDateRange(request.startDate, request.endDate || request.startDate).includes(date);
+  });
+}
+
+function isWorkShift(shift: ShiftCode): boolean {
+  return shift === "早" || shift === "日" || shift === "遅" || shift === "夜" || shift === "明";
+}
+
+function isOverMonthlyWorkLimit(staff: StaffMember, shifts: ShiftCode[]): boolean {
+  if (!staff.monthlyWorkLimitDays) return false;
+  return shifts.filter(isWorkShift).length >= staff.monthlyWorkLimitDays;
+}
+
+function summarizeCandidateBlockers(candidates: { blockers: string[] }[]): string {
+  const counts = new Map<string, number>();
+  candidates.forEach((candidate) => {
+    candidate.blockers.forEach((blocker) => counts.set(blocker, (counts.get(blocker) || 0) + 1));
+  });
+  const summary = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([reason, count]) => `${reason} ${count}名`);
+  return summary.length ? summary.join("、") : "候補条件を確認";
+}
+
+function buildWorkloadSuggestions(document: MonthlyScheduleDocument): ScheduleDiagnostics["suggestions"] {
+  const staffById = new Map(document.staff.map((staff) => [staff.id, staff]));
+  return document.schedule.flatMap((row) => {
+    const staff = staffById.get(row.staffId);
+    if (!staff?.monthlyWorkLimitDays) return [];
+    const workingDays = row.shifts.filter(isWorkShift).length;
+    if (workingDays <= staff.monthlyWorkLimitDays) return [];
+    return [{
+      type: "legacy_improvement_workload",
+      priority: "中" as const,
+      target: `${staff.name} 月間勤務上限`,
+      message: "公休/休みの振替、応援追加、月間上限の見直しを検討してください。",
+      remainingIssueSummary: `${workingDays}日 / 上限${staff.monthlyWorkLimitDays}日`,
+    }];
+  }).slice(0, 2);
+}
+
+function dedupeSuggestions(suggestions: ScheduleDiagnostics["suggestions"]): ScheduleDiagnostics["suggestions"] {
+  const seen = new Set<string>();
+  return suggestions.filter((suggestion) => {
+    const key = `${suggestion.type}:${suggestion.target}:${suggestion.remainingIssueSummary}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function displayDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return `${parsed.getMonth() + 1}/${parsed.getDate()}`;
 }
 
 function requestedWorkShift(type: string): ShiftCode {
