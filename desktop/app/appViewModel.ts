@@ -57,7 +57,6 @@ export interface AppActionViewModel {
     | "exportJson"
     | "exportExcel"
     | "exportPdf"
-    | "exportStaffMessages"
     | "quit";
   label: string;
   enabled: boolean;
@@ -250,11 +249,6 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
       id: "exportPdf",
       label: "PDF出力",
       enabled: canExport,
-    },
-    {
-      id: "exportStaffMessages",
-      label: "送信用テキスト",
-      enabled: canSolve,
     },
     {
       id: "quit",

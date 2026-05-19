@@ -2,7 +2,6 @@ import type { MonthlyScheduleDocument } from "../core/domain";
 import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderScheduleTsv } from "../core/scheduleTsv";
-import { renderStaffScheduleMessages } from "../core/staffMessage";
 import { AppController } from "./appController";
 import type { DesktopApiClient } from "./desktopApiClient";
 import { DesktopAppRuntime, type DesktopAppRuntimeOptions } from "./appRuntime";
@@ -194,17 +193,6 @@ async function handleShellRequest(
     const body = `${JSON.stringify(controller.getState().document, null, 2)}\n`;
     response.writeHead(200, {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store",
-      "content-length": Buffer.byteLength(body, "utf8"),
-    });
-    response.end(body);
-    return;
-  }
-
-  if ((method === "GET" || method === "POST") && path === "/app/export/staff-messages") {
-    const body = renderStaffScheduleMessages(controller.getState().document);
-    response.writeHead(200, {
-      "content-type": "text/plain; charset=utf-8",
       "cache-control": "no-store",
       "content-length": Buffer.byteLength(body, "utf8"),
     });
