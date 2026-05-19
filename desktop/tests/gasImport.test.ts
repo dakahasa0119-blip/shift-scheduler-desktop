@@ -33,7 +33,7 @@ function main(): void {
         thursday: true,
         friday: true,
         saturday: true,
-        sunday: true,
+        sunday: "FALSE" as unknown as boolean,
         fixedOff: "",
         gender: "男性",
       },
@@ -71,6 +71,7 @@ function main(): void {
   assertEqual(document.requirements.allowedShortageShifts[0], "遅", "allowed shortage");
   assertEqual(document.staff[0].name, "江藤", "staff name");
   assertEqual(document.staff[0].role, "介護リーダー", "staff role");
+  assertEqual(document.staff[0].allowedWeekdays.includes(0), false, "string false weekday");
   assertEqual(document.staff[0].monthlyNightTarget, 3, "night target");
   assertEqual(document.requests[0].startDate, "2026-06-06", "request date");
   assertEqual(document.requests[0].notes, "私用", "request notes");

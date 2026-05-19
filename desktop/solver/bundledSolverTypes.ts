@@ -58,6 +58,6 @@ export function buildBundledSolverInvocation(
 }
 
 function normalizeSolverTimeout(value: number): number {
-  if (!Number.isFinite(value)) return 120;
-  return Math.max(10, Math.min(600, Math.round(value)));
+  if (!Number.isFinite(value)) return 240;
+  return Math.max(10, Math.min(1800, Math.round(value)));
 }

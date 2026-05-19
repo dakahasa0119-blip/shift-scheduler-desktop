@@ -138,7 +138,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
 }
 
 function renderSolverTimeLimitControl(viewModel: AppViewModel): string {
-  const values = [120, 180, 300, 600];
+  const values = [240, 600, 1200, 1800];
   return [
     '<label class="solver-time-limit">',
     '<span>作成時間</span>',
@@ -1592,7 +1592,7 @@ function renderClientScript(actionBasePath: string): string {
           }
       : action === "solve"
         ? {
-            timeLimitSeconds: Number(document.querySelector("#solver-time-limit-seconds")?.value || 120)
+            timeLimitSeconds: Number(document.querySelector("#solver-time-limit-seconds")?.value || 240)
           }
       : action === "addLeaveRequest"
         ? collectLeaveRequest()

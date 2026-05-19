@@ -100,7 +100,7 @@ export function buildDesktopSolverConfig(options: DesktopLocalApiOptions): Bundl
     workDirectory: options.workDirectory || path.join(baseRuntimeDirectory, "solver-work"),
     supportLogDirectory: options.supportLogDirectory || path.join(baseRuntimeDirectory, "logs"),
     keepDebugFiles: options.keepDebugFiles ?? false,
-    defaultTimeLimitSeconds: options.defaultTimeLimitSeconds || 120,
+    defaultTimeLimitSeconds: options.defaultTimeLimitSeconds || 240,
     joinPath: path.join,
   });
 }

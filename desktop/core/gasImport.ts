@@ -137,14 +137,20 @@ function parseAllowedShifts(value: string): CoreRequiredShiftCode[] {
 
 function parseAllowedWeekdays(condition: SolverStaffCondition): number[] {
   const weekdays: number[] = [];
-  if (condition.sunday) weekdays.push(0);
-  if (condition.monday) weekdays.push(1);
-  if (condition.tuesday) weekdays.push(2);
-  if (condition.wednesday) weekdays.push(3);
-  if (condition.thursday) weekdays.push(4);
-  if (condition.friday) weekdays.push(5);
-  if (condition.saturday) weekdays.push(6);
+  if (parseGasBoolean(condition.sunday)) weekdays.push(0);
+  if (parseGasBoolean(condition.monday)) weekdays.push(1);
+  if (parseGasBoolean(condition.tuesday)) weekdays.push(2);
+  if (parseGasBoolean(condition.wednesday)) weekdays.push(3);
+  if (parseGasBoolean(condition.thursday)) weekdays.push(4);
+  if (parseGasBoolean(condition.friday)) weekdays.push(5);
+  if (parseGasBoolean(condition.saturday)) weekdays.push(6);
   return weekdays.length ? weekdays : [0, 1, 2, 3, 4, 5, 6];
+}
+
+function parseGasBoolean(value: unknown): boolean {
+  if (typeof value === "boolean") return value;
+  const text = String(value || "").trim().toLowerCase();
+  return text === "true" || text === "1" || text === "yes";
 }
 
 function parseFixedOffWeekday(value: string): number | null {

@@ -25,7 +25,7 @@ The packaged Windows/Linux app should use a bundled executable artifact instead.
 ## Expected Executable Contract
 
 ```text
-shift-solver solve input.json --out output.json --debug debug.json --time-limit 120
+shift-solver solve input.json --out output.json --debug debug.json --time-limit 240
 ```
 
 ## Current Code

@@ -55,7 +55,7 @@ export interface AppControllerState {
 
 export class AppController {
   private state: AppControllerState;
-  private solverTimeLimitSeconds = 120;
+  private solverTimeLimitSeconds = 240;
 
   constructor(
     document: MonthlyScheduleDocument,
@@ -301,7 +301,7 @@ export class AppController {
         urgentLeaves,
         options: {
           fixedThroughDate: fixedThroughDate || undefined,
-          timeLimitSeconds: 120,
+          timeLimitSeconds: 240,
         },
       });
       const nextDocument = response.ok ? response.document : this.state.document;
@@ -797,7 +797,7 @@ function normalizeSettingsInput(input: unknown): ScheduleSettingsInput {
 function normalizeSolverTimeLimit(value: number | undefined, fallback: number): number {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
-  return Math.max(60, Math.min(600, Math.round(parsed)));
+  return Math.max(60, Math.min(1800, Math.round(parsed)));
 }
 
 function normalizeInteger(value: unknown, min: number, max: number): number | undefined {

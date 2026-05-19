@@ -209,7 +209,7 @@ function buildAppViewModelFromParts(
     urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
     capacitySimulationJson: `${JSON.stringify(document.capacitySimulation || null, null, 2)}\n`,
     solverInputJson: renderSolverInputJson(document),
-    solverTimeLimitSeconds: 120,
+    solverTimeLimitSeconds: 240,
     capacitySimulation: document.capacitySimulation
       ? {
           generatedAt: document.capacitySimulation.generatedAt,

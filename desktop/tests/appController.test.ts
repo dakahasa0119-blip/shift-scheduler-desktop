@@ -34,7 +34,7 @@ async function main(): Promise<void> {
   const solved = await controller.solve();
   assertEqual(solved.busy, false, "solved busy");
   assertEqual(api.solveCalls.length, 1, "solve call count");
-  assertEqual(api.solveCalls[0].options?.timeLimitSeconds, 120, "solve time limit");
+  assertEqual(api.solveCalls[0].options?.timeLimitSeconds, 240, "solve time limit");
   assertEqual(solved.viewModel.status.label, "作成できました（確認事項あり）", "solved status");
   assertEqual(solved.viewModel.diagnostics?.sections[0].title, "確認事項", "diagnostics shown");
   assertEqual(solved.document.diagnostics?.summary.allowedShortageCount, 1, "document updated");

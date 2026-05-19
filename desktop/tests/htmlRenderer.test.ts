@@ -33,7 +33,8 @@ async function main(): Promise<void> {
   assertIncludes(html, 'data-request="希望日勤"', "request label");
   assertIncludes(html, '<button type="button" class="action action-exportExcel" data-action="exportExcel">Excel出力</button>', "export button");
   assertIncludes(html, '<select id="solver-time-limit-seconds">', "solver time limit select");
-  assertIncludes(html, '<option value="300">5分</option>', "solver long time option");
+  assertIncludes(html, '<option value="240" selected>4分</option>', "solver gas default time option");
+  assertIncludes(html, '<option value="1800">30分</option>', "solver long time option");
   assertIncludes(html, '<textarea id="document-json"', "document json editor");
   assertIncludes(html, '<textarea id="staff-tsv"', "staff tsv editor");
   assertIncludes(html, '<textarea id="requests-tsv"', "requests tsv editor");

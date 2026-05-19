@@ -306,8 +306,8 @@ export async function handleBackupDocument(
 }
 
 function normalizeTimeLimit(value: number | undefined): number {
-  if (!Number.isFinite(value || NaN)) return 120;
-  return Math.max(10, Math.min(600, Math.round(Number(value))));
+  if (!Number.isFinite(value || NaN)) return 240;
+  return Math.max(10, Math.min(1800, Math.round(Number(value))));
 }
 
 function isSolverTimeout(error: unknown): boolean {
