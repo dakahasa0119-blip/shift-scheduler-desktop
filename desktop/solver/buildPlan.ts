@@ -6,7 +6,7 @@ export interface SolverBuildTarget {
   platform: SolverBuildPlatform;
   executableName: string;
   outputDirectory: string;
-  sourceModule: string;
+  entryScript: string;
 }
 
 export interface SolverBuildCommand {
@@ -26,8 +26,7 @@ export function buildPyInstallerCommand(target: SolverBuildTarget): SolverBuildC
       target.outputDirectory,
       "--clean",
       "--noconfirm",
-      "-m",
-      target.sourceModule,
+      target.entryScript,
     ],
     outputExecutablePath: joinPath(target.outputDirectory, target.executableName),
   };
@@ -58,13 +57,13 @@ export const initialSolverBuildTargets: SolverBuildTarget[] = [
     platform: "linux-x64",
     executableName: "shift-solver",
     outputDirectory: "desktop/packaging/resources/solver/linux-x64",
-    sourceModule: "shift_solver",
+    entryScript: "desktop/solver/pyinstaller_entry.py",
   },
   {
     platform: "windows-x64",
     executableName: "shift-solver.exe",
     outputDirectory: "desktop/packaging/resources/solver/windows-x64",
-    sourceModule: "shift_solver",
+    entryScript: "desktop/solver/pyinstaller_entry.py",
   },
 ];
 

@@ -29,9 +29,10 @@ jobs:
           python -m pip install pyinstaller
 
       - name: Build solver executable
-        working-directory: solver_cli
+        env:
+          PYTHONPATH: solver_cli
         run: |
-          python -m PyInstaller --onefile --name shift-solver --distpath ..\desktop\packaging\resources\solver\windows-x64 --clean --noconfirm -m shift_solver
+          python -m PyInstaller --onefile --name shift-solver --distpath desktop\packaging\resources\solver\windows-x64 --clean --noconfirm desktop\solver\pyinstaller_entry.py
 
       - name: Verify executable starts
         run: |

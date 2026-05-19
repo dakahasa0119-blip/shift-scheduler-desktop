@@ -61,7 +61,7 @@ Internal command planner:
 Example Linux command shape:
 
 ```text
-pyinstaller --onefile --name shift-solver --distpath desktop/packaging/resources/solver/linux-x64 --clean --noconfirm -m shift_solver
+pyinstaller --onefile --name shift-solver --distpath desktop/packaging/resources/solver/linux-x64 --clean --noconfirm desktop/solver/pyinstaller_entry.py
 ```
 
 Print the planned command only for support/debugging:

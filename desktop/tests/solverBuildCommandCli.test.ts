@@ -8,7 +8,7 @@ function main(): void {
   const windows = buildPyInstallerCommand(findSolverBuildTarget("windows-x64"));
   assertEqual(windows.outputExecutablePath, "desktop/packaging/resources/solver/windows-x64/shift-solver.exe", "windows output");
   assertIncludes(formatCommand(windows), "--distpath desktop/packaging/resources/solver/windows-x64", "formatted distpath");
-  assertIncludes(formatCommand(windows), "-m shift_solver", "formatted module");
+  assertIncludes(formatCommand(windows), "desktop/solver/pyinstaller_entry.py", "formatted entry script");
 }
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {
