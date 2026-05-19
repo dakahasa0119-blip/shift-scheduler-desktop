@@ -126,12 +126,25 @@ async function main(): Promise<void> {
     month: 2,
     requirements: {
       late: 2,
+      allowedShortageShifts: "早,遅",
+      femaleRequiredWeekdays: "月,水,金",
     },
   });
   assertEqual(settings.viewModel.status.label, "設定を反映しました", "settings status");
   assertEqual(settings.document.year, 2027, "settings year");
   assertEqual(settings.document.month, 2, "settings month");
   assertEqual(settings.document.requirements.late, 2, "settings late");
+  assertEqual(settings.document.requirements.allowedShortageShifts.join(","), "早,遅", "settings allowed shortage");
+  assertEqual(settings.document.requirements.femaleRequiredWeekdays.join(","), "1,3,5", "settings female weekdays");
+
+  const clearedSettings = controller.updateSettings({
+    requirements: {
+      allowedShortageShifts: "",
+      femaleRequiredWeekdays: "",
+    },
+  });
+  assertEqual(clearedSettings.document.requirements.allowedShortageShifts.length, 0, "settings allowed shortage cleared");
+  assertEqual(clearedSettings.document.requirements.femaleRequiredWeekdays.length, 0, "settings female weekdays cleared");
 
   const tsv = controller.importScheduleTsv("介護リーダー\t江藤\t日\t日\t公\n介護\t有山\t早\t早\t遅\n");
   assertEqual(tsv.viewModel.status.label, "勤務表TSVを反映しました（自動再判定済み）", "tsv status");

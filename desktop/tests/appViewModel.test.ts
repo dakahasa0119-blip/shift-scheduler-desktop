@@ -9,6 +9,8 @@ async function main(): Promise<void> {
   assertEqual(initial.status.label, "作成できます", "initial status");
   assertEqual(initial.settings.year, 2026, "settings year");
   assertEqual(initial.settings.requirements.late, 1, "settings late requirement");
+  assertEqual(initial.settings.requirements.allowedShortageShifts, "遅", "settings allowed shortage");
+  assertEqual(initial.settings.requirements.femaleRequiredWeekdays, "", "settings female weekdays");
   assertEqual(initial.staffTsv.includes("氏名\t職種"), true, "staff tsv");
   assertEqual(initial.requestsTsv.includes("氏名\t区分"), true, "requests tsv");
   assertEqual(initial.urgentLeaveTsv.includes("氏名\t日付\t理由"), true, "urgent leave tsv");

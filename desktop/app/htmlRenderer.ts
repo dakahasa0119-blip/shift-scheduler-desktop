@@ -281,15 +281,15 @@ function renderStaffOverview(viewModel: AppViewModel): string {
     "</tr></thead><tbody>",
     rows
       .map((row) => {
-        const weekdays = row.slice(4, 11).map((value, index) => (normalizeBoolean(value) ? ["月", "火", "水", "木", "金", "土", "日"][index] : "")).filter(Boolean);
+        const weekdays = formatWeekdays(row[5] || "");
         return [
           "<tr>",
-          `<td>${escapeHtml(row[0] || "")}</td>`,
-          `<td><strong>${escapeHtml(row[1] || "")}</strong></td>`,
+          `<td>${escapeHtml(row[1] || "")}</td>`,
+          `<td><strong>${escapeHtml(row[0] || "")}</strong></td>`,
+          `<td>${escapeHtml(row[7] || "")}</td>`,
+          `<td>${renderShiftChips(row[4] || "")}</td>`,
+          `<td class="weekday-list">${escapeHtml(weekdays)}</td>`,
           `<td>${escapeHtml(row[2] || "")}</td>`,
-          `<td>${renderShiftChips(row[3] || "")}</td>`,
-          `<td class="weekday-list">${escapeHtml(weekdays.join(" "))}</td>`,
-          `<td>${escapeHtml(row[12] || "")}</td>`,
           "</tr>",
         ].join("");
       })
@@ -391,8 +391,17 @@ function renderShiftChips(value: string): string {
   return shifts.map((shift) => `<span class="shift-chip">${escapeHtml(shift)}</span>`).join("");
 }
 
-function normalizeBoolean(value: string): boolean {
-  return String(value || "").trim().toLowerCase() === "true";
+function formatWeekdays(value: string): string {
+  const labels = ["日", "月", "火", "水", "木", "金", "土"];
+  return String(value || "")
+    .split(/[,\s、・]+/)
+    .map((item) => {
+      const text = item.trim();
+      const index = Number(text);
+      return Number.isInteger(index) && index >= 0 && index <= 6 ? labels[index] : text;
+    })
+    .filter(Boolean)
+    .join(" ");
 }
 
 function parseTsv(text: string): { headers: string[]; rows: string[][] } {
@@ -418,6 +427,8 @@ function renderSettingsEditor(viewModel: AppViewModel): string {
     renderNumberField("日", "requirements.day", viewModel.settings.requirements.day),
     renderNumberField("遅", "requirements.late", viewModel.settings.requirements.late),
     renderNumberField("夜", "requirements.night", viewModel.settings.requirements.night),
+    renderTextField("許容不足", "requirements.allowedShortageShifts", viewModel.settings.requirements.allowedShortageShifts),
+    renderTextField("女性配置曜日", "requirements.femaleRequiredWeekdays", viewModel.settings.requirements.femaleRequiredWeekdays),
     "</div>",
     "</section>",
   ].join("");
@@ -425,6 +436,10 @@ function renderSettingsEditor(viewModel: AppViewModel): string {
 
 function renderNumberField(label: string, field: string, value: number): string {
   return `<label><span>${escapeHtml(label)}</span><input type="number" data-settings-field="${escapeHtml(field)}" value="${escapeHtml(String(value))}"></label>`;
+}
+
+function renderTextField(label: string, field: string, value: string): string {
+  return `<label><span>${escapeHtml(label)}</span><input type="text" data-settings-field="${escapeHtml(field)}" value="${escapeHtml(value)}"></label>`;
 }
 
 function renderDocumentEditor(viewModel: AppViewModel): string {
@@ -1629,6 +1644,8 @@ function renderClientScript(actionBasePath: string): string {
       if (field === "requirements.day") out.requirements.day = value;
       if (field === "requirements.late") out.requirements.late = value;
       if (field === "requirements.night") out.requirements.night = value;
+      if (field === "requirements.allowedShortageShifts") out.requirements.allowedShortageShifts = input.value;
+      if (field === "requirements.femaleRequiredWeekdays") out.requirements.femaleRequiredWeekdays = input.value;
     });
     return out;
   }

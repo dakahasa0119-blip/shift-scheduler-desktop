@@ -44,6 +44,8 @@ export interface AppSettingsViewModel {
     day: number;
     late: number;
     night: number;
+    allowedShortageShifts: string;
+    femaleRequiredWeekdays: string;
   };
 }
 
@@ -234,6 +236,8 @@ function buildAppViewModelFromParts(
         day: document.requirements.day,
         late: document.requirements.late,
         night: document.requirements.night,
+        allowedShortageShifts: document.requirements.allowedShortageShifts.join(","),
+        femaleRequiredWeekdays: document.requirements.femaleRequiredWeekdays.join(","),
       },
     },
     schedule: buildScheduleTableViewModel(document),

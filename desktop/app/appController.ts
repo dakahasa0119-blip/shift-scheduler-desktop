@@ -7,7 +7,7 @@ import {
   buildAppViewModelFromValidateResponse,
   buildInitialAppViewModel,
 } from "./appViewModel";
-import type { MonthlyScheduleDocument } from "../core/domain";
+import type { CoreRequiredShiftCode, MonthlyScheduleDocument } from "../core/domain";
 import { applyScheduleTsv } from "../core/scheduleTsv";
 import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
 import { parseUrgentLeaveTsv } from "../core/recoveryTsv";
@@ -43,6 +43,8 @@ export interface ScheduleSettingsInput {
     day?: number;
     late?: number;
     night?: number;
+    allowedShortageShifts?: CoreRequiredShiftCode[];
+    femaleRequiredWeekdays?: number[];
   };
 }
 
@@ -571,19 +573,21 @@ export class AppController {
 
   updateSettings(input: unknown): AppControllerState {
     const settings = normalizeSettingsInput(input);
-      const document: MonthlyScheduleDocument = this.applyEditSideEffects({
-        ...this.state.document,
-        year: settings.year ?? this.state.document.year,
-        month: settings.month ?? this.state.document.month,
+    const document: MonthlyScheduleDocument = this.applyEditSideEffects({
+      ...this.state.document,
+      year: settings.year ?? this.state.document.year,
+      month: settings.month ?? this.state.document.month,
       requirements: {
         ...this.state.document.requirements,
         early: settings.requirements?.early ?? this.state.document.requirements.early,
         day: settings.requirements?.day ?? this.state.document.requirements.day,
         late: settings.requirements?.late ?? this.state.document.requirements.late,
         night: settings.requirements?.night ?? this.state.document.requirements.night,
+        allowedShortageShifts: settings.requirements?.allowedShortageShifts ?? this.state.document.requirements.allowedShortageShifts,
+        femaleRequiredWeekdays: settings.requirements?.femaleRequiredWeekdays ?? this.state.document.requirements.femaleRequiredWeekdays,
       },
-        diagnostics: null,
-      });
+      diagnostics: null,
+    });
     this.state = {
       document,
       viewModel: {
@@ -782,14 +786,21 @@ export class AppController {
 
 function normalizeSettingsInput(input: unknown): ScheduleSettingsInput {
   const value = (input || {}) as ScheduleSettingsInput;
+  const requirements = value.requirements || {};
   return {
     year: normalizeInteger(value.year, 2000, 2100),
     month: normalizeInteger(value.month, 1, 12),
     requirements: {
-      early: normalizeInteger(value.requirements?.early, 0, 20),
-      day: normalizeInteger(value.requirements?.day, 0, 20),
-      late: normalizeInteger(value.requirements?.late, 0, 20),
-      night: normalizeInteger(value.requirements?.night, 0, 20),
+      early: normalizeInteger(requirements.early, 0, 20),
+      day: normalizeInteger(requirements.day, 0, 20),
+      late: normalizeInteger(requirements.late, 0, 20),
+      night: normalizeInteger(requirements.night, 0, 20),
+      allowedShortageShifts: hasOwn(requirements, "allowedShortageShifts")
+        ? normalizeCoreShiftList(requirements.allowedShortageShifts)
+        : undefined,
+      femaleRequiredWeekdays: hasOwn(requirements, "femaleRequiredWeekdays")
+        ? normalizeWeekdayList(requirements.femaleRequiredWeekdays)
+        : undefined,
     },
   };
 }
@@ -804,4 +815,30 @@ function normalizeInteger(value: unknown, min: number, max: number): number | un
   const numberValue = Number(value);
   if (!Number.isFinite(numberValue)) return undefined;
   return Math.max(min, Math.min(max, Math.round(numberValue)));
+}
+
+function normalizeCoreShiftList(value: unknown): CoreRequiredShiftCode[] | undefined {
+  const items = Array.isArray(value) ? value : String(value || "").split(/[,\s、・]+/);
+  const shifts = items
+    .map((item) => String(item || "").trim())
+    .filter((item): item is CoreRequiredShiftCode => item === "早" || item === "日" || item === "遅" || item === "夜");
+  return [...new Set(shifts)];
+}
+
+function normalizeWeekdayList(value: unknown): number[] | undefined {
+  const weekdayMap: Record<string, number> = { "日": 0, "月": 1, "火": 2, "水": 3, "木": 4, "金": 5, "土": 6 };
+  const items = Array.isArray(value) ? value : String(value || "").split(/[,\s、・]+/);
+  const weekdays = items
+    .map((item) => {
+      const text = String(item || "").trim();
+      if (!text) return null;
+      if (Object.prototype.hasOwnProperty.call(weekdayMap, text)) return weekdayMap[text];
+      return Number(text);
+    })
+    .filter((item): item is number => Number.isInteger(item) && item >= 0 && item <= 6);
+  return [...new Set(weekdays)];
+}
+
+function hasOwn(value: object, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }

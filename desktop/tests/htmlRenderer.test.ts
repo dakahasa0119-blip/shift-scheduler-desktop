@@ -54,6 +54,8 @@ async function main(): Promise<void> {
   assertIncludes(html, '<textarea id="solver-input-json"', "solver input editor");
   assertIncludes(html, '<textarea id="solver-output-json"', "solver output editor");
   assertIncludes(html, 'data-settings-field="requirements.late"', "settings editor");
+  assertIncludes(html, 'data-settings-field="requirements.allowedShortageShifts"', "allowed shortage settings editor");
+  assertIncludes(html, 'data-settings-field="requirements.femaleRequiredWeekdays"', "female weekdays settings editor");
   assertIncludes(html, 'actions = {', "interactive script");
   assertIncludes(html, 'actionBasePath = "/preview"', "default action base path");
   assertIncludes(html, 'solve: actionBasePath + "/solve"', "solve endpoint");
