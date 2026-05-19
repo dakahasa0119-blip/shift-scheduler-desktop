@@ -1,5 +1,6 @@
 import { convertGasSolverInputToDocument, extractGasSolverInputPayload, isGasSolverInputPayload } from "../core/gasImport";
 import type { SolverInputPayload } from "../core/solverInput";
+import { validateMonthlyScheduleDocument } from "../core/validation";
 
 function main(): void {
   const payload: SolverInputPayload = {
@@ -36,6 +37,21 @@ function main(): void {
         sunday: "FALSE" as unknown as boolean,
         fixedOff: "",
         gender: "男性",
+      },
+      {
+        staffType: "介護部応援",
+        name: "伊藤",
+        condition: "",
+        allowedShift: "",
+        monday: "FALSE",
+        tuesday: "FALSE",
+        wednesday: "FALSE",
+        thursday: "FALSE",
+        friday: "FALSE",
+        saturday: "FALSE",
+        sunday: "FALSE",
+        fixedOff: "",
+        gender: "女性",
       },
     ],
     leaveEntries: [
@@ -88,6 +104,14 @@ function main(): void {
   assertEqual(document.staff[0].role, "介護リーダー", "staff role");
   assertEqual(document.staff[0].allowedWeekdays.includes(0), false, "string false weekday");
   assertEqual(document.staff[0].monthlyNightTarget, 3, "night target");
+  assertEqual(document.staff[1].allowedShifts.join(","), "早,日,遅,夜", "empty allowed shifts defaulted");
+  assertEqual(document.staff[1].notes.includes("GAS取込"), true, "defaulted allowed shifts note");
+  assertEqual(document.staff[1].allowedWeekdays.length, 7, "empty gas weekdays follow solver default");
+  assertEqual(
+    validateMonthlyScheduleDocument(document).issues.some((issue) => issue.message.includes("GASで勤務可能シフトが空欄")),
+    true,
+    "defaulted allowed shifts warning",
+  );
   const leaveRequest = document.requests.find((request) => request.type === "事前希望休");
   if (!leaveRequest) throw new Error("leave request missing");
   assertEqual(leaveRequest.startDate, "2026-06-06", "request date");

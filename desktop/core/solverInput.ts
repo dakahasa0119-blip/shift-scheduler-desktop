@@ -5,7 +5,7 @@ import type {
   ShiftCode,
   StaffMember,
 } from "./domain";
-import { SUPPLY_EXCLUSION_TYPES } from "./domain";
+import { GAS_DEFAULT_ALLOWED_SHIFT_NOTE, SUPPLY_EXCLUSION_TYPES } from "./domain";
 
 export interface SolverStaffCondition {
   staffType: string;
@@ -196,8 +196,13 @@ function toSolverStaffCondition(staff: StaffMember): SolverStaffCondition {
 
 function buildConditionText(staff: StaffMember): string {
   const parts: string[] = [];
+  const notes = staff.notes
+    .split("/")
+    .map((part) => part.trim())
+    .filter((part) => part && part !== GAS_DEFAULT_ALLOWED_SHIFT_NOTE)
+    .join(" ");
   if (staff.monthlyNightTarget != null) parts.push(`月${staff.monthlyNightTarget}回`);
-  if (staff.notes) parts.push(staff.notes);
+  if (notes) parts.push(notes);
   return parts.join(" ") || "なし";
 }
 

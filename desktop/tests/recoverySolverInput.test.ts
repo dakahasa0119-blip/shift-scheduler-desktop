@@ -1,3 +1,4 @@
+import { GAS_DEFAULT_ALLOWED_SHIFT_NOTE } from "../core/domain";
 import { sampleMonthlyScheduleDocument } from "../core/fixtures";
 import { buildSolverInputPayload } from "../core/solverInput";
 
@@ -21,6 +22,23 @@ function main(): void {
   assertEqual(payload.recovery?.urgentLeaves[0].date, "6/5", "solver date");
   assertEqual(payload.recovery?.urgentLeaves[0].originalShift, "早", "original shift");
   assertEqual(payload.currentSchedule[0].role, "介護リーダー", "current role");
+
+  const noteFiltered = buildSolverInputPayload(
+    {
+      ...sampleMonthlyScheduleDocument,
+      staff: [
+        {
+          ...sampleMonthlyScheduleDocument.staff[0],
+          monthlyNightTarget: null,
+          notes: GAS_DEFAULT_ALLOWED_SHIFT_NOTE,
+        },
+      ],
+      schedule: [sampleMonthlyScheduleDocument.schedule[0]],
+      requests: [],
+    },
+    "2026-05-20 10:00:00",
+  );
+  assertEqual(noteFiltered.staffConditions[0].condition, "なし", "gas import note hidden from solver condition");
 }
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {

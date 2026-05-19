@@ -1,4 +1,4 @@
-import type { MonthlyScheduleDocument } from "./domain";
+import { GAS_DEFAULT_ALLOWED_SHIFT_NOTE, type MonthlyScheduleDocument } from "./domain";
 
 export interface ValidationIssue {
   path: string;
@@ -33,6 +33,9 @@ export function validateMonthlyScheduleDocument(document: MonthlyScheduleDocumen
     if (staff.id && staffIds.has(staff.id)) issues.push(error(`${base}.id`, "職員IDが重複しています"));
     if (staff.name && staffNames.has(staff.name)) issues.push(error(`${base}.name`, "職員名が重複しています"));
     if (!staff.allowedShifts.length) issues.push(error(`${base}.allowedShifts`, "勤務可能シフトが空です"));
+    if (staff.notes.includes(GAS_DEFAULT_ALLOWED_SHIFT_NOTE)) {
+      issues.push(warn(`${base}.allowedShifts`, `${staff.name} はGASで勤務可能シフトが空欄だったため、早・日・遅・夜として補完しています`));
+    }
     if (!staff.allowedWeekdays.length) issues.push(warn(`${base}.allowedWeekdays`, "勤務可能曜日が空です"));
     if (staff.fixedOffWeekday != null && (staff.fixedOffWeekday < 0 || staff.fixedOffWeekday > 6)) {
       issues.push(error(`${base}.fixedOffWeekday`, "固定休曜日が不正です"));

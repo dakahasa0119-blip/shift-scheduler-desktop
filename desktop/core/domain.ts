@@ -249,3 +249,5 @@ export const SUPPLY_EXCLUSION_TYPES: RequestType[] = [
   "退職後",
   "供給除外",
 ];
+
+export const GAS_DEFAULT_ALLOWED_SHIFT_NOTE = "GAS取込: 可能勤務空欄を早・日・遅・夜として補完";

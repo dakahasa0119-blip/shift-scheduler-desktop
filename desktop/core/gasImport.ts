@@ -6,6 +6,7 @@ import type {
   StaffMember,
   StaffRequest,
 } from "./domain";
+import { GAS_DEFAULT_ALLOWED_SHIFT_NOTE } from "./domain";
 import type {
   SolverInputPayload,
   SolverLeaveEntry,
@@ -68,13 +69,19 @@ export function convertGasSolverInputToDocument(payload: SolverInputPayload): Mo
 }
 
 function convertStaff(condition: SolverStaffCondition, index: number): StaffMember {
+  const allowedShiftText = clean(condition.allowedShift);
+  const conditionText = clean(condition.condition);
+  const notes = [
+    conditionText === "なし" ? "" : conditionText,
+    allowedShiftText ? "" : GAS_DEFAULT_ALLOWED_SHIFT_NOTE,
+  ].filter(Boolean).join(" / ");
   return {
     id: stableStaffId(condition.name, index),
     name: clean(condition.name) || `職員${index + 1}`,
     role: clean(condition.staffType) || "介護",
     gender: normalizeGender(condition.gender),
     employmentType: "",
-    allowedShifts: parseAllowedShifts(condition.allowedShift),
+    allowedShifts: parseAllowedShifts(allowedShiftText),
     allowedWeekdays: parseAllowedWeekdays(condition),
     fixedOffWeekday: parseFixedOffWeekday(condition.fixedOff),
     monthlyNightTarget: parseMonthlyNightTarget(condition.condition),
@@ -86,7 +93,7 @@ function convertStaff(condition: SolverStaffCondition, index: number): StaffMemb
     weeklyNightLimit: null,
     activeFrom: null,
     activeTo: null,
-    notes: clean(condition.condition) === "なし" ? "" : clean(condition.condition),
+    notes,
   };
 }
 
