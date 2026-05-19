@@ -95,6 +95,9 @@ async function main(): Promise<void> {
 
   const gasImported = controller.importJson(
     JSON.stringify({
+      ok: true,
+      action: "exportSolverInputBundle",
+      result: {
       schemaVersion: "gas-shift-solver-input/v1",
       generatedAt: "2026-05-20 09:00:00",
       source: "gas",
@@ -127,6 +130,7 @@ async function main(): Promise<void> {
       supplyExclusions: [],
       previousMonthTailByName: {},
       currentSchedule: [{ role: "介護", name: "北富", shifts: ["日"] }],
+      },
     }),
   );
   assertEqual(gasImported.viewModel.status.label, "GASデータを取り込みました", "gas import status");

@@ -1,4 +1,4 @@
-import { convertGasSolverInputToDocument, isGasSolverInputPayload } from "../core/gasImport";
+import { convertGasSolverInputToDocument, extractGasSolverInputPayload, isGasSolverInputPayload } from "../core/gasImport";
 import type { SolverInputPayload } from "../core/solverInput";
 
 function main(): void {
@@ -60,6 +60,8 @@ function main(): void {
   };
 
   assertEqual(isGasSolverInputPayload(payload), true, "is gas payload");
+  assertEqual(isGasSolverInputPayload({ ok: true, action: "exportSolverInputBundle", result: payload }), true, "is wrapped gas payload");
+  assertEqual(extractGasSolverInputPayload({ ok: true, result: payload })?.schemaVersion, "gas-shift-solver-input/v1", "extract wrapped");
   const document = convertGasSolverInputToDocument(payload);
   assertEqual(document.schemaVersion, "desktop-shift-schedule/v1", "schema");
   assertEqual(document.year, 2026, "year");

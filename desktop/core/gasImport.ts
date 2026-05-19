@@ -9,6 +9,23 @@ import type {
 import type { SolverInputPayload, SolverLeaveEntry, SolverScheduleRow, SolverStaffCondition } from "./solverInput";
 
 export function isGasSolverInputPayload(value: unknown): value is SolverInputPayload {
+  return Boolean(extractGasSolverInputPayload(value));
+}
+
+export function extractGasSolverInputPayload(value: unknown): SolverInputPayload | null {
+  if (isRawGasSolverInputPayload(value)) return value;
+  if (value && typeof value === "object") {
+    const result = (value as { result?: unknown }).result;
+    if (isRawGasSolverInputPayload(result)) return result;
+    const payload = (value as { payload?: unknown }).payload;
+    if (isRawGasSolverInputPayload(payload)) return payload;
+    const inputPayload = (value as { inputPayload?: unknown }).inputPayload;
+    if (isRawGasSolverInputPayload(inputPayload)) return inputPayload;
+  }
+  return null;
+}
+
+function isRawGasSolverInputPayload(value: unknown): value is SolverInputPayload {
   return Boolean(
     value &&
       typeof value === "object" &&
