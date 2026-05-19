@@ -22,6 +22,8 @@ function main(): void {
   const verifyOutArg = process.argv.find((arg) => arg.startsWith("--verify-out="));
   const force = process.argv.includes("--force");
   const skipVerify = process.argv.includes("--skip-verify");
+  const skipPrepare = process.argv.includes("--skip-prepare");
+  const skipSmoke = process.argv.includes("--skip-smoke");
   let target: ReleaseTarget | undefined;
   try {
     target = targetArg ? parseReleaseTarget(targetArg.replace("--target=", "")) : undefined;
@@ -31,18 +33,7 @@ function main(): void {
     return;
   }
 
-  let releasePlan;
-  try {
-    releasePlan = buildPrepareReleasePlan({
-      nodePlatform: process.platform,
-      requestedTarget: target,
-      force,
-    });
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
-    return;
-  }
+  const releaseTarget = resolveReleaseTarget(target);
 
   const assembleArgs = [
     "-y",
@@ -50,10 +41,12 @@ function main(): void {
     "tsx",
     "tsx",
     "desktop/packaging/nodeAssembleRelease.ts",
-    `--target=${releasePlan.target}`,
+    `--target=${releaseTarget}`,
   ];
   if (outputArg) assembleArgs.push(outputArg);
   if (force) assembleArgs.push("--force");
+  if (skipPrepare) assembleArgs.push("--skip-prepare");
+  if (skipSmoke) assembleArgs.push("--skip-smoke");
   const assemble = childProcess.spawnSync("npx", assembleArgs, {
     stdio: "inherit",
   });
@@ -68,11 +61,11 @@ function main(): void {
   }
 
   const assemblyPlan = buildPackageAssemblyPlan({
-    target: releasePlan.target,
+    target: releaseTarget,
     outputRoot: outputArg ? outputArg.replace("--out=", "") : undefined,
   });
   const archivePlan = buildPackageArchivePlan({
-    target: releasePlan.target,
+    target: releaseTarget,
     assembledDirectory: assemblyPlan.outputDirectory,
     archiveRoot: archiveOutArg ? archiveOutArg.replace("--archive-out=", "") : undefined,
     verifyRoot: verifyOutArg ? verifyOutArg.replace("--verify-out=", "") : undefined,
@@ -112,7 +105,7 @@ function main(): void {
       "tsx",
       "tsx",
       "desktop/packaging/nodeVerifyArchiveRelease.ts",
-      `--target=${releasePlan.target}`,
+      `--target=${releaseTarget}`,
     ];
     if (outputArg) verifyArgs.push(outputArg);
     if (archiveOutArg) verifyArgs.push(archiveOutArg);
@@ -129,6 +122,11 @@ function main(): void {
       process.exitCode = verify.status || 1;
     }
   }
+}
+
+function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget {
+  if (target) return target;
+  return buildPrepareReleasePlan({ nodePlatform: process.platform }).target;
 }
 
 function sha256File(filePath: string): string {

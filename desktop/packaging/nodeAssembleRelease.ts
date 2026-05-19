@@ -18,6 +18,7 @@ function main(): void {
   const outputArg = process.argv.find((arg) => arg.startsWith("--out="));
   const force = process.argv.includes("--force");
   const skipSmoke = process.argv.includes("--skip-smoke");
+  const skipPrepare = process.argv.includes("--skip-prepare");
   let target: ReleaseTarget | undefined;
   try {
     target = targetArg ? parseReleaseTarget(targetArg.replace("--target=", "")) : undefined;
@@ -27,43 +28,29 @@ function main(): void {
     return;
   }
 
-  let releasePlan;
-  try {
-    releasePlan = buildPrepareReleasePlan({
-      nodePlatform: process.platform,
-      requestedTarget: target,
-      force,
-    });
-  } catch (error) {
-    console.error(error instanceof Error ? error.message : String(error));
-    process.exitCode = 1;
-    return;
-  }
-
-  const prepareArgs = [
-    "-y",
-    "-p",
-    "tsx",
-    "tsx",
-    "desktop/packaging/nodePrepareRelease.ts",
-    `--target=${releasePlan.target}`,
-  ];
-  if (force) prepareArgs.push("--force");
-  const prepare = childProcess.spawnSync("npx", prepareArgs, {
-    stdio: "inherit",
-  });
-  if (prepare.error) {
-    console.error(prepare.error.message);
-    process.exitCode = 1;
-    return;
-  }
-  if (prepare.status !== 0) {
-    process.exitCode = prepare.status || 1;
-    return;
+  const releaseTarget = resolveReleaseTarget(target);
+  if (!skipPrepare) {
+    const prepared = prepareRelease(target, force);
+    if (!prepared) return;
+  } else {
+    const readiness = childProcess.spawnSync(
+      "npx",
+      ["-y", "-p", "tsx", "tsx", "desktop/packaging/nodeReleaseReadiness.ts", `--target=${releaseTarget}`],
+      { stdio: "inherit" },
+    );
+    if (readiness.error) {
+      console.error(readiness.error.message);
+      process.exitCode = 1;
+      return;
+    }
+    if (readiness.status !== 0) {
+      process.exitCode = readiness.status || 1;
+      return;
+    }
   }
 
   const plan = buildPackageAssemblyPlan({
-    target: releasePlan.target,
+    target: releaseTarget,
     outputRoot: outputArg ? outputArg.replace("--out=", "") : undefined,
   });
   const check = checkPackageAssemblyPlan(plan, {
@@ -91,7 +78,7 @@ function main(): void {
       "tsx",
       "tsx",
       "desktop/packaging/nodeSmokeAssembledRelease.ts",
-      `--target=${releasePlan.target}`,
+      `--target=${releaseTarget}`,
     ];
     if (outputArg) smokeArgs.push(outputArg);
     const smoke = childProcess.spawnSync("npx", smokeArgs, {
@@ -106,6 +93,49 @@ function main(): void {
       process.exitCode = smoke.status || 1;
     }
   }
+}
+
+function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget {
+  if (target) return target;
+  return buildPrepareReleasePlan({ nodePlatform: process.platform }).target;
+}
+
+function prepareRelease(target: ReleaseTarget | undefined, force: boolean): boolean {
+  let releasePlan;
+  try {
+    releasePlan = buildPrepareReleasePlan({
+      nodePlatform: process.platform,
+      requestedTarget: target,
+      force,
+    });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exitCode = 1;
+    return false;
+  }
+
+  const prepareArgs = [
+    "-y",
+    "-p",
+    "tsx",
+    "tsx",
+    "desktop/packaging/nodePrepareRelease.ts",
+    `--target=${releasePlan.target}`,
+  ];
+  if (force) prepareArgs.push("--force");
+  const prepare = childProcess.spawnSync("npx", prepareArgs, {
+    stdio: "inherit",
+  });
+  if (prepare.error) {
+    console.error(prepare.error.message);
+    process.exitCode = 1;
+    return false;
+  }
+  if (prepare.status !== 0) {
+    process.exitCode = prepare.status || 1;
+    return false;
+  }
+  return true;
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodeAssembleRelease.ts") || arg.endsWith("nodeAssembleRelease.ts"))) {
