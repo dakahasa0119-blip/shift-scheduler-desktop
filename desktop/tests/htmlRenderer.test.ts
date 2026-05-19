@@ -33,6 +33,8 @@ async function main(): Promise<void> {
   assertIncludes(html, 'data-request="希望日勤"', "request label");
   assertIncludes(html, '<button type="button" class="action action-exportExcel" data-action="exportExcel">Excel出力</button>', "export button");
   assertIncludes(html, '<textarea id="document-json"', "document json editor");
+  assertIncludes(html, '<textarea id="staff-tsv"', "staff tsv editor");
+  assertIncludes(html, '<textarea id="requests-tsv"', "requests tsv editor");
   assertIncludes(html, '<textarea id="schedule-tsv"', "schedule tsv editor");
   assertIncludes(html, 'data-settings-field="requirements.late"', "settings editor");
   assertIncludes(html, 'actions = {', "interactive script");
@@ -42,6 +44,10 @@ async function main(): Promise<void> {
   assertIncludes(html, 'load: actionBasePath + "/load"', "load endpoint");
   assertIncludes(html, 'backup: actionBasePath + "/backup"', "backup endpoint");
   assertIncludes(html, 'applySettings: actionBasePath + "/import/settings"', "settings endpoint");
+  assertIncludes(html, 'applyStaffTsv: actionBasePath + "/import/staff-tsv"', "staff tsv import endpoint");
+  assertIncludes(html, 'exportStaffTsv: actionBasePath + "/export/staff-tsv"', "staff tsv export endpoint");
+  assertIncludes(html, 'applyRequestsTsv: actionBasePath + "/import/requests-tsv"', "requests tsv import endpoint");
+  assertIncludes(html, 'exportRequestsTsv: actionBasePath + "/export/requests-tsv"', "requests tsv export endpoint");
   assertIncludes(html, 'applyScheduleTsv: actionBasePath + "/import/schedule-tsv"', "schedule tsv import endpoint");
   assertIncludes(html, 'exportScheduleTsv: actionBasePath + "/export/schedule-tsv"', "schedule tsv export endpoint");
   assertIncludes(html, 'applyJson: actionBasePath + "/import/json"', "json import endpoint");

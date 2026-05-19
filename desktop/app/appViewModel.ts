@@ -2,6 +2,7 @@ import type { SolveScheduleResponse, ValidateScheduleResponse } from "../api/con
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { validateMonthlyScheduleDocument, type ValidationIssue } from "../core/validation";
 import { renderScheduleTsv } from "../core/scheduleTsv";
+import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { buildDiagnosticPanelViewModel, type DiagnosticPanelViewModel } from "./diagnosticViewModel";
 import { buildScheduleTableViewModel, type ScheduleTableViewModel } from "./scheduleTableViewModel";
 
@@ -9,6 +10,8 @@ export interface AppViewModel {
   title: string;
   status: AppStatusViewModel;
   documentJson: string;
+  staffTsv: string;
+  requestsTsv: string;
   scheduleTsv: string;
   settings: AppSettingsViewModel;
   schedule: ScheduleTableViewModel;
@@ -41,6 +44,10 @@ export interface AppActionViewModel {
     | "load"
     | "backup"
     | "applySettings"
+    | "applyStaffTsv"
+    | "exportStaffTsv"
+    | "applyRequestsTsv"
+    | "exportRequestsTsv"
     | "applyScheduleTsv"
     | "exportScheduleTsv"
     | "applyJson"
@@ -113,6 +120,8 @@ function buildAppViewModelFromParts(
     title: "勤務表作成",
     status,
     documentJson: JSON.stringify(document, null, 2),
+    staffTsv: renderStaffTsv(document),
+    requestsTsv: renderRequestsTsv(document),
     scheduleTsv: renderScheduleTsv(document),
     settings: {
       year: document.year,
@@ -162,6 +171,26 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "applySettings",
       label: "設定反映",
+      enabled: true,
+    },
+    {
+      id: "applyStaffTsv",
+      label: "職員反映",
+      enabled: true,
+    },
+    {
+      id: "exportStaffTsv",
+      label: "職員TSV出力",
+      enabled: true,
+    },
+    {
+      id: "applyRequestsTsv",
+      label: "希望反映",
+      enabled: true,
+    },
+    {
+      id: "exportRequestsTsv",
+      label: "希望TSV出力",
       enabled: true,
     },
     {

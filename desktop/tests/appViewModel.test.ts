@@ -9,6 +9,8 @@ async function main(): Promise<void> {
   assertEqual(initial.status.label, "作成できます", "initial status");
   assertEqual(initial.settings.year, 2026, "settings year");
   assertEqual(initial.settings.requirements.late, 1, "settings late requirement");
+  assertEqual(initial.staffTsv.includes("氏名\t職種"), true, "staff tsv");
+  assertEqual(initial.requestsTsv.includes("氏名\t区分"), true, "requests tsv");
   assertEqual(initial.scheduleTsv.includes("職種\t氏名"), true, "schedule tsv");
   assertEqual(initial.schedule.rows.length, sampleMonthlyScheduleDocument.staff.length, "initial rows");
   assertEqual(findAction(initial, "solve").enabled, true, "solve initially enabled");
@@ -16,6 +18,8 @@ async function main(): Promise<void> {
   assertEqual(findAction(initial, "load").enabled, true, "load initially enabled");
   assertEqual(findAction(initial, "backup").enabled, true, "backup initially enabled");
   assertEqual(findAction(initial, "applySettings").enabled, true, "settings initially enabled");
+  assertEqual(findAction(initial, "applyStaffTsv").enabled, true, "staff tsv initially enabled");
+  assertEqual(findAction(initial, "applyRequestsTsv").enabled, true, "requests tsv initially enabled");
   assertEqual(findAction(initial, "applyScheduleTsv").enabled, true, "schedule tsv initially enabled");
   assertEqual(findAction(initial, "exportExcel").enabled, false, "export initially disabled");
 

@@ -8,6 +8,7 @@ import {
 } from "./appViewModel";
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { applyScheduleTsv } from "../core/scheduleTsv";
+import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -215,6 +216,58 @@ export class AppController {
         viewModel: {
           ...this.state.viewModel,
           status: { label: "勤務表TSVを反映できませんでした", tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  importStaffTsv(staffText: string): AppControllerState {
+    try {
+      const document = applyStaffTsv(this.state.document, staffText);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "職員一覧を反映しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: error instanceof Error ? error.message : String(error),
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: "職員一覧を反映できませんでした", tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  importRequestsTsv(requestsText: string): AppControllerState {
+    try {
+      const document = applyRequestsTsv(this.state.document, requestsText);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "希望休・希望勤務を反映しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: error instanceof Error ? error.message : String(error),
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: "希望休・希望勤務を反映できませんでした", tone: "blocked" },
         },
       };
     }

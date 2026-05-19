@@ -1,5 +1,6 @@
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { sampleMonthlyScheduleDocument } from "../core/fixtures";
+import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { AppController } from "./appController";
 import type { DesktopApiClient } from "./desktopApiClient";
@@ -136,14 +137,32 @@ async function handleShellRequest(path: string, request: any, response: any, con
     return;
   }
 
+  if (method === "POST" && path === "/app/import/staff-tsv") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { staffText?: string };
+    const state = controller.importStaffTsv(body.staffText || "");
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/import/requests-tsv") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { requestsText?: string };
+    const state = controller.importRequestsTsv(body.requestsText || "");
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/staff-tsv") {
+    sendTsv(response, renderStaffTsv(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/requests-tsv") {
+    sendTsv(response, renderRequestsTsv(controller.getState().document));
+    return;
+  }
+
   if ((method === "GET" || method === "POST") && path === "/app/export/schedule-tsv") {
-    const body = renderScheduleTsv(controller.getState().document);
-    response.writeHead(200, {
-      "content-type": "text/tab-separated-values; charset=utf-8",
-      "cache-control": "no-store",
-      "content-length": Buffer.byteLength(body, "utf8"),
-    });
-    response.end(body);
+    sendTsv(response, renderScheduleTsv(controller.getState().document));
     return;
   }
 
@@ -182,6 +201,15 @@ async function handleShellRequest(path: string, request: any, response: any, con
 
   response.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
   response.end("not found");
+}
+
+function sendTsv(response: any, body: string): void {
+  response.writeHead(200, {
+    "content-type": "text/tab-separated-values; charset=utf-8",
+    "cache-control": "no-store",
+    "content-length": Buffer.byteLength(body, "utf8"),
+  });
+  response.end(body);
 }
 
 async function loadInitialDocument(client: Pick<DesktopApiClient, "loadDocument">): Promise<MonthlyScheduleDocument | null> {

@@ -24,6 +24,8 @@ export function renderAppHtml(viewModel: AppViewModel, options: AppHtmlRenderOpt
     renderTopBar(viewModel),
     renderDiagnostics(viewModel),
     renderSettingsEditor(viewModel),
+    renderStaffTsvEditor(viewModel),
+    renderRequestsTsvEditor(viewModel),
     renderScheduleTsvEditor(viewModel),
     renderDocumentEditor(viewModel),
     renderSchedule(viewModel),
@@ -68,6 +70,24 @@ function renderScheduleTsvEditor(viewModel: AppViewModel): string {
     '<section class="tsv-editor" aria-label="勤務表TSV">',
     '<h2>勤務表TSV</h2>',
     `<textarea id="schedule-tsv" spellcheck="false">${escapeHtml(viewModel.scheduleTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderStaffTsvEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="職員一覧TSV">',
+    '<h2>職員一覧</h2>',
+    `<textarea id="staff-tsv" spellcheck="false">${escapeHtml(viewModel.staffTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderRequestsTsvEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="希望休・希望勤務TSV">',
+    '<h2>希望休・希望勤務</h2>',
+    `<textarea id="requests-tsv" spellcheck="false">${escapeHtml(viewModel.requestsTsv)}</textarea>`,
     "</section>",
   ].join("");
 }
@@ -408,6 +428,10 @@ function renderClientScript(actionBasePath: string): string {
     load: actionBasePath + "/load",
     backup: actionBasePath + "/backup",
     applySettings: actionBasePath + "/import/settings",
+    applyStaffTsv: actionBasePath + "/import/staff-tsv",
+    exportStaffTsv: actionBasePath + "/export/staff-tsv",
+    applyRequestsTsv: actionBasePath + "/import/requests-tsv",
+    exportRequestsTsv: actionBasePath + "/export/requests-tsv",
     applyScheduleTsv: actionBasePath + "/import/schedule-tsv",
     exportScheduleTsv: actionBasePath + "/export/schedule-tsv",
     applyJson: actionBasePath + "/import/json",
@@ -422,7 +446,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv") {
       window.location.href = endpoint;
       return;
     }
@@ -430,6 +454,10 @@ function renderClientScript(actionBasePath: string): string {
       ? { documentText: document.querySelector("#document-json")?.value || "" }
       : action === "applySettings"
         ? collectSettings()
+        : action === "applyStaffTsv"
+          ? { staffText: document.querySelector("#staff-tsv")?.value || "" }
+        : action === "applyRequestsTsv"
+          ? { requestsText: document.querySelector("#requests-tsv")?.value || "" }
         : action === "applyScheduleTsv"
           ? { scheduleText: document.querySelector("#schedule-tsv")?.value || "" }
         : undefined;

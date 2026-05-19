@@ -79,6 +79,26 @@ async function main(): Promise<void> {
     assertEqual(importedTsv.statusCode, 200, "schedule tsv import status code");
     assertIncludes(importedTsv.body, "勤務表TSVを反映しました", "schedule tsv import response");
 
+    const exportedStaff = await get(`${server.url}/app/export/staff-tsv`);
+    assertEqual(exportedStaff.statusCode, 200, "staff tsv export status code");
+    assertIncludes(exportedStaff.body, "氏名\t職種", "staff tsv export");
+
+    const importedStaff = await postJson(`${server.url}/app/import/staff-tsv`, {
+      staffText: exportedStaff.body.replace("介護リーダー", "主任"),
+    });
+    assertEqual(importedStaff.statusCode, 200, "staff tsv import status code");
+    assertIncludes(importedStaff.body, "職員一覧を反映しました", "staff tsv import response");
+
+    const exportedRequests = await get(`${server.url}/app/export/requests-tsv`);
+    assertEqual(exportedRequests.statusCode, 200, "requests tsv export status code");
+    assertIncludes(exportedRequests.body, "氏名\t区分", "requests tsv export");
+
+    const importedRequests = await postJson(`${server.url}/app/import/requests-tsv`, {
+      requestsText: "氏名\t区分\t開始日\t終了日\t備考\n江藤\t希望夜勤\t2027-02-10\t2027-02-10\t確認\n",
+    });
+    assertEqual(importedRequests.statusCode, 200, "requests tsv import status code");
+    assertIncludes(importedRequests.body, "希望休・希望勤務を反映しました", "requests tsv import response");
+
     const exportedJson = await get(`${server.url}/app/export/json`);
     assertEqual(exportedJson.statusCode, 200, "json export status code");
     assertIncludes(exportedJson.body, '"month": 2', "json export month");
