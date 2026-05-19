@@ -155,6 +155,7 @@ export interface MonthlyArchiveEntry {
   archivedAt: string;
   schedule: ScheduleRow[];
   actualSchedule: ScheduleRow[];
+  requests: StaffRequest[];
   changeHistory: ChangeHistoryEntry[];
 }
 

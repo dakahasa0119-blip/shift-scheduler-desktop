@@ -1,4 +1,4 @@
-import type { MonthlyArchiveEntry, MonthlyOperationState, MonthlyScheduleDocument, ScheduleRow } from "./domain";
+import type { MonthlyArchiveEntry, MonthlyOperationState, MonthlyScheduleDocument, ScheduleRow, StaffRequest } from "./domain";
 import { appendChangeHistory, createOrRefreshActualSchedule } from "./operationalRecords";
 
 export interface MonthlyTransitionResult {
@@ -29,6 +29,7 @@ export function runMonthlyArchive(document: MonthlyScheduleDocument, now: Date =
     archivedAt: now.toISOString(),
     schedule: cloneScheduleRows(initialized.schedule),
     actualSchedule: cloneScheduleRows(initialized.actualSchedule || []),
+    requests: cloneRequests(initialized.requests),
     changeHistory: [...(initialized.changeHistory || [])],
   };
   const archives = [
@@ -62,6 +63,7 @@ export function startNextMonthPlanning(document: MonthlyScheduleDocument, now: D
   const initialized = initializeOperationMonths(document);
   const operation = initialized.operation!;
   const target = parseYearMonth(operation.currentTargetYearMonth);
+  const previousMonthTail = buildPreviousMonthTail(initialized.schedule);
   const schedule = initialized.staff.map((staff) => ({
     staffId: staff.id,
     role: staff.role,
@@ -72,6 +74,8 @@ export function startNextMonthPlanning(document: MonthlyScheduleDocument, now: D
     ...initialized,
     year: target.year,
     month: target.month,
+    requests: [],
+    previousMonthTail,
     schedule,
     actualSchedule: undefined,
     diagnostics: null,
@@ -169,6 +173,18 @@ function cloneScheduleRows(rows: ScheduleRow[]): ScheduleRow[] {
     ...row,
     shifts: row.shifts.slice(),
   }));
+}
+
+function cloneRequests(requests: StaffRequest[]): StaffRequest[] {
+  return requests.map((request) => ({ ...request }));
+}
+
+function buildPreviousMonthTail(rows: ScheduleRow[]): MonthlyScheduleDocument["previousMonthTail"] {
+  const out: MonthlyScheduleDocument["previousMonthTail"] = {};
+  rows.forEach((row) => {
+    out[row.staffId] = row.shifts.slice(-7);
+  });
+  return out;
 }
 
 function normalizeShifts(values: string[], days: number): MonthlyScheduleDocument["schedule"][number]["shifts"] {
