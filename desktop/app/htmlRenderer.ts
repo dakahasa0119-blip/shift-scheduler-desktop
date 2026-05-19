@@ -39,10 +39,10 @@ function renderWorkspace(viewModel: AppViewModel): string {
     renderDataWorkspace(viewModel),
     "</div>",
     '<aside class="side-rail" aria-label="操作と確認">',
+    renderDiagnostics(viewModel),
     renderOperationPanel(viewModel),
     renderWorkflowPanel(viewModel),
     renderCapacitySimulation(viewModel),
-    renderDiagnostics(viewModel),
     "</aside>",
     "</section>",
   ].join("");
@@ -859,6 +859,7 @@ body {
   color: var(--text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 14px;
+  overflow-x: hidden;
 }
 .app-shell {
   min-height: 100vh;
@@ -890,11 +891,13 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 12px;
   align-items: start;
+  min-width: 0;
 }
 .primary-column {
   min-width: 0;
   display: grid;
   gap: 12px;
+  overflow: hidden;
 }
 .side-rail {
   min-width: 0;
@@ -902,6 +905,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   gap: 12px;
   position: sticky;
   top: 12px;
+  z-index: 10;
 }
 .action {
   min-height: 34px;
@@ -1067,6 +1071,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 8px;
+  min-width: 0;
 }
 .overview-metric {
   min-height: 58px;
@@ -1094,6 +1099,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
+  min-width: 0;
 }
 .section-heading {
   display: flex;
@@ -1115,6 +1121,8 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
+  min-width: 0;
+  overflow: hidden;
 }
 .tab-input {
   position: absolute;
@@ -1381,6 +1389,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   border: 1px solid var(--line);
   border-radius: 6px;
   max-height: calc(100vh - 170px);
+  max-width: 100%;
 }
 .schedule-table {
   border-collapse: separate;
