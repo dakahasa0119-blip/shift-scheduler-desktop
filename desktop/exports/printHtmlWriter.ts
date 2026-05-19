@@ -2,6 +2,7 @@ import type { ExportCell, ExportCellTone, ExportWorkbook } from "./exportWorkboo
 
 export function renderWorkbookAsPrintHtml(workbook: ExportWorkbook): string {
   const sheet = workbook.sheets[0];
+  const columnCount = Math.max(...sheet.rows.map((row) => row.cells.length));
   return [
     "<!doctype html>",
     '<html lang="ja">',
@@ -15,8 +16,9 @@ export function renderWorkbookAsPrintHtml(workbook: ExportWorkbook): string {
     "<body>",
     `<main class="print-sheet print-${sheet.print.orientation}">`,
     `<table aria-label="${escapeHtml(sheet.name)}">`,
+    renderColGroup(columnCount),
     "<tbody>",
-    sheet.rows.map((row) => `<tr class="row-${row.kind}">${row.cells.map(renderCell).join("")}</tr>`).join(""),
+    sheet.rows.map((row) => `<tr class="row-${row.kind}">${renderRowCells(row, columnCount)}</tr>`).join(""),
     "</tbody>",
     "</table>",
     "</main>",
@@ -25,12 +27,43 @@ export function renderWorkbookAsPrintHtml(workbook: ExportWorkbook): string {
   ].join("\n");
 }
 
-function renderCell(cell: ExportCell): string {
+function renderColGroup(columnCount: number): string {
+  return [
+    "<colgroup>",
+    '<col class="col-role">',
+    '<col class="col-name">',
+    ...Array.from({ length: Math.max(0, columnCount - 2) }).map(() => '<col class="col-day">'),
+    "</colgroup>",
+  ].join("");
+}
+
+function renderRowCells(row: { kind: string; cells: ExportCell[] }, columnCount: number): string {
+  if (row.kind === "title") {
+    const title = row.cells[0] || { value: "" };
+    const status = row.cells[1] || { value: "" };
+    return [
+      renderCell(title, Math.max(1, columnCount - 8)),
+      renderCell(status, 8),
+    ].join("");
+  }
+  if (row.kind === "diagnostic") {
+    if (row.cells.length <= 1) return renderCell(row.cells[0] || { value: "" }, columnCount);
+    return [
+      renderCell(row.cells[0], 7),
+      renderCell(row.cells[1], Math.max(1, columnCount - 7)),
+    ].join("");
+  }
+  if (row.kind === "spacer") return renderCell(row.cells[0] || { value: "" }, columnCount);
+  return row.cells.map((cell) => renderCell(cell)).join("");
+}
+
+function renderCell(cell: ExportCell, colSpan = 1): string {
   const className = ["cell", `tone-${cell.tone || "plain"}`, cell.role ? `role-${cell.role}` : ""]
     .filter(Boolean)
     .join(" ");
   const note = cell.note ? ` title="${escapeHtml(cell.note)}"` : "";
-  return `<td class="${className}"${note}>${escapeHtml(cell.value)}</td>`;
+  const span = colSpan > 1 ? ` colspan="${colSpan}"` : "";
+  return `<td class="${className}"${span}${note}>${escapeHtml(cell.value)}</td>`;
 }
 
 function printCss(): string {
@@ -55,9 +88,10 @@ table {
   border-collapse: collapse;
   table-layout: fixed;
 }
+.col-role { width: 42px; }
+.col-name { width: 54px; }
 td {
   border: 1px solid #bfc7d1;
-  min-height: 18px;
   padding: 2px 3px;
   text-align: center;
   vertical-align: middle;
@@ -66,9 +100,10 @@ td {
 }
 .row-title td {
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   text-align: left;
   background: #eef3f7;
+  height: 24px;
 }
 .row-header td,
 .row-weekday td {
@@ -91,6 +126,14 @@ td {
 .row-diagnostic td {
   text-align: left;
   font-size: 9px;
+  line-height: 1.35;
+}
+.row-spacer td {
+  height: 6px;
+  padding: 0;
+  border-left: 0;
+  border-right: 0;
+  background: #ffffff;
 }
 .tone-work { background: #f8fbff; }
 .tone-night { background: #e9efff; }

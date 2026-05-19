@@ -26,6 +26,9 @@ async function main(): Promise<void> {
   assertIncludes(html, '<html lang="ja">', "language");
   assertIncludes(html, "@page", "print page");
   assertIncludes(html, "size: A4 landscape", "landscape");
+  assertIncludes(html, '<col class="col-role">', "role column width");
+  assertIncludes(html, 'colspan="24">2026年6月 勤務表</td>', "title spans schedule columns");
+  assertIncludes(html, 'colspan="25">運用上は許容されていますが、確認しておく不足です。', "diagnostic spans readable columns");
   assertIncludes(html, "2026年6月 勤務表", "title");
   assertIncludes(html, "6/3 遅 1名不足", "shortage");
   assertIncludes(html, "tone-requestUnmet", "unmet request tone");
