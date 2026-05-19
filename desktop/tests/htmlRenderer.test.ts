@@ -48,6 +48,8 @@ async function main(): Promise<void> {
   assertIncludes(html, '<textarea id="actual-schedule-tsv"', "actual tsv editor");
   assertIncludes(html, '<textarea id="change-history-tsv"', "change history tsv editor");
   assertIncludes(html, '<textarea id="capacity-simulation-json"', "capacity simulation editor");
+  assertIncludes(html, '<textarea id="solver-input-json"', "solver input editor");
+  assertIncludes(html, '<textarea id="solver-output-json"', "solver output editor");
   assertIncludes(html, 'data-settings-field="requirements.late"', "settings editor");
   assertIncludes(html, 'actions = {', "interactive script");
   assertIncludes(html, 'actionBasePath = "/preview"', "default action base path");
@@ -58,6 +60,9 @@ async function main(): Promise<void> {
   assertIncludes(html, 'startNextMonthPlanning: actionBasePath + "/start-next-month-planning"', "next month planning endpoint");
   assertIncludes(html, 'promoteOperationMonth: actionBasePath + "/promote-operation-month"', "promote operation endpoint");
   assertIncludes(html, 'repairCalendar: actionBasePath + "/repair-calendar"', "repair calendar endpoint");
+  assertIncludes(html, 'checkSolverConnection: actionBasePath + "/check-solver-connection"', "solver check endpoint");
+  assertIncludes(html, 'importSolverOutputJson: actionBasePath + "/import/solver-output-json"', "solver output import endpoint");
+  assertIncludes(html, 'exportSolverInputJson: actionBasePath + "/export/solver-input-json"', "solver input export endpoint");
   assertIncludes(html, 'recover: actionBasePath + "/recover"', "recover endpoint");
   assertIncludes(html, 'addLeaveRequest: actionBasePath + "/add-leave-request"', "leave endpoint");
   assertIncludes(html, 'cancelPlannedLeave: actionBasePath + "/cancel-planned-leave"', "planned cancel endpoint");

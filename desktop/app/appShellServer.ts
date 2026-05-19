@@ -5,6 +5,7 @@ import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
 import { renderScheduleTsv } from "../core/scheduleTsv";
+import { renderSolverInputJson } from "../core/solverJsonExchange";
 import { AppController } from "./appController";
 import type { DesktopApiClient } from "./desktopApiClient";
 import { DesktopAppRuntime, type DesktopAppRuntimeOptions } from "./appRuntime";
@@ -144,6 +145,12 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/check-solver-connection") {
+    const state = await controller.checkSolverConnection();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/post-edit-recheck") {
     const state = controller.runPostEditScheduleRecheck();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
@@ -208,6 +215,13 @@ async function handleShellRequest(
   if (method === "POST" && path === "/app/import/capacity-simulation-json") {
     const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { capacitySimulationText?: string };
     const state = controller.importCapacitySimulationJson(body.capacitySimulationText || "");
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/import/solver-output-json") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { solverOutputText?: string };
+    const state = controller.importSolverOutputJson(body.solverOutputText || "");
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
     return;
   }
@@ -315,6 +329,11 @@ async function handleShellRequest(
 
   if ((method === "GET" || method === "POST") && path === "/app/export/capacity-simulation-json") {
     sendJson(response, renderCapacitySimulationJson(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/solver-input-json") {
+    sendJson(response, renderSolverInputJson(controller.getState().document));
     return;
   }
 

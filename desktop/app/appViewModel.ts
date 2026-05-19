@@ -5,6 +5,7 @@ import { renderScheduleTsv } from "../core/scheduleTsv";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderUrgentLeaveTsv } from "../core/recoveryTsv";
 import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
+import { renderSolverInputJson } from "../core/solverJsonExchange";
 import { buildDiagnosticPanelViewModel, type DiagnosticPanelViewModel } from "./diagnosticViewModel";
 import { buildScheduleTableViewModel, type ScheduleTableViewModel } from "./scheduleTableViewModel";
 
@@ -20,6 +21,7 @@ export interface AppViewModel {
   changeHistoryTsv: string;
   urgentLeaveHistoryTsv: string;
   capacitySimulationJson: string;
+  solverInputJson: string;
   capacitySimulation: CapacitySimulationViewModel | null;
   operation: OperationStateViewModel;
   plannedLeaveCancelOptions: AppSelectOptionViewModel[];
@@ -74,6 +76,9 @@ export interface AppActionViewModel {
     | "startNextMonthPlanning"
     | "promoteOperationMonth"
     | "repairCalendar"
+    | "checkSolverConnection"
+    | "importSolverOutputJson"
+    | "exportSolverInputJson"
     | "postEditRecheck"
     | "solve"
     | "createActual"
@@ -197,6 +202,7 @@ function buildAppViewModelFromParts(
     changeHistoryTsv: renderChangeHistoryTsv(document),
     urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
     capacitySimulationJson: `${JSON.stringify(document.capacitySimulation || null, null, 2)}\n`,
+    solverInputJson: renderSolverInputJson(document),
     capacitySimulation: document.capacitySimulation
       ? {
           generatedAt: document.capacitySimulation.generatedAt,
@@ -265,6 +271,21 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "repairCalendar",
       label: "勤務表カレンダー修復",
+      enabled: true,
+    },
+    {
+      id: "checkSolverConnection",
+      label: "Solver接続確認",
+      enabled: true,
+    },
+    {
+      id: "importSolverOutputJson",
+      label: "Solver結果取り込み",
+      enabled: true,
+    },
+    {
+      id: "exportSolverInputJson",
+      label: "Solver入力JSON出力",
       enabled: true,
     },
     {

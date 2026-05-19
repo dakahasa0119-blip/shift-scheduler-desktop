@@ -153,6 +153,13 @@ async function main(): Promise<void> {
   const repaired = controller.repairCurrentShiftCalendar();
   assertEqual(repaired.viewModel.status.label, "勤務表カレンダーを修復しました", "repair calendar status");
 
+  const solverCheck = await controller.checkSolverConnection();
+  assertEqual(solverCheck.viewModel.status.label, "Solver接続を確認しました", "solver check status");
+
+  const solverOutputImported = controller.importSolverOutputJson(JSON.stringify(sampleSolverOutputWithAdvisory));
+  assertEqual(solverOutputImported.viewModel.status.label, "Solver結果JSONを反映しました", "solver output import");
+  assertEqual(solverOutputImported.document.schedule[0].name, "江藤", "solver output schedule");
+
   const staff = controller.importStaffTsv(tsv.viewModel.staffTsv.replace("介護リーダー", "主任"));
   assertEqual(staff.viewModel.status.label, "職員一覧を反映しました（自動再判定済み）", "staff tsv status");
   assertEqual(staff.document.staff[0].role, "主任", "staff role");

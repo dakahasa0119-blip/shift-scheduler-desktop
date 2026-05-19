@@ -149,6 +149,20 @@ async function main(): Promise<void> {
     assertEqual(repaired.statusCode, 200, "repair calendar status code");
     assertIncludes(repaired.body, "勤務表カレンダーを修復しました", "repair calendar response");
 
+    const solverCheck = await post(`${server.url}/app/check-solver-connection`);
+    assertEqual(solverCheck.statusCode, 200, "solver check status code");
+    assertIncludes(solverCheck.body, "Solver接続を確認しました", "solver check response");
+
+    const solverInput = await get(`${server.url}/app/export/solver-input-json`);
+    assertEqual(solverInput.statusCode, 200, "solver input status code");
+    assertIncludes(solverInput.body, '"schemaVersion": "gas-shift-solver-input/v1"', "solver input schema");
+
+    const solverOutput = await postJson(`${server.url}/app/import/solver-output-json`, {
+      solverOutputText: JSON.stringify(sampleSolverOutputWithAdvisory),
+    });
+    assertEqual(solverOutput.statusCode, 200, "solver output import status code");
+    assertIncludes(solverOutput.body, "Solver結果JSONを反映しました", "solver output import response");
+
     const excel = await get(`${server.url}/app/export/excel`);
     assertEqual(excel.statusCode, 200, "excel status code");
     assertEqual(excel.body.charCodeAt(0), 0x50, "excel zip byte 1");

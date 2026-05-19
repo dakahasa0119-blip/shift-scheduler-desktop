@@ -32,6 +32,7 @@ import {
   runMonthlyTransition,
   startNextMonthPlanning,
 } from "../core/monthlyTransition";
+import { importSolverOutputJson } from "../core/solverJsonExchange";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -152,6 +153,51 @@ export class AppController {
       busy: false,
       lastError: "",
     };
+    return this.state;
+  }
+
+  async checkSolverConnection(): Promise<AppControllerState> {
+    return this.run(async () => {
+      const response = await this.api.validateSchedule({
+        document: this.state.document,
+      });
+      return {
+        ...this.state,
+        viewModel: {
+          ...buildAppViewModelFromDocument(this.state.document),
+          status: response.ok
+            ? { label: "Solver接続を確認しました", tone: "ready" }
+            : { label: response.userMessage, tone: "blocked" },
+        },
+        lastError: response.ok ? "" : response.userMessage,
+      };
+    });
+  }
+
+  importSolverOutputJson(solverOutputText: string): AppControllerState {
+    try {
+      const document = importSolverOutputJson(this.state.document, solverOutputText);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "Solver結果JSONを反映しました", tone: document.diagnostics?.summary.canUse ? "ready" : "blocked" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: message,
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: "Solver結果JSONを反映できませんでした", tone: "blocked" },
+        },
+      };
+    }
     return this.state;
   }
 

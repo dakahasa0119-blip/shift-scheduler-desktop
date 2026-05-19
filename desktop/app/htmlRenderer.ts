@@ -86,6 +86,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "startNextMonthPlanning"),
     renderActionById(viewModel, "promoteOperationMonth"),
     renderActionById(viewModel, "repairCalendar"),
+    renderActionById(viewModel, "checkSolverConnection"),
     renderActionById(viewModel, "postEditRecheck"),
     renderActionById(viewModel, "solve"),
     renderActionById(viewModel, "createActual"),
@@ -203,6 +204,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<input class="tab-input" type="radio" name="data-tab" id="tab-actual">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-history">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-capacity">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-solver">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-json">',
     '<div class="tab-list" role="tablist" aria-label="入力データ切替">',
     '<label class="tab-button" for="tab-settings" role="tab">基本設定</label>',
@@ -212,6 +214,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<label class="tab-button" for="tab-actual" role="tab">勤務実績</label>',
     '<label class="tab-button" for="tab-history" role="tab">履歴</label>',
     '<label class="tab-button" for="tab-capacity" role="tab">体制</label>',
+    '<label class="tab-button" for="tab-solver" role="tab">Solver</label>',
     '<label class="tab-button" for="tab-json" role="tab">JSON</label>',
     "</div>",
     '<div class="tab-panels">',
@@ -222,6 +225,7 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     `<div class="tab-panel panel-actual">${renderActualScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "createActual")}${renderActionById(viewModel, "applyActualScheduleTsv")}${renderActionById(viewModel, "exportActualScheduleTsv")}</div></div>`,
     `<div class="tab-panel panel-history">${renderHistoryTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "ensureHistory")}${renderActionById(viewModel, "exportChangeHistoryTsv")}${renderActionById(viewModel, "exportUrgentLeaveHistoryTsv")}</div></div>`,
     `<div class="tab-panel panel-capacity">${renderCapacityJsonEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "runCapacitySimulation")}${renderActionById(viewModel, "refreshCapacitySimulation")}${renderActionById(viewModel, "importCapacitySimulationJson")}${renderActionById(viewModel, "exportCapacitySimulationJson")}</div></div>`,
+    `<div class="tab-panel panel-solver">${renderSolverJsonEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "checkSolverConnection")}${renderActionById(viewModel, "importSolverOutputJson")}${renderActionById(viewModel, "exportSolverInputJson")}</div></div>`,
     `<div class="tab-panel panel-json">${renderDocumentEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyJson")}${renderActionById(viewModel, "exportJson")}</div></div>`,
     "</div>",
     "</section>",
@@ -417,6 +421,19 @@ function renderCapacityJsonEditor(viewModel: AppViewModel): string {
     '<section class="tsv-editor" aria-label="体制シミュレーションJSON">',
     '<h2>体制シミュレーションJSON</h2>',
     `<textarea id="capacity-simulation-json" spellcheck="false">${escapeHtml(viewModel.capacitySimulationJson)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderSolverJsonEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="Solver入力JSON">',
+    '<h2>Solver入力JSON</h2>',
+    `<textarea id="solver-input-json" spellcheck="false" readonly>${escapeHtml(viewModel.solverInputJson)}</textarea>`,
+    "</section>",
+    '<section class="tsv-editor" aria-label="Solver結果JSON">',
+    '<h2>Solver結果JSON</h2>',
+    '<textarea id="solver-output-json" spellcheck="false"></textarea>',
     "</section>",
   ].join("");
 }
@@ -1070,6 +1087,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-actual:checked ~ .tab-list label[for="tab-actual"],
 #tab-history:checked ~ .tab-list label[for="tab-history"],
 #tab-capacity:checked ~ .tab-list label[for="tab-capacity"],
+#tab-solver:checked ~ .tab-list label[for="tab-solver"],
 #tab-json:checked ~ .tab-list label[for="tab-json"] {
   background: var(--surface-soft);
   border-color: var(--line);
@@ -1082,6 +1100,7 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-actual:checked ~ .tab-panels .panel-actual,
 #tab-history:checked ~ .tab-panels .panel-history,
 #tab-capacity:checked ~ .tab-panels .panel-capacity,
+#tab-solver:checked ~ .tab-panels .panel-solver,
 #tab-json:checked ~ .tab-panels .panel-json {
   display: block;
 }
@@ -1412,6 +1431,7 @@ function renderClientScript(actionBasePath: string): string {
     startNextMonthPlanning: actionBasePath + "/start-next-month-planning",
     promoteOperationMonth: actionBasePath + "/promote-operation-month",
     repairCalendar: actionBasePath + "/repair-calendar",
+    checkSolverConnection: actionBasePath + "/check-solver-connection",
     postEditRecheck: actionBasePath + "/post-edit-recheck",
     solve: actionBasePath + "/solve",
     createActual: actionBasePath + "/create-actual",
@@ -1439,6 +1459,8 @@ function renderClientScript(actionBasePath: string): string {
     refreshCapacitySimulation: actionBasePath + "/refresh-capacity-simulation",
     importCapacitySimulationJson: actionBasePath + "/import/capacity-simulation-json",
     exportCapacitySimulationJson: actionBasePath + "/export/capacity-simulation-json",
+    importSolverOutputJson: actionBasePath + "/import/solver-output-json",
+    exportSolverInputJson: actionBasePath + "/export/solver-input-json",
     applyJson: actionBasePath + "/import/json",
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
@@ -1452,7 +1474,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv" || action === "exportAiDebugJson" || action === "exportCapacitySimulationJson") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv" || action === "exportAiDebugJson" || action === "exportCapacitySimulationJson" || action === "exportSolverInputJson") {
       window.location.href = endpoint;
       return;
     }
@@ -1481,6 +1503,8 @@ function renderClientScript(actionBasePath: string): string {
         ? { actualScheduleText: document.querySelector("#actual-schedule-tsv")?.value || "" }
       : action === "importCapacitySimulationJson"
         ? { capacitySimulationText: document.querySelector("#capacity-simulation-json")?.value || "" }
+      : action === "importSolverOutputJson"
+        ? { solverOutputText: document.querySelector("#solver-output-json")?.value || "" }
         : undefined;
     await runAction(endpoint, body);
   });
