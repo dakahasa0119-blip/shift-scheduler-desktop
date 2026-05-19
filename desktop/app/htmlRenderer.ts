@@ -120,13 +120,110 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     "</div>",
     '<div class="tab-panels">',
     `<div class="tab-panel panel-settings">${renderSettingsEditor(viewModel)}${renderActionById(viewModel, "applySettings")}</div>`,
-    `<div class="tab-panel panel-staff">${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}</div></div>`,
-    `<div class="tab-panel panel-requests">${renderRequestsTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyRequestsTsv")}${renderActionById(viewModel, "exportRequestsTsv")}</div></div>`,
+    `<div class="tab-panel panel-staff">${renderStaffOverview(viewModel)}${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}</div></div>`,
+    `<div class="tab-panel panel-requests">${renderRequestsOverview(viewModel)}${renderRequestsTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyRequestsTsv")}${renderActionById(viewModel, "exportRequestsTsv")}</div></div>`,
     `<div class="tab-panel panel-schedule">${renderScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyScheduleTsv")}${renderActionById(viewModel, "exportScheduleTsv")}</div></div>`,
     `<div class="tab-panel panel-json">${renderDocumentEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyJson")}${renderActionById(viewModel, "exportJson")}</div></div>`,
     "</div>",
     "</section>",
   ].join("");
+}
+
+function renderStaffOverview(viewModel: AppViewModel): string {
+  const rows = parseTsv(viewModel.staffTsv).rows.filter((row) => row.some((cell) => cell.trim()));
+  if (!rows.length) return "";
+  return [
+    '<section class="data-preview" aria-label="職員条件サマリー">',
+    '<div class="section-heading compact">',
+    '<h2>職員条件</h2>',
+    `<span>${rows.length}名</span>`,
+    "</div>",
+    '<div class="preview-wrap">',
+    '<table class="preview-table staff-preview">',
+    "<thead><tr>",
+    ["区分", "氏名", "夜勤条件", "可能シフト", "曜日", "性別"].map((label) => `<th>${escapeHtml(label)}</th>`).join(""),
+    "</tr></thead><tbody>",
+    rows
+      .map((row) => {
+        const weekdays = row.slice(4, 11).map((value, index) => (normalizeBoolean(value) ? ["月", "火", "水", "木", "金", "土", "日"][index] : "")).filter(Boolean);
+        return [
+          "<tr>",
+          `<td>${escapeHtml(row[0] || "")}</td>`,
+          `<td><strong>${escapeHtml(row[1] || "")}</strong></td>`,
+          `<td>${escapeHtml(row[2] || "")}</td>`,
+          `<td>${renderShiftChips(row[3] || "")}</td>`,
+          `<td class="weekday-list">${escapeHtml(weekdays.join(" "))}</td>`,
+          `<td>${escapeHtml(row[12] || "")}</td>`,
+          "</tr>",
+        ].join("");
+      })
+      .join(""),
+    "</tbody></table>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderRequestsOverview(viewModel: AppViewModel): string {
+  const parsed = parseTsv(viewModel.requestsTsv);
+  const rows = parsed.rows.filter((row) => row.some((cell) => cell.trim()));
+  if (!rows.length) return "";
+  const counts = rows.reduce<Record<string, number>>((acc, row) => {
+    const type = row[1] || "未分類";
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+  return [
+    '<section class="data-preview" aria-label="希望サマリー">',
+    '<div class="section-heading compact">',
+    '<h2>希望・供給除外</h2>',
+    `<span>${rows.length}件</span>`,
+    "</div>",
+    '<div class="request-summary">',
+    Object.entries(counts)
+      .map(([type, count]) => `<span class="request-pill">${escapeHtml(type)} <strong>${count}</strong></span>`)
+      .join(""),
+    "</div>",
+    '<div class="preview-wrap compact-table">',
+    '<table class="preview-table request-preview">',
+    "<thead><tr>",
+    ["氏名", "区分", "開始", "終了", "備考"].map((label) => `<th>${escapeHtml(label)}</th>`).join(""),
+    "</tr></thead><tbody>",
+    rows
+      .slice(0, 18)
+      .map((row) =>
+        [
+          "<tr>",
+          `<td><strong>${escapeHtml(row[0] || "")}</strong></td>`,
+          `<td>${escapeHtml(row[1] || "")}</td>`,
+          `<td>${escapeHtml(row[2] || "")}</td>`,
+          `<td>${escapeHtml(row[3] || "")}</td>`,
+          `<td>${escapeHtml(row[4] || "")}</td>`,
+          "</tr>",
+        ].join(""),
+      )
+      .join(""),
+    "</tbody></table>",
+    "</div>",
+    "</section>",
+  ].join("");
+}
+
+function renderShiftChips(value: string): string {
+  const shifts = value.split(/[・,、\s]+/).map((item) => item.trim()).filter(Boolean);
+  if (!shifts.length) return "";
+  return shifts.map((shift) => `<span class="shift-chip">${escapeHtml(shift)}</span>`).join("");
+}
+
+function normalizeBoolean(value: string): boolean {
+  return String(value || "").trim().toLowerCase() === "true";
+}
+
+function parseTsv(text: string): { headers: string[]; rows: string[][] } {
+  const lines = String(text || "").split(/\r?\n/).filter((line) => line.length > 0);
+  const headers = lines[0]?.split("\t") || [];
+  const rows = lines.slice(1).map((line) => line.split("\t"));
+  return { headers, rows };
 }
 
 function renderActionById(viewModel: AppViewModel, id: AppActionViewModel["id"]): string {
@@ -656,6 +753,9 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   gap: 12px;
   margin-bottom: 8px;
 }
+.section-heading.compact {
+  margin-bottom: 6px;
+}
 .section-heading span {
   color: var(--muted);
   font-size: 12px;
@@ -714,6 +814,80 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   background: transparent;
   border: 0;
   padding: 0;
+}
+.data-preview {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.preview-wrap {
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  max-height: 260px;
+}
+.compact-table {
+  max-height: 220px;
+}
+.preview-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.preview-table th,
+.preview-table td {
+  min-width: auto;
+  height: 30px;
+  padding: 5px 8px;
+  text-align: left;
+  vertical-align: middle;
+}
+.preview-table thead th {
+  top: 0;
+  background: #edf2f5;
+}
+.preview-table tbody tr:nth-child(even) td {
+  background: #fbfcfd;
+}
+.weekday-list {
+  color: var(--muted);
+  font-size: 12px;
+}
+.shift-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  margin: 1px 3px 1px 0;
+  padding: 0 6px;
+  border: 1px solid #c9d4dc;
+  border-radius: 999px;
+  background: #f8fbff;
+  font-size: 12px;
+  font-weight: 700;
+}
+.request-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.request-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 8px;
+  border: 1px solid #cbd8c9;
+  border-radius: 999px;
+  background: #f5faf5;
+  color: #284d33;
+  font-size: 12px;
+  font-weight: 700;
+}
+.request-pill strong {
+  font-variant-numeric: tabular-nums;
 }
 .settings-grid {
   display: grid;
