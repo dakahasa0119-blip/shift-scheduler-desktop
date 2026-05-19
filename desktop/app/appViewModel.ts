@@ -4,6 +4,7 @@ import { validateMonthlyScheduleDocument, type ValidationIssue } from "../core/v
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
 import { renderUrgentLeaveTsv } from "../core/recoveryTsv";
+import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
 import { buildDiagnosticPanelViewModel, type DiagnosticPanelViewModel } from "./diagnosticViewModel";
 import { buildScheduleTableViewModel, type ScheduleTableViewModel } from "./scheduleTableViewModel";
 
@@ -15,6 +16,9 @@ export interface AppViewModel {
   requestsTsv: string;
   urgentLeaveTsv: string;
   scheduleTsv: string;
+  actualScheduleTsv: string;
+  changeHistoryTsv: string;
+  urgentLeaveHistoryTsv: string;
   settings: AppSettingsViewModel;
   schedule: ScheduleTableViewModel;
   diagnostics: DiagnosticPanelViewModel | null;
@@ -43,6 +47,8 @@ export interface AppActionViewModel {
     | "validate"
     | "monthlyPrecheck"
     | "solve"
+    | "createActual"
+    | "addLeaveRequest"
     | "recover"
     | "save"
     | "load"
@@ -54,6 +60,11 @@ export interface AppActionViewModel {
     | "exportRequestsTsv"
     | "applyScheduleTsv"
     | "exportScheduleTsv"
+    | "applyActualScheduleTsv"
+    | "exportActualScheduleTsv"
+    | "ensureHistory"
+    | "exportChangeHistoryTsv"
+    | "exportUrgentLeaveHistoryTsv"
     | "applyJson"
     | "exportJson"
     | "exportExcel"
@@ -146,6 +157,9 @@ function buildAppViewModelFromParts(
     requestsTsv: renderRequestsTsv(document),
     urgentLeaveTsv: renderUrgentLeaveTsv(),
     scheduleTsv: renderScheduleTsv(document),
+    actualScheduleTsv: renderActualScheduleTsv(document),
+    changeHistoryTsv: renderChangeHistoryTsv(document),
+    urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
     settings: {
       year: document.year,
       month: document.month,
@@ -179,6 +193,16 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "solve",
       label: "勤務表作成",
+      enabled: canSolve,
+    },
+    {
+      id: "createActual",
+      label: "勤務実績作成",
+      enabled: canSolve,
+    },
+    {
+      id: "addLeaveRequest",
+      label: "休暇・希望を登録",
       enabled: canSolve,
     },
     {
@@ -234,6 +258,31 @@ function buildActions(canSolve: boolean, diagnostics: DiagnosticPanelViewModel |
     {
       id: "exportScheduleTsv",
       label: "勤務表TSV出力",
+      enabled: true,
+    },
+    {
+      id: "applyActualScheduleTsv",
+      label: "実績反映",
+      enabled: true,
+    },
+    {
+      id: "exportActualScheduleTsv",
+      label: "実績TSV出力",
+      enabled: true,
+    },
+    {
+      id: "ensureHistory",
+      label: "変更履歴を確認",
+      enabled: true,
+    },
+    {
+      id: "exportChangeHistoryTsv",
+      label: "変更履歴TSV出力",
+      enabled: true,
+    },
+    {
+      id: "exportUrgentLeaveHistoryTsv",
+      label: "急休履歴TSV出力",
       enabled: true,
     },
     {

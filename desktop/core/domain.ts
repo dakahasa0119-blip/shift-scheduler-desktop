@@ -35,13 +35,16 @@ export type RequestType =
   | "事前希望休"
   | "有給"
   | "特別休"
+  | "当日急遽休"
+  | "当日特別休"
   | "出張"
   | "産休"
   | "育休"
   | "休職"
   | "長期病欠"
   | "入職前"
-  | "退職後";
+  | "退職後"
+  | "供給除外";
 
 export interface StaffMember {
   id: string;
@@ -87,6 +90,27 @@ export interface ScheduleRow {
   role: StaffRole;
   name: string;
   shifts: ShiftCode[];
+}
+
+export interface ChangeHistoryEntry {
+  category: string;
+  leaveType: string;
+  staffName: string;
+  date: string;
+  beforeValue: string;
+  afterValue: string;
+  notes: string;
+  executedAt: string;
+}
+
+export interface UrgentLeaveHistoryEntry {
+  staffName: string;
+  date: string;
+  originalShift: ShiftCode;
+  changedTo: ShiftCode;
+  notes: string;
+  createdAt: string;
+  canceled: boolean;
 }
 
 export interface ShortageDiagnostic {
@@ -139,6 +163,9 @@ export interface MonthlyScheduleDocument {
   requirements: StaffingRequirements;
   previousMonthTail: Record<string, ShiftCode[]>;
   schedule: ScheduleRow[];
+  actualSchedule?: ScheduleRow[];
+  changeHistory?: ChangeHistoryEntry[];
+  urgentLeaveHistory?: UrgentLeaveHistoryEntry[];
   diagnostics: ScheduleDiagnostics | null;
 }
 
@@ -153,6 +180,8 @@ export const HARD_LEAVE_TYPES: RequestType[] = [
   "事前希望休",
   "有給",
   "特別休",
+  "当日急遽休",
+  "当日特別休",
 ];
 
 export const SUPPLY_EXCLUSION_TYPES: RequestType[] = [
@@ -163,4 +192,5 @@ export const SUPPLY_EXCLUSION_TYPES: RequestType[] = [
   "長期病欠",
   "入職前",
   "退職後",
+  "供給除外",
 ];

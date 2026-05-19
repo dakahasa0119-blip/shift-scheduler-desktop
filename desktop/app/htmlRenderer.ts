@@ -81,13 +81,16 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     renderActionById(viewModel, "validate"),
     renderActionById(viewModel, "monthlyPrecheck"),
     renderActionById(viewModel, "solve"),
+    renderActionById(viewModel, "createActual"),
     renderActionById(viewModel, "save"),
     renderActionById(viewModel, "load"),
     "</div>",
     "</div>",
     '<div class="operation-group">',
     '<h2>急休</h2>',
+    renderLeaveRequestForm(viewModel),
     renderUrgentLeaveEditor(viewModel),
+    renderActionById(viewModel, "addLeaveRequest"),
     renderActionById(viewModel, "recover"),
     "</div>",
     '<div class="operation-group">',
@@ -136,12 +139,16 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     '<input class="tab-input" type="radio" name="data-tab" id="tab-staff">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-requests">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-schedule">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-actual">',
+    '<input class="tab-input" type="radio" name="data-tab" id="tab-history">',
     '<input class="tab-input" type="radio" name="data-tab" id="tab-json">',
     '<div class="tab-list" role="tablist" aria-label="入力データ切替">',
     '<label class="tab-button" for="tab-settings" role="tab">基本設定</label>',
     '<label class="tab-button" for="tab-staff" role="tab">職員</label>',
     '<label class="tab-button" for="tab-requests" role="tab">希望</label>',
     '<label class="tab-button" for="tab-schedule" role="tab">勤務表TSV</label>',
+    '<label class="tab-button" for="tab-actual" role="tab">勤務実績</label>',
+    '<label class="tab-button" for="tab-history" role="tab">履歴</label>',
     '<label class="tab-button" for="tab-json" role="tab">JSON</label>',
     "</div>",
     '<div class="tab-panels">',
@@ -149,6 +156,8 @@ function renderDataWorkspace(viewModel: AppViewModel): string {
     `<div class="tab-panel panel-staff">${renderStaffOverview(viewModel)}${renderStaffTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyStaffTsv")}${renderActionById(viewModel, "exportStaffTsv")}</div></div>`,
     `<div class="tab-panel panel-requests">${renderRequestsOverview(viewModel)}${renderRequestsTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyRequestsTsv")}${renderActionById(viewModel, "exportRequestsTsv")}</div></div>`,
     `<div class="tab-panel panel-schedule">${renderScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyScheduleTsv")}${renderActionById(viewModel, "exportScheduleTsv")}</div></div>`,
+    `<div class="tab-panel panel-actual">${renderActualScheduleTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "createActual")}${renderActionById(viewModel, "applyActualScheduleTsv")}${renderActionById(viewModel, "exportActualScheduleTsv")}</div></div>`,
+    `<div class="tab-panel panel-history">${renderHistoryTsvEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "ensureHistory")}${renderActionById(viewModel, "exportChangeHistoryTsv")}${renderActionById(viewModel, "exportUrgentLeaveHistoryTsv")}</div></div>`,
     `<div class="tab-panel panel-json">${renderDocumentEditor(viewModel)}<div class="button-row">${renderActionById(viewModel, "applyJson")}${renderActionById(viewModel, "exportJson")}</div></div>`,
     "</div>",
     "</section>",
@@ -317,6 +326,28 @@ function renderScheduleTsvEditor(viewModel: AppViewModel): string {
   ].join("");
 }
 
+function renderActualScheduleTsvEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="勤務実績TSV">',
+    '<h2>勤務実績</h2>',
+    `<textarea id="actual-schedule-tsv" spellcheck="false">${escapeHtml(viewModel.actualScheduleTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderHistoryTsvEditor(viewModel: AppViewModel): string {
+  return [
+    '<section class="tsv-editor" aria-label="変更履歴TSV">',
+    '<h2>変更履歴</h2>',
+    `<textarea id="change-history-tsv" spellcheck="false" readonly>${escapeHtml(viewModel.changeHistoryTsv)}</textarea>`,
+    "</section>",
+    '<section class="tsv-editor" aria-label="急休履歴TSV">',
+    '<h2>急休履歴</h2>',
+    `<textarea id="urgent-leave-history-tsv" spellcheck="false" readonly>${escapeHtml(viewModel.urgentLeaveHistoryTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
 function renderStaffTsvEditor(viewModel: AppViewModel): string {
   return [
     '<section class="tsv-editor" aria-label="職員一覧TSV">',
@@ -343,6 +374,42 @@ function renderUrgentLeaveEditor(viewModel: AppViewModel): string {
     `<label><span>固定終了日</span><input id="recovery-fixed-through-date" type="date" value=""></label>`,
     "</div>",
     `<textarea id="urgent-leave-tsv" spellcheck="false">${escapeHtml(viewModel.urgentLeaveTsv)}</textarea>`,
+    "</section>",
+  ].join("");
+}
+
+function renderLeaveRequestForm(viewModel: AppViewModel): string {
+  const staffOptions = viewModel.schedule.rows
+    .map((row) => `<option value="${escapeHtml(row.name)}">${escapeHtml(row.name)}</option>`)
+    .join("");
+  const types = [
+    "事前希望休",
+    "有給",
+    "特別休",
+    "希望早出",
+    "希望日勤",
+    "希望遅出",
+    "希望夜勤",
+    "当日急遽休",
+    "当日特別休",
+    "出張",
+    "産休",
+    "育休",
+    "休職",
+    "長期病欠",
+    "入職前",
+    "退職後",
+    "供給除外",
+  ];
+  return [
+    '<section class="leave-form" aria-label="休暇・希望勤務入力">',
+    '<div class="leave-grid">',
+    `<label><span>氏名</span><select id="leave-staff-name">${staffOptions}</select></label>`,
+    `<label><span>区分</span><select id="leave-type">${types.map((type) => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join("")}</select></label>`,
+    `<label><span>開始日</span><input id="leave-start-date" type="date" value=""></label>`,
+    `<label><span>終了日</span><input id="leave-end-date" type="date" value=""></label>`,
+    '<label class="wide"><span>備考</span><input id="leave-notes" type="text" value=""></label>',
+    "</div>",
     "</section>",
   ].join("");
 }
@@ -898,6 +965,8 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-staff:checked ~ .tab-list label[for="tab-staff"],
 #tab-requests:checked ~ .tab-list label[for="tab-requests"],
 #tab-schedule:checked ~ .tab-list label[for="tab-schedule"],
+#tab-actual:checked ~ .tab-list label[for="tab-actual"],
+#tab-history:checked ~ .tab-list label[for="tab-history"],
 #tab-json:checked ~ .tab-list label[for="tab-json"] {
   background: var(--surface-soft);
   border-color: var(--line);
@@ -907,6 +976,8 @@ h3 { font-size: 14px; margin-bottom: 8px; }
 #tab-staff:checked ~ .tab-panels .panel-staff,
 #tab-requests:checked ~ .tab-panels .panel-requests,
 #tab-schedule:checked ~ .tab-panels .panel-schedule,
+#tab-actual:checked ~ .tab-panels .panel-actual,
+#tab-history:checked ~ .tab-panels .panel-history,
 #tab-json:checked ~ .tab-panels .panel-json {
   display: block;
 }
@@ -1055,18 +1126,33 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   gap: 8px;
   margin-bottom: 8px;
 }
-.recovery-grid label {
+.leave-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.leave-grid .wide {
+  grid-column: 1 / -1;
+}
+.recovery-grid label,
+.leave-grid label {
   display: grid;
   gap: 4px;
   color: var(--muted);
   font-weight: 700;
 }
-.recovery-grid input {
+.recovery-grid input,
+.leave-grid input,
+.leave-grid select {
   min-height: 34px;
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 4px 8px;
   font: inherit;
+}
+.leave-form {
+  margin-bottom: 10px;
 }
 .settings-grid label {
   display: grid;
@@ -1218,6 +1304,8 @@ function renderClientScript(actionBasePath: string): string {
     validate: actionBasePath + "/validate",
     monthlyPrecheck: actionBasePath + "/monthly-precheck",
     solve: actionBasePath + "/solve",
+    createActual: actionBasePath + "/create-actual",
+    addLeaveRequest: actionBasePath + "/add-leave-request",
     recover: actionBasePath + "/recover",
     save: actionBasePath + "/save",
     load: actionBasePath + "/load",
@@ -1229,6 +1317,11 @@ function renderClientScript(actionBasePath: string): string {
     exportRequestsTsv: actionBasePath + "/export/requests-tsv",
     applyScheduleTsv: actionBasePath + "/import/schedule-tsv",
     exportScheduleTsv: actionBasePath + "/export/schedule-tsv",
+    applyActualScheduleTsv: actionBasePath + "/import/actual-schedule-tsv",
+    exportActualScheduleTsv: actionBasePath + "/export/actual-schedule-tsv",
+    ensureHistory: actionBasePath + "/ensure-history",
+    exportChangeHistoryTsv: actionBasePath + "/export/change-history-tsv",
+    exportUrgentLeaveHistoryTsv: actionBasePath + "/export/urgent-leave-history-tsv",
     applyJson: actionBasePath + "/import/json",
     exportJson: actionBasePath + "/export/json",
     exportExcel: actionBasePath + "/export/excel",
@@ -1242,7 +1335,7 @@ function renderClientScript(actionBasePath: string): string {
     const action = button.getAttribute("data-action");
     const endpoint = actions[action];
     if (!endpoint) return;
-    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv") {
+    if (action === "exportExcel" || action === "exportPdf" || action === "exportJson" || action === "exportScheduleTsv" || action === "exportStaffTsv" || action === "exportRequestsTsv" || action === "exportActualScheduleTsv" || action === "exportChangeHistoryTsv" || action === "exportUrgentLeaveHistoryTsv") {
       window.location.href = endpoint;
       return;
     }
@@ -1253,6 +1346,8 @@ function renderClientScript(actionBasePath: string): string {
             urgentLeaveText: document.querySelector("#urgent-leave-tsv")?.value || "",
             fixedThroughDate: document.querySelector("#recovery-fixed-through-date")?.value || ""
           }
+      : action === "addLeaveRequest"
+        ? collectLeaveRequest()
       : action === "applySettings"
         ? collectSettings()
         : action === "applyStaffTsv"
@@ -1261,6 +1356,8 @@ function renderClientScript(actionBasePath: string): string {
           ? { requestsText: document.querySelector("#requests-tsv")?.value || "" }
         : action === "applyScheduleTsv"
           ? { scheduleText: document.querySelector("#schedule-tsv")?.value || "" }
+        : action === "applyActualScheduleTsv"
+          ? { actualScheduleText: document.querySelector("#actual-schedule-tsv")?.value || "" }
         : undefined;
     await runAction(endpoint, body);
   });
@@ -1278,6 +1375,16 @@ function renderClientScript(actionBasePath: string): string {
       if (field === "requirements.night") out.requirements.night = value;
     });
     return out;
+  }
+
+  function collectLeaveRequest() {
+    return {
+      staffName: document.querySelector("#leave-staff-name")?.value || "",
+      type: document.querySelector("#leave-type")?.value || "",
+      startDate: document.querySelector("#leave-start-date")?.value || "",
+      endDate: document.querySelector("#leave-end-date")?.value || "",
+      notes: document.querySelector("#leave-notes")?.value || ""
+    };
   }
 
   async function runAction(endpoint, body) {

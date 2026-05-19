@@ -12,6 +12,7 @@ import { applyScheduleTsv } from "../core/scheduleTsv";
 import { applyRequestsTsv, applyStaffTsv } from "../core/inputTsv";
 import { parseUrgentLeaveTsv } from "../core/recoveryTsv";
 import { convertGasSolverInputToDocument, extractGasSolverInputPayload } from "../core/gasImport";
+import { addLeaveRequest, applyActualScheduleTsv, createOrRefreshActualSchedule, ensureChangeHistory, type LeaveRequestInput } from "../core/operationalRecords";
 
 export interface ScheduleSettingsInput {
   year?: number;
@@ -148,6 +149,61 @@ export class AppController {
         lastError: response.ok ? "" : response.userMessage,
       };
     });
+  }
+
+  createActualSchedule(): AppControllerState {
+    const document = createOrRefreshActualSchedule(this.state.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "勤務実績を作成 / 更新しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  ensureHistory(): AppControllerState {
+    const document = ensureChangeHistory(this.state.document);
+    this.state = {
+      document,
+      viewModel: {
+        ...buildAppViewModelFromDocument(document),
+        status: { label: "変更履歴を確認しました", tone: "ready" },
+      },
+      busy: false,
+      lastError: "",
+    };
+    return this.state;
+  }
+
+  addLeaveRequest(input: LeaveRequestInput): AppControllerState {
+    try {
+      const document = addLeaveRequest(this.state.document, input);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "休暇・希望勤務を登録しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: message,
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: message, tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
   }
 
   async save(): Promise<AppControllerState> {
@@ -288,6 +344,32 @@ export class AppController {
         viewModel: {
           ...this.state.viewModel,
           status: { label: "勤務表TSVを反映できませんでした", tone: "blocked" },
+        },
+      };
+    }
+    return this.state;
+  }
+
+  importActualScheduleTsv(actualScheduleText: string): AppControllerState {
+    try {
+      const document = applyActualScheduleTsv(this.state.document, actualScheduleText);
+      this.state = {
+        document,
+        viewModel: {
+          ...buildAppViewModelFromDocument(document),
+          status: { label: "勤務実績TSVを反映しました", tone: "ready" },
+        },
+        busy: false,
+        lastError: "",
+      };
+    } catch (error) {
+      this.state = {
+        ...this.state,
+        busy: false,
+        lastError: error instanceof Error ? error.message : String(error),
+        viewModel: {
+          ...this.state.viewModel,
+          status: { label: "勤務実績TSVを反映できませんでした", tone: "blocked" },
         },
       };
     }

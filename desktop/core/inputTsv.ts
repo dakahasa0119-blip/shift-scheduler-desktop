@@ -182,13 +182,16 @@ function normalizeRequestType(value: string | undefined): RequestType {
     type === "事前希望休" ||
     type === "有給" ||
     type === "特別休" ||
+    type === "当日急遽休" ||
+    type === "当日特別休" ||
     type === "出張" ||
     type === "産休" ||
     type === "育休" ||
     type === "休職" ||
     type === "長期病欠" ||
     type === "入職前" ||
-    type === "退職後"
+    type === "退職後" ||
+    type === "供給除外"
   ) {
     return type;
   }

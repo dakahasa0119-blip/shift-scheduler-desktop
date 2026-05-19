@@ -47,6 +47,31 @@ async function main(): Promise<void> {
   assertEqual(api.recoverCalls[0].options?.fixedThroughDate, "2026-06-04", "recover fixed date");
   assertEqual(recovered.viewModel.status.label, "急休リカバリーを反映しました（変更 1件）", "recover status");
 
+  const actual = controller.createActualSchedule();
+  assertEqual(actual.viewModel.status.label, "勤務実績を作成 / 更新しました", "actual status");
+  assertEqual(actual.document.actualSchedule?.length, actual.document.schedule.length, "actual row count");
+  assertEqual(actual.document.changeHistory?.at(-1)?.category, "勤務実績作成", "actual history");
+
+  const plannedLeave = controller.addLeaveRequest({
+    staffName: "江藤",
+    type: "有給",
+    startDate: "2026-06-08",
+    endDate: "2026-06-08",
+    notes: "私用",
+  });
+  assertEqual(plannedLeave.viewModel.status.label, "休暇・希望勤務を登録しました", "leave status");
+  assertEqual(plannedLeave.document.requests.at(-1)?.type, "有給", "leave request type");
+  assertEqual(plannedLeave.document.changeHistory?.at(-1)?.afterValue, "有", "leave history shift");
+
+  const urgentLeave = controller.addLeaveRequest({
+    staffName: "江藤",
+    type: "当日急遽休",
+    startDate: "2026-06-05",
+    notes: "発熱",
+  });
+  assertEqual(urgentLeave.document.urgentLeaveHistory?.length, 1, "urgent leave history");
+  assertEqual(urgentLeave.document.actualSchedule?.[0].shifts[4], "公", "urgent leave actual shift");
+
   const excel = await controller.exportExcel();
   assertEqual(excel.ok, true, "excel export ok");
   if (!excel.ok) return;

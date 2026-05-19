@@ -1,6 +1,7 @@
 import type { MonthlyScheduleDocument } from "../core/domain";
 import { createBlankMonthlyScheduleDocument } from "../core/fixtures";
 import { renderRequestsTsv, renderStaffTsv } from "../core/inputTsv";
+import { renderActualScheduleTsv, renderChangeHistoryTsv, renderUrgentLeaveHistoryTsv } from "../core/operationalRecords";
 import { renderScheduleTsv } from "../core/scheduleTsv";
 import { AppController } from "./appController";
 import type { DesktopApiClient } from "./desktopApiClient";
@@ -127,6 +128,25 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/create-actual") {
+    const state = controller.createActualSchedule();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/add-leave-request") {
+    const body = await readJsonBody(request, 1024 * 1024);
+    const state = controller.addLeaveRequest(body);
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
+  if (method === "POST" && path === "/app/ensure-history") {
+    const state = controller.ensureHistory();
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/save") {
     const state = await controller.save();
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
@@ -166,6 +186,13 @@ async function handleShellRequest(
     return;
   }
 
+  if (method === "POST" && path === "/app/import/actual-schedule-tsv") {
+    const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { actualScheduleText?: string };
+    const state = controller.importActualScheduleTsv(body.actualScheduleText || "");
+    sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
+    return;
+  }
+
   if (method === "POST" && path === "/app/import/staff-tsv") {
     const body = (await readJsonBody(request, 10 * 1024 * 1024)) as { staffText?: string };
     const state = controller.importStaffTsv(body.staffText || "");
@@ -192,6 +219,21 @@ async function handleShellRequest(
 
   if ((method === "GET" || method === "POST") && path === "/app/export/schedule-tsv") {
     sendTsv(response, renderScheduleTsv(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/actual-schedule-tsv") {
+    sendTsv(response, renderActualScheduleTsv(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/change-history-tsv") {
+    sendTsv(response, renderChangeHistoryTsv(controller.getState().document));
+    return;
+  }
+
+  if ((method === "GET" || method === "POST") && path === "/app/export/urgent-leave-history-tsv") {
+    sendTsv(response, renderUrgentLeaveHistoryTsv(controller.getState().document));
     return;
   }
 
