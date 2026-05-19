@@ -109,7 +109,7 @@ async function main(): Promise<void> {
       documentText: exportedJson.body,
     });
     assertEqual(importedJson.statusCode, 200, "json import status");
-    assertIncludes(importedJson.body, "JSONを反映しました", "json import status text");
+    assertIncludes(importedJson.body, "詳細データを反映しました", "json import status text");
 
     const settings = await requestText(`${smokePlan.expectedBaseUrl}/app/import/settings`, "POST", {
       year: 2027,
@@ -129,7 +129,7 @@ async function main(): Promise<void> {
       scheduleText: scheduleTsv.body,
     });
     assertEqual(importedScheduleTsv.statusCode, 200, "schedule tsv import status");
-    assertIncludes(importedScheduleTsv.body, "勤務表TSVを反映しました", "schedule tsv import status text");
+    assertIncludes(importedScheduleTsv.body, "勤務表を反映しました", "schedule tsv import status text");
     console.log(`smoke: passed ${smokePlan.expectedBaseUrl}`);
   } finally {
     stopLauncher(child);

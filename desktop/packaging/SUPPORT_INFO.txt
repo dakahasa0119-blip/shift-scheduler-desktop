@@ -18,12 +18,11 @@ Linux:
   同梱Node.js runtimeです。
 
 - desktop/packaging/resources/solver/
-  勤務表作成Solverです。
+  勤務表作成機能です。
 
 トラブル時
 
 1. アプリを終了します。
 2. 保存場所の current-schedule.json を退避します。
 3. 再起動します。
-4. 必要なら JSON タブから退避したデータを確認します。
-
+4. 必要なら 詳細データ タブから退避したデータを確認します。
