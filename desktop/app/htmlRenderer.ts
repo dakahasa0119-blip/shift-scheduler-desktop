@@ -1,6 +1,6 @@
 import type { AppActionViewModel, AppViewModel } from "./appViewModel";
 import type { DiagnosticItemViewModel, DiagnosticSectionViewModel } from "./diagnosticViewModel";
-import type { ScheduleCellViewModel } from "./scheduleTableViewModel";
+import type { ScheduleCellViewModel, ScheduleStaffRowViewModel } from "./scheduleTableViewModel";
 
 export interface AppHtmlRenderOptions {
   interactive?: boolean;
@@ -34,6 +34,7 @@ function renderWorkspace(viewModel: AppViewModel): string {
   return [
     '<section class="workspace" aria-label="勤務表作成ワークスペース">',
     '<div class="primary-column">',
+    renderMonthlyOverview(viewModel),
     renderSchedule(viewModel),
     renderDataWorkspace(viewModel),
     "</div>",
@@ -43,6 +44,33 @@ function renderWorkspace(viewModel: AppViewModel): string {
     "</aside>",
     "</section>",
   ].join("");
+}
+
+function renderMonthlyOverview(viewModel: AppViewModel): string {
+  const activeRows = viewModel.schedule.rows.filter((row) => row.cells.some((cell) => cell.shift));
+  const requestCount = viewModel.requestsTsv
+    .split("\n")
+    .slice(1)
+    .filter((line) => line.trim()).length;
+  const shortageCount = buildDailyCoverage(viewModel).reduce((sum, day) => sum + day.shortages.length, 0);
+  const nightCount = activeRows.reduce((sum, row) => sum + countRowShifts(row).night, 0);
+  return [
+    '<section class="monthly-overview" aria-label="運用サマリー">',
+    renderOverviewMetric("対象月", `${viewModel.settings.year}年${viewModel.settings.month}月`),
+    renderOverviewMetric("職員", `${activeRows.length}名 / 登録${viewModel.schedule.rows.length}名`),
+    renderOverviewMetric("希望", `${requestCount}件`),
+    renderOverviewMetric("夜勤", `${nightCount}枠`),
+    renderOverviewMetric("不足", shortageCount ? `${shortageCount}件` : "なし", shortageCount ? "blocked" : "ready"),
+    renderOverviewMetric(
+      "必要配置",
+      `早${viewModel.settings.requirements.early} 日${viewModel.settings.requirements.day} 遅${viewModel.settings.requirements.late} 夜${viewModel.settings.requirements.night}`,
+    ),
+    "</section>",
+  ].join("");
+}
+
+function renderOverviewMetric(label: string, value: string, tone: "ready" | "blocked" | "neutral" = "neutral"): string {
+  return `<div class="overview-metric overview-${tone}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
 }
 
 function renderOperationPanel(viewModel: AppViewModel): string {
@@ -246,9 +274,13 @@ function renderDiagnosticItem(item: DiagnosticItemViewModel): string {
 }
 
 function renderSchedule(viewModel: AppViewModel): string {
+  const coverage = buildDailyCoverage(viewModel);
   return [
     '<section class="schedule-section" aria-label="勤務表">',
+    '<div class="section-heading">',
     `<h2>${escapeHtml(viewModel.schedule.title)}</h2>`,
+    '<span>GAS本番シートと同じ横持ち勤務表</span>',
+    "</div>",
     '<div class="schedule-wrap">',
     '<table class="schedule-table">',
     "<thead>",
@@ -256,6 +288,14 @@ function renderSchedule(viewModel: AppViewModel): string {
     '<th class="sticky role-col" scope="col">職種</th>',
     '<th class="sticky name-col" scope="col">氏名</th>',
     viewModel.schedule.days.map((day) => `<th class="${day.weekend ? "weekend" : ""}" scope="col">${day.day}</th>`).join(""),
+    renderSummaryHeader("早"),
+    renderSummaryHeader("日"),
+    renderSummaryHeader("遅"),
+    renderSummaryHeader("夜"),
+    renderSummaryHeader("明"),
+    renderSummaryHeader("公"),
+    renderSummaryHeader("休"),
+    renderSummaryHeader("空"),
     "</tr>",
     "<tr>",
     '<th class="sticky role-col subhead" scope="col"></th>',
@@ -263,6 +303,14 @@ function renderSchedule(viewModel: AppViewModel): string {
     viewModel.schedule.days
       .map((day) => `<th class="weekday ${day.weekend ? "weekend" : ""}" scope="col">${escapeHtml(day.weekday)}</th>`)
       .join(""),
+    '<th class="summary-head" scope="col">早</th>',
+    '<th class="summary-head" scope="col">日</th>',
+    '<th class="summary-head" scope="col">遅</th>',
+    '<th class="summary-head" scope="col">夜</th>',
+    '<th class="summary-head" scope="col">明</th>',
+    '<th class="summary-head" scope="col">公</th>',
+    '<th class="summary-head" scope="col">休有特</th>',
+    '<th class="summary-head" scope="col">空</th>',
     "</tr>",
     "</thead>",
     "<tbody>",
@@ -273,14 +321,139 @@ function renderSchedule(viewModel: AppViewModel): string {
           `<th class="sticky role-col" scope="row">${escapeHtml(row.role)}</th>`,
           `<th class="sticky name-col" scope="row">${escapeHtml(row.name)}</th>`,
           row.cells.map(renderScheduleCell).join(""),
+          renderRowSummary(row),
           "</tr>",
         ].join(""),
       )
       .join(""),
+    renderCoverageRows(viewModel, coverage),
     "</tbody>",
     "</table>",
     "</div>",
     "</section>",
+  ].join("");
+}
+
+function renderSummaryHeader(label: string): string {
+  return `<th class="summary-head" scope="col">${escapeHtml(label)}</th>`;
+}
+
+interface ShiftCounts {
+  early: number;
+  day: number;
+  late: number;
+  night: number;
+  afterNight: number;
+  off: number;
+  leave: number;
+  blank: number;
+}
+
+function countRowShifts(row: ScheduleStaffRowViewModel): ShiftCounts {
+  return row.cells.reduce(
+    (counts, cell) => {
+      if (cell.shift === "早") counts.early++;
+      else if (cell.shift === "日") counts.day++;
+      else if (cell.shift === "遅") counts.late++;
+      else if (cell.shift === "夜") counts.night++;
+      else if (cell.shift === "明") counts.afterNight++;
+      else if (cell.shift === "公") counts.off++;
+      else if (cell.shift === "休" || cell.shift === "有" || cell.shift === "特" || cell.shift === "欠") counts.leave++;
+      else if (!cell.shift) counts.blank++;
+      return counts;
+    },
+    { early: 0, day: 0, late: 0, night: 0, afterNight: 0, off: 0, leave: 0, blank: 0 },
+  );
+}
+
+function renderRowSummary(row: ScheduleStaffRowViewModel): string {
+  const counts = countRowShifts(row);
+  return [
+    renderSummaryCell(counts.early),
+    renderSummaryCell(counts.day),
+    renderSummaryCell(counts.late),
+    renderSummaryCell(counts.night),
+    renderSummaryCell(counts.afterNight),
+    renderSummaryCell(counts.off),
+    renderSummaryCell(counts.leave),
+    renderSummaryCell(counts.blank),
+  ].join("");
+}
+
+function renderSummaryCell(value: number): string {
+  return `<td class="summary-cell">${value || ""}</td>`;
+}
+
+interface DailyCoverage {
+  early: number;
+  day: number;
+  late: number;
+  night: number;
+  shortages: string[];
+}
+
+function buildDailyCoverage(viewModel: AppViewModel): DailyCoverage[] {
+  return viewModel.schedule.days.map((_, dayIndex) => {
+    const counts = viewModel.schedule.rows.reduce(
+      (daily, row) => {
+        const shift = row.cells[dayIndex]?.shift || "";
+        if (shift === "早") daily.early++;
+        if (shift === "日") daily.day++;
+        if (shift === "遅") daily.late++;
+        if (shift === "夜") daily.night++;
+        return daily;
+      },
+      { early: 0, day: 0, late: 0, night: 0, shortages: [] as string[] },
+    );
+    if (counts.early < viewModel.settings.requirements.early) counts.shortages.push("早");
+    if (counts.day < viewModel.settings.requirements.day) counts.shortages.push("日");
+    if (counts.late < viewModel.settings.requirements.late) counts.shortages.push("遅");
+    if (counts.night < viewModel.settings.requirements.night) counts.shortages.push("夜");
+    return counts;
+  });
+}
+
+function renderCoverageRows(viewModel: AppViewModel, coverage: DailyCoverage[]): string {
+  const rows = [
+    renderCoverageRow("早", "early", viewModel.settings.requirements.early, coverage),
+    renderCoverageRow("日", "day", viewModel.settings.requirements.day, coverage),
+    renderCoverageRow("遅", "late", viewModel.settings.requirements.late, coverage),
+    renderCoverageRow("夜", "night", viewModel.settings.requirements.night, coverage),
+  ];
+  const shortageLine = coverage
+    .map((day, index) => ({ day: index + 1, shortages: day.shortages }))
+    .filter((item) => item.shortages.length)
+    .map((item) => `${item.day}日 ${item.shortages.join("/")}`)
+    .join("、");
+  rows.push(
+    [
+      '<tr class="coverage-row shortage-row">',
+      '<th class="sticky role-col" scope="row">不足</th>',
+      `<th class="sticky name-col" scope="row">${escapeHtml(shortageLine || "なし")}</th>`,
+      coverage
+        .map((day) => `<td class="${day.shortages.length ? "coverage-short" : "coverage-ok"}">${escapeHtml(day.shortages.join(""))}</td>`)
+        .join(""),
+      '<td class="summary-cell" colspan="8"></td>',
+      "</tr>",
+    ].join(""),
+  );
+  return rows.join("");
+}
+
+function renderCoverageRow(label: string, key: "early" | "day" | "late" | "night", required: number, coverage: DailyCoverage[]): string {
+  return [
+    '<tr class="coverage-row">',
+    `<th class="sticky role-col" scope="row">必要${escapeHtml(label)}</th>`,
+    `<th class="sticky name-col" scope="row">${required}/日</th>`,
+    coverage
+      .map((day) => {
+        const value = day[key];
+        const tone = value < required ? "coverage-short" : "coverage-ok";
+        return `<td class="${tone}">${value}</td>`;
+      })
+      .join(""),
+    '<td class="summary-cell" colspan="8"></td>',
+    "</tr>",
   ].join("");
 }
 
@@ -444,11 +617,49 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   line-height: 1.45;
 }
 .diagnostic-item span { color: var(--muted); }
+.monthly-overview {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.overview-metric {
+  min-height: 58px;
+  display: grid;
+  align-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.overview-metric span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.overview-metric strong {
+  font-size: 16px;
+  line-height: 1.2;
+}
+.overview-ready { border-color: #9ec5ad; background: #f3faf6; }
+.overview-blocked { border-color: #dfa1a1; background: #fff5f5; }
 .schedule-section {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
+}
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.section-heading span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 .data-workspace {
   background: var(--surface);
@@ -622,12 +833,46 @@ thead .sticky { z-index: 5; background: #e7edf2; }
 .shift-requestMatched { background: var(--matched); box-shadow: inset 0 0 0 2px #4d9a68; }
 .shift-requestUnmet { background: var(--unmet); color: var(--blocked); font-weight: 700; box-shadow: inset 0 0 0 2px #cf6060; }
 .shift-empty { background: #ffffff; color: #bdc4cb; }
+.summary-head,
+.summary-cell {
+  min-width: 42px;
+  background: #f4f7f9;
+  color: #394550;
+  font-weight: 700;
+}
+.summary-cell {
+  font-variant-numeric: tabular-nums;
+}
+.coverage-row th,
+.coverage-row td {
+  height: 26px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.coverage-row .sticky {
+  background: #eef3f6;
+}
+.coverage-ok {
+  background: #f2f8f4;
+  color: #1d6f42;
+}
+.coverage-short {
+  background: #fdebec;
+  color: var(--blocked);
+}
+.shortage-row .name-col {
+  max-width: 96px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 @media (max-width: 720px) {
   .app-shell { padding: 10px; }
   .top-bar { align-items: flex-start; flex-direction: column; }
   .action-bar { justify-content: flex-start; }
   .workspace { grid-template-columns: 1fr; }
   .side-rail { position: static; }
+  .monthly-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .section-heading { align-items: flex-start; flex-direction: column; }
   .button-grid { grid-template-columns: 1fr; }
   .role-col { min-width: 92px; }
   .name-col { left: 92px; min-width: 82px; }
