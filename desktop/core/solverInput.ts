@@ -12,13 +12,13 @@ export interface SolverStaffCondition {
   name: string;
   condition: string;
   allowedShift: string;
-  monday: boolean;
-  tuesday: boolean;
-  wednesday: boolean;
-  thursday: boolean;
-  friday: boolean;
-  saturday: boolean;
-  sunday: boolean;
+  monday: boolean | string;
+  tuesday: boolean | string;
+  wednesday: boolean | string;
+  thursday: boolean | string;
+  friday: boolean | string;
+  saturday: boolean | string;
+  sunday: boolean | string;
   fixedOff: string;
   gender: string;
 }
@@ -33,10 +33,10 @@ export interface SolverLeaveEntry {
 export interface SolverSupplyExclusion {
   name: string;
   type: RequestType;
-  date: string;
-  startDate: string;
-  endDate: string;
-  notes: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
+  notes?: string;
 }
 
 export interface SolverScheduleRow {

@@ -45,8 +45,23 @@ function main(): void {
         date: "6/6",
         notes: "私用",
       },
+      {
+        name: "江藤",
+        type: "出張",
+        date: "6/8",
+        notes: "研修",
+      },
     ],
-    supplyExclusions: [],
+    supplyExclusions: [
+      {
+        name: "江藤",
+        type: "出張",
+        date: "6/8",
+        startDate: "6/8",
+        endDate: "6/10",
+        notes: "研修",
+      },
+    ],
     previousMonthTailByName: {
       "江藤": ["遅", "夜", "明", "公", "夜", "明", "早"],
     },
@@ -73,8 +88,14 @@ function main(): void {
   assertEqual(document.staff[0].role, "介護リーダー", "staff role");
   assertEqual(document.staff[0].allowedWeekdays.includes(0), false, "string false weekday");
   assertEqual(document.staff[0].monthlyNightTarget, 3, "night target");
-  assertEqual(document.requests[0].startDate, "2026-06-06", "request date");
-  assertEqual(document.requests[0].notes, "私用", "request notes");
+  const leaveRequest = document.requests.find((request) => request.type === "事前希望休");
+  if (!leaveRequest) throw new Error("leave request missing");
+  assertEqual(leaveRequest.startDate, "2026-06-06", "request date");
+  assertEqual(leaveRequest.notes, "私用", "request notes");
+  assertEqual(document.requests.length, 2, "request count includes supply exclusion range without duplicate start day");
+  assertEqual(document.requests[0].type, "出張", "supply exclusion type");
+  assertEqual(document.requests[0].startDate, "2026-06-08", "supply exclusion start");
+  assertEqual(document.requests[0].endDate, "2026-06-10", "supply exclusion end");
   assertEqual(document.previousMonthTail[document.staff[0].id].length, 7, "previous tail");
   assertEqual(document.schedule[0].shifts.length, 30, "schedule days padded");
   assertEqual(document.schedule[0].shifts[1], "夜", "schedule shift");

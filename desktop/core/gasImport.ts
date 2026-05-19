@@ -6,7 +6,13 @@ import type {
   StaffMember,
   StaffRequest,
 } from "./domain";
-import type { SolverInputPayload, SolverLeaveEntry, SolverScheduleRow, SolverStaffCondition } from "./solverInput";
+import type {
+  SolverInputPayload,
+  SolverLeaveEntry,
+  SolverScheduleRow,
+  SolverStaffCondition,
+  SolverSupplyExclusion,
+} from "./solverInput";
 
 export function isGasSolverInputPayload(value: unknown): value is SolverInputPayload {
   return Boolean(extractGasSolverInputPayload(value));
@@ -46,7 +52,7 @@ export function convertGasSolverInputToDocument(payload: SolverInputPayload): Mo
     year,
     month,
     staff,
-    requests: convertRequests(payload.leaveEntries || [], staffByName, year, month),
+    requests: convertRequests(payload.leaveEntries || [], payload.supplyExclusions || [], staffByName, year, month),
     requirements: {
       early: requiredCount(payload.requiredShiftStaffing, "早"),
       day: requiredCount(payload.requiredShiftStaffing, "日"),
@@ -86,25 +92,48 @@ function convertStaff(condition: SolverStaffCondition, index: number): StaffMemb
 
 function convertRequests(
   leaveEntries: SolverLeaveEntry[],
+  supplyExclusions: SolverSupplyExclusion[],
   staffByName: Map<string, StaffMember>,
   year: number,
   month: number,
 ): StaffRequest[] {
-  return leaveEntries
-    .map((entry, index) => {
-      const staff = staffByName.get(clean(entry.name));
-      const date = normalizeGasDate(entry.date, year, month);
-      if (!staff || !date) return null;
-      return {
-        id: `request-${index + 1}`,
-        staffId: staff.id,
-        type: normalizeRequestType(entry.type),
-        startDate: date,
-        endDate: date,
-        notes: clean(entry.notes),
-      } satisfies StaffRequest;
-    })
-    .filter((entry): entry is StaffRequest => Boolean(entry));
+  const requests = [
+    ...supplyExclusions,
+    ...leaveEntries.map((entry) => ({ ...entry, startDate: entry.date, endDate: entry.date })),
+  ];
+  const seen = new Set<string>();
+  const out: StaffRequest[] = [];
+
+  requests.forEach((entry) => {
+    const staff = staffByName.get(clean(entry.name));
+    const startDate = normalizeGasDate(entry.startDate || entry.date, year, month);
+    const endDate = normalizeGasDate(entry.endDate || entry.date || entry.startDate, year, month) || startDate;
+    if (!staff || !startDate || !endDate || endDate < startDate) return;
+    const requestType = normalizeRequestType(entry.type);
+    const notes = clean(entry.notes);
+    const coveredByRange = out.some(
+      (request) =>
+        request.staffId === staff.id &&
+        request.type === requestType &&
+        request.notes === notes &&
+        request.startDate <= startDate &&
+        request.endDate >= endDate,
+    );
+    if (coveredByRange) return;
+    const key = [staff.id, requestType, startDate, endDate, notes].join("|");
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({
+      id: `request-${out.length + 1}`,
+      staffId: staff.id,
+      type: requestType,
+      startDate,
+      endDate,
+      notes,
+    });
+  });
+
+  return out;
 }
 
 function convertScheduleRow(staff: StaffMember, row: SolverScheduleRow | undefined, daysInMonth: number) {
