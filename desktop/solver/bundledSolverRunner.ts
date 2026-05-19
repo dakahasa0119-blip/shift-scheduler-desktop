@@ -47,6 +47,17 @@ export interface BundledSolverLogger {
   error(message: string, details?: unknown): void;
 }
 
+export class SolverInvocationError extends Error {
+  constructor(
+    message: string,
+    readonly exitCode: number,
+    readonly output: string,
+  ) {
+    super(message);
+    this.name = "SolverInvocationError";
+  }
+}
+
 export class BundledSolverRunner implements SolverRunner {
   constructor(private readonly deps: BundledSolverRunnerDependencies) {}
 
@@ -69,7 +80,8 @@ export class BundledSolverRunner implements SolverRunner {
     try {
       const result = await this.deps.process.run(invocation);
       if (result.exitCode !== 0) {
-        throw new Error(`solver exited with code ${result.exitCode}: ${result.stderr || result.stdout}`);
+        const output = result.stderr || result.stdout;
+        throw new SolverInvocationError(`solver exited with code ${result.exitCode}: ${output}`, result.exitCode, output);
       }
       const outputText = await this.deps.files.readText(tempPaths.outputPath);
       const output = JSON.parse(outputText) as SolverOutputPayload;

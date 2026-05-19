@@ -23,6 +23,7 @@ export interface AppViewModel {
   urgentLeaveHistoryTsv: string;
   capacitySimulationJson: string;
   solverInputJson: string;
+  solverTimeLimitSeconds: number;
   capacitySimulation: CapacitySimulationViewModel | null;
   operation: OperationStateViewModel;
   staffDropdowns: typeof staffDropdownOptions;
@@ -208,6 +209,7 @@ function buildAppViewModelFromParts(
     urgentLeaveHistoryTsv: renderUrgentLeaveHistoryTsv(document),
     capacitySimulationJson: `${JSON.stringify(document.capacitySimulation || null, null, 2)}\n`,
     solverInputJson: renderSolverInputJson(document),
+    solverTimeLimitSeconds: 120,
     capacitySimulation: document.capacitySimulation
       ? {
           generatedAt: document.capacitySimulation.generatedAt,

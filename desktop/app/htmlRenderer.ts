@@ -78,6 +78,7 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     '<section class="operation-panel" aria-label="操作">',
     '<div class="operation-group operation-primary">',
     '<div class="section-heading compact"><h2>通常操作</h2><span>作成から配布前確認まで</span></div>',
+    renderSolverTimeLimitControl(viewModel),
     '<div class="button-grid action-stack">',
     renderActionById(viewModel, "validate"),
     renderActionById(viewModel, "solve"),
@@ -133,6 +134,20 @@ function renderOperationPanel(viewModel: AppViewModel): string {
     "</div>",
     "</div>",
     "</section>",
+  ].join("");
+}
+
+function renderSolverTimeLimitControl(viewModel: AppViewModel): string {
+  const values = [120, 180, 300, 600];
+  return [
+    '<label class="solver-time-limit">',
+    '<span>作成時間</span>',
+    '<select id="solver-time-limit-seconds">',
+    values
+      .map((value) => `<option value="${value}"${value === viewModel.solverTimeLimitSeconds ? " selected" : ""}>${value / 60}分</option>`)
+      .join(""),
+    "</select>",
+    "</label>",
   ].join("");
 }
 
@@ -1010,6 +1025,23 @@ h3 { font-size: 14px; margin-bottom: 8px; }
   padding-top: 0;
   border-top: 0;
 }
+.solver-time-limit {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  color: var(--muted);
+  font-weight: 800;
+}
+.solver-time-limit select {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--surface);
+  font: inherit;
+  font-weight: 700;
+}
 .button-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1557,6 +1589,10 @@ function renderClientScript(actionBasePath: string): string {
         ? {
             urgentLeaveText: document.querySelector("#urgent-leave-tsv")?.value || "",
             fixedThroughDate: document.querySelector("#recovery-fixed-through-date")?.value || ""
+          }
+      : action === "solve"
+        ? {
+            timeLimitSeconds: Number(document.querySelector("#solver-time-limit-seconds")?.value || 120)
           }
       : action === "addLeaveRequest"
         ? collectLeaveRequest()

@@ -18,7 +18,7 @@ import type {
   ValidateScheduleRequest,
   ValidateScheduleResponse,
 } from "./contracts";
-import { exportFailed, internalError, solverFailed, storageFailed, validationFailed } from "./errors";
+import { exportFailed, internalError, solverFailed, solverTimedOut, storageFailed, validationFailed } from "./errors";
 import { buildSolverInputPayload, type SolverInputPayload } from "../core/solverInput";
 import { applySolverOutputToDocument, type SolverOutputPayload } from "../core/solverOutput";
 import { validateMonthlyScheduleDocument } from "../core/validation";
@@ -31,6 +31,7 @@ import {
 } from "../exports/exportFileWriter";
 import type { PdfRenderer } from "../exports/pdfRenderer";
 import type { DocumentStore } from "../storage/jsonDocumentStore";
+import { SolverInvocationError } from "../solver/bundledSolverRunner";
 
 export interface ApiHandlerDependencies {
   appVersion: string;
@@ -107,6 +108,12 @@ export async function handleSolveSchedule(
     };
   } catch (error) {
     deps.logger?.error("solve schedule failed", error);
+    if (isSolverTimeout(error)) {
+      return solverTimedOut({ timeLimitSeconds: normalizeTimeLimit(request.options?.timeLimitSeconds) });
+    }
+    if (error instanceof SolverInvocationError) {
+      return solverFailed({ exitCode: error.exitCode, output: error.output });
+    }
     return internalError(error instanceof Error ? { message: error.message } : error);
   }
 }
@@ -152,6 +159,12 @@ export async function handleRecoverSchedule(
     };
   } catch (error) {
     deps.logger?.error("recover schedule failed", error);
+    if (isSolverTimeout(error)) {
+      return solverTimedOut({ timeLimitSeconds: normalizeTimeLimit(request.options?.timeLimitSeconds) });
+    }
+    if (error instanceof SolverInvocationError) {
+      return solverFailed({ exitCode: error.exitCode, output: error.output });
+    }
     return internalError(error instanceof Error ? { message: error.message } : error);
   }
 }
@@ -295,6 +308,10 @@ export async function handleBackupDocument(
 function normalizeTimeLimit(value: number | undefined): number {
   if (!Number.isFinite(value || NaN)) return 120;
   return Math.max(10, Math.min(600, Math.round(Number(value))));
+}
+
+function isSolverTimeout(error: unknown): boolean {
+  return error instanceof SolverInvocationError && error.exitCode === -2;
 }
 
 function formatGeneratedAt(date: Date): string {

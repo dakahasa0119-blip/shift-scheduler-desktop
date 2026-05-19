@@ -55,6 +55,7 @@ export interface AppControllerState {
 
 export class AppController {
   private state: AppControllerState;
+  private solverTimeLimitSeconds = 120;
 
   constructor(
     document: MonthlyScheduleDocument,
@@ -266,20 +267,22 @@ export class AppController {
     return this.state;
   }
 
-  async solve(): Promise<AppControllerState> {
+  async solve(timeLimitSeconds?: number): Promise<AppControllerState> {
+    this.solverTimeLimitSeconds = normalizeSolverTimeLimit(timeLimitSeconds, this.solverTimeLimitSeconds);
     return this.run(async () => {
       const response = await this.api.solveSchedule({
         document: this.state.document,
         options: {
           mode: "create",
-          timeLimitSeconds: 120,
+          timeLimitSeconds: this.solverTimeLimitSeconds,
         },
       });
       const nextDocument = response.ok ? response.document : this.state.document;
+      const viewModel = buildAppViewModelFromSolveResponse(this.state.document, response);
       return {
         ...this.state,
         document: nextDocument,
-        viewModel: buildAppViewModelFromSolveResponse(this.state.document, response),
+        viewModel: { ...viewModel, solverTimeLimitSeconds: this.solverTimeLimitSeconds },
         lastError: response.ok ? "" : response.userMessage,
       };
     });
@@ -789,6 +792,12 @@ function normalizeSettingsInput(input: unknown): ScheduleSettingsInput {
       night: normalizeInteger(value.requirements?.night, 0, 20),
     },
   };
+}
+
+function normalizeSolverTimeLimit(value: number | undefined, fallback: number): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(60, Math.min(600, Math.round(parsed)));
 }
 
 function normalizeInteger(value: unknown, min: number, max: number): number | undefined {

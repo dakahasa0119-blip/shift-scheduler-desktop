@@ -39,6 +39,9 @@ async function main(): Promise<void> {
   assertEqual(solved.viewModel.diagnostics?.sections[0].title, "確認事項", "diagnostics shown");
   assertEqual(solved.document.diagnostics?.summary.allowedShortageCount, 1, "document updated");
 
+  await controller.solve(300);
+  assertEqual(api.solveCalls[1].options?.timeLimitSeconds, 300, "custom solve time limit");
+
   const recovered = await controller.recover("氏名\t日付\t理由\t備考\n江藤\t2026-06-05\t急休\t発熱\n", "2026-06-04");
   assertEqual(recovered.busy, false, "recovered busy");
   assertEqual(api.recoverCalls.length, 1, "recover call count");

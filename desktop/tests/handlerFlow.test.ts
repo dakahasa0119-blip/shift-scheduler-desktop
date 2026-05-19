@@ -1,6 +1,7 @@
 import { handleHealth, handleRecoverSchedule, handleSolveSchedule, handleValidateSchedule } from "../api/handlers";
 import { MockSolverRunner } from "../api/mockSolverRunner";
 import { sampleMonthlyScheduleDocument } from "../core/fixtures";
+import { SolverInvocationError } from "../solver/bundledSolverRunner";
 
 async function main(): Promise<void> {
   const health = handleHealth({ appVersion: "0.1.0-test" });
@@ -61,6 +62,25 @@ async function main(): Promise<void> {
   assertEqual(solver.calls.length, 2, "recovery solver call count");
   assertEqual(solver.calls[1].options.mode, "recovery", "recovery solver mode");
   assertEqual(solver.calls[1].input.recovery?.urgentLeaves[0].originalShift, "早", "recovery original shift");
+
+  const timeout = await handleSolveSchedule(
+    {
+      document: sampleMonthlyScheduleDocument,
+      options: {
+        timeLimitSeconds: 60,
+        mode: "create",
+      },
+    },
+    {
+      appVersion: "0.1.0-test",
+      now: () => new Date(2026, 4, 19, 20, 0, 0),
+      solver: new TimeoutSolverRunner(),
+    },
+  );
+  assertEqual(timeout.ok, false, "timeout response ok");
+  if (timeout.ok) return;
+  assertEqual(timeout.code, "solver_failed", "timeout code");
+  assertEqual(timeout.userMessage, "勤務表作成が時間内に終わりませんでした。条件を減らすか、時間をおいて再実行してください。", "timeout message");
 }
 
 main().catch((error) => {
@@ -77,5 +97,11 @@ function assertEqual<T>(actual: T, expected: T, label: string): void {
 function assertTrue(value: boolean, label: string): void {
   if (!value) {
     throw new Error(`${label}: expected true`);
+  }
+}
+
+class TimeoutSolverRunner {
+  async solve(): Promise<never> {
+    throw new SolverInvocationError("solver exited with code -2:", -2, "");
   }
 }

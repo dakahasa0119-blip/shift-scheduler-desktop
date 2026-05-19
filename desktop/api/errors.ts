@@ -33,6 +33,15 @@ export function solverFailed(details?: unknown): ApiErrorResponse {
   );
 }
 
+export function solverTimedOut(details?: unknown): ApiErrorResponse {
+  return buildApiError(
+    "solver_failed",
+    "solver timed out",
+    "勤務表作成が時間内に終わりませんでした。条件を減らすか、時間をおいて再実行してください。",
+    details,
+  );
+}
+
 export function exportFailed(details?: unknown): ApiErrorResponse {
   return buildApiError(
     "export_failed",

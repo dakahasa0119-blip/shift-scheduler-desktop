@@ -176,7 +176,8 @@ async function handleShellRequest(
   }
 
   if (method === "POST" && path === "/app/solve") {
-    const state = await controller.solve();
+    const body = (await readJsonBody(request, 1024 * 1024)) as { timeLimitSeconds?: number };
+    const state = await controller.solve(body.timeLimitSeconds);
     sendHtml(response, renderAppHtml(state.viewModel, { interactive: true, actionBasePath: "/app" }));
     return;
   }
