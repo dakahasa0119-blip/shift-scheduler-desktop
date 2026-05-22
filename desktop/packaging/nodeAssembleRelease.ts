@@ -36,7 +36,7 @@ function main(): void {
     const readiness = childProcess.spawnSync(
       npxExecutable(),
       ["-y", "-p", "tsx", "tsx", "desktop/packaging/nodeReleaseReadiness.ts", `--target=${releaseTarget}`],
-      { stdio: "inherit" },
+      { stdio: "inherit", shell: isWindows() },
     );
     if (readiness.error) {
       console.error(readiness.error.message);
@@ -88,6 +88,7 @@ function main(): void {
     if (outputArg) smokeArgs.push(outputArg);
     const smoke = childProcess.spawnSync(npxExecutable(), smokeArgs, {
       stdio: "inherit",
+      shell: isWindows(),
     });
     if (smoke.error) {
       console.error(smoke.error.message);
@@ -130,6 +131,7 @@ function prepareRelease(target: ReleaseTarget | undefined, force: boolean): bool
   if (force) prepareArgs.push("--force");
   const prepare = childProcess.spawnSync(npxExecutable(), prepareArgs, {
     stdio: "inherit",
+    shell: isWindows(),
   });
   if (prepare.error) {
     console.error(prepare.error.message);
@@ -156,7 +158,7 @@ function buildRuntimeBundle(target: ReleaseTarget): boolean {
       `--entry=${entryPoint}`,
       "--out=desktop/dist/shift-scheduler.cjs",
     ],
-    { stdio: "inherit" },
+    { stdio: "inherit", shell: isWindows() },
   );
   if (bundle.error) {
     console.error(bundle.error.message);
@@ -182,7 +184,7 @@ function prepareNodeRuntime(target: ReleaseTarget): boolean {
       "desktop/packaging/nodePrepareNodeRuntime.ts",
       `--platform=${platform}`,
     ],
-    { stdio: "inherit" },
+    { stdio: "inherit", shell: isWindows() },
   );
   if (result.error) {
     console.error(result.error.message);
@@ -197,7 +199,11 @@ function prepareNodeRuntime(target: ReleaseTarget): boolean {
 }
 
 function npxExecutable(): string {
-  return process.platform === "win32" ? "npx.cmd" : "npx";
+  return "npx";
+}
+
+function isWindows(): boolean {
+  return process.platform === "win32";
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodeAssembleRelease.ts") || arg.endsWith("nodeAssembleRelease.ts"))) {

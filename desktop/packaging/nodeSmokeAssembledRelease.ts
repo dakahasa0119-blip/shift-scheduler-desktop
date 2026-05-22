@@ -54,20 +54,22 @@ async function main(): Promise<void> {
     outputDirectory: assemblyPlan.outputDirectory,
     port: portArg ? Number(portArg.replace("--port=", "")) : undefined,
   });
+  const launcherPath = path.resolve(smokePlan.launcherPath);
+  const dataDirectory = path.resolve(smokePlan.dataDirectory);
 
-  if (!fs.existsSync(smokePlan.launcherPath)) {
+  if (!fs.existsSync(launcherPath)) {
     console.error(`launcher missing: ${smokePlan.launcherPath}`);
     process.exitCode = 1;
     return;
   }
 
-  const child = childProcess.spawn(path.resolve(smokePlan.launcherPath), [`--port=${smokePlan.port}`], {
+  const child = childProcess.spawn(launcherPath, [`--port=${smokePlan.port}`], {
     cwd: smokePlan.outputDirectory,
     detached: process.platform !== "win32",
     env: {
       ...process.env,
       SHIFT_DESKTOP_NO_OPEN: "1",
-      SHIFT_DESKTOP_DATA_DIR: smokePlan.dataDirectory,
+      SHIFT_DESKTOP_DATA_DIR: dataDirectory,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -98,8 +100,8 @@ async function main(): Promise<void> {
     assertEqual(backup.statusCode, 200, "backup status");
     assertIncludes(backup.body, "バックアップしました", "backup status text");
 
-    if (!fs.existsSync(`${smokePlan.dataDirectory}/current-schedule.json`)) {
-      throw new Error(`saved document missing: ${smokePlan.dataDirectory}/current-schedule.json`);
+    if (!fs.existsSync(`${dataDirectory}/current-schedule.json`)) {
+      throw new Error(`saved document missing: ${dataDirectory}/current-schedule.json`);
     }
 
     const exportedJson = await requestText(`${smokePlan.expectedBaseUrl}/app/export/json`, "GET");

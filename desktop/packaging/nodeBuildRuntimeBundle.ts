@@ -29,7 +29,7 @@ function main(): void {
       `--outfile=${outputFile}`,
       "--external:node:*",
     ],
-    { stdio: "inherit" },
+    { stdio: "inherit", shell: isWindows() },
   );
   if (result.error) {
     console.error(result.error.message);
@@ -44,7 +44,11 @@ function main(): void {
 }
 
 function npxExecutable(): string {
-  return process.platform === "win32" ? "npx.cmd" : "npx";
+  return "npx";
+}
+
+function isWindows(): boolean {
+  return process.platform === "win32";
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodeBuildRuntimeBundle.ts") || arg.endsWith("nodeBuildRuntimeBundle.ts"))) {

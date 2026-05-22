@@ -49,6 +49,7 @@ function main(): void {
   if (skipSmoke) assembleArgs.push("--skip-smoke");
   const assemble = childProcess.spawnSync(npxExecutable(), assembleArgs, {
     stdio: "inherit",
+    shell: isWindows(),
   });
   if (assemble.error) {
     console.error(assemble.error.message);
@@ -109,6 +110,7 @@ function main(): void {
     if (verifyOutArg) verifyArgs.push(verifyOutArg);
     const verify = childProcess.spawnSync(npxExecutable(), verifyArgs, {
       stdio: "inherit",
+      shell: isWindows(),
     });
     if (verify.error) {
       console.error(verify.error.message);
@@ -141,11 +143,15 @@ function createArchive(format: "tar.gz" | "zip", archivePath: string, assembledD
 }
 
 function npxExecutable(): string {
-  return process.platform === "win32" ? "npx.cmd" : "npx";
+  return "npx";
 }
 
 function pythonExecutable(): string {
   return process.platform === "win32" ? "python" : "python3";
+}
+
+function isWindows(): boolean {
+  return process.platform === "win32";
 }
 
 function cleanReleaseOnlyArtifacts(assembledDirectory: string): void {

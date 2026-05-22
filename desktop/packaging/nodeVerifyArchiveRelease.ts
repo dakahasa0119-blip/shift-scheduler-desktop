@@ -114,6 +114,7 @@ function main(): void {
   ];
   const smoke = childProcess.spawnSync(npxExecutable(), smokeArgs, {
     stdio: "inherit",
+    shell: isWindows(),
   });
   if (smoke.error) {
     console.error(smoke.error.message);
@@ -144,11 +145,15 @@ function extractArchive(format: "tar.gz" | "zip", archivePath: string, outputDir
 }
 
 function npxExecutable(): string {
-  return process.platform === "win32" ? "npx.cmd" : "npx";
+  return "npx";
 }
 
 function pythonExecutable(): string {
   return process.platform === "win32" ? "python" : "python3";
+}
+
+function isWindows(): boolean {
+  return process.platform === "win32";
 }
 
 function sha256File(filePath: string): string {

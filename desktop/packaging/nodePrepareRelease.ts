@@ -41,6 +41,7 @@ function main(): void {
     console.log(`step: ${step.label}`);
     const result = childProcess.spawnSync(resolveExecutable(step.executable), step.args, {
       stdio: "inherit",
+      shell: process.platform === "win32" && step.executable === "npx",
     });
     if (result.error) {
       console.error(result.error.message);
@@ -56,7 +57,6 @@ function main(): void {
 }
 
 function resolveExecutable(executable: string): string {
-  if (process.platform === "win32" && executable === "npx") return "npx.cmd";
   return executable;
 }
 
