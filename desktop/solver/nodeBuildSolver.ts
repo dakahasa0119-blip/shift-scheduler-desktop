@@ -16,6 +16,7 @@ const path = require("node:path");
 function main(): void {
   const platformArg = process.argv.find((arg) => arg.startsWith("--platform="));
   const force = process.argv.includes("--force");
+  const skipReadiness = process.argv.includes("--skip-readiness");
   let requestedPlatform: SolverBuildPlatform | undefined;
   try {
     requestedPlatform = platformArg ? parseSolverBuildPlatform(platformArg.replace("--platform=", "")) : undefined;
@@ -66,7 +67,7 @@ function main(): void {
   console.log(`output: ${outputPath}`);
   if (!actualPlan.shouldBuild) {
     console.log("build: skipped");
-    printReadiness(actualPlan.releaseTarget);
+    if (!skipReadiness) printReadiness(actualPlan.releaseTarget);
     return;
   }
 
@@ -93,7 +94,7 @@ function main(): void {
     fs.chmodSync(outputPath, 0o755);
   }
   console.log("build: completed");
-  printReadiness(actualPlan.releaseTarget);
+  if (!skipReadiness) printReadiness(actualPlan.releaseTarget);
 }
 
 function commandOutputPath(platform: SolverBuildPlatform): string {

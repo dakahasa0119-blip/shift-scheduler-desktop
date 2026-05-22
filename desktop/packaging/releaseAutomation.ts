@@ -3,7 +3,7 @@ import type { SolverBuildPlatform } from "../solver/buildPlan";
 import type { ReleaseTarget } from "./releaseManifest";
 
 export interface ReleaseAutomationStep {
-  id: "solver-build" | "readiness";
+  id: "solver-build" | "node-runtime" | "readiness";
   label: string;
   executable: string;
   args: string[];
@@ -37,7 +37,7 @@ export function buildPrepareReleasePlan(options: PrepareReleasePlanOptions): Pre
   }
 
   const solverPlatform = solverPlatformForReleaseTarget(target);
-  const solverArgs = ["-y", "-p", "tsx", "tsx", "desktop/solver/nodeBuildSolver.ts"];
+  const solverArgs = ["-y", "-p", "tsx", "tsx", "desktop/solver/nodeBuildSolver.ts", "--skip-readiness"];
   if (options.force) solverArgs.push("--force");
 
   return {
@@ -49,6 +49,12 @@ export function buildPrepareReleasePlan(options: PrepareReleasePlanOptions): Pre
         label: "Prepare bundled solver",
         executable: "npx",
         args: solverArgs,
+      },
+      {
+        id: "node-runtime",
+        label: "Prepare bundled Node.js runtime",
+        executable: "npx",
+        args: ["-y", "-p", "tsx", "tsx", "desktop/packaging/nodePrepareNodeRuntime.ts", `--platform=${solverPlatform}`],
       },
       {
         id: "readiness",

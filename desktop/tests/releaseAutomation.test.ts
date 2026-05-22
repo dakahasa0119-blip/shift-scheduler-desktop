@@ -14,7 +14,11 @@ function main(): void {
   assertEqual(linux.solverPlatform, "linux-x64", "linux solver");
   assertEqual(linux.steps[0].id, "solver-build", "first step");
   assertIncludes(linux.steps[0].args.join(" "), "desktop/solver/nodeBuildSolver.ts", "solver step");
-  assertIncludes(linux.steps[1].args.join(" "), "--target=linux-prototype", "readiness target");
+  assertIncludes(linux.steps[0].args.join(" "), "--skip-readiness", "solver readiness deferred");
+  assertEqual(linux.steps[1].id, "node-runtime", "second step");
+  assertIncludes(linux.steps[1].args.join(" "), "desktop/packaging/nodePrepareNodeRuntime.ts", "node runtime step");
+  assertIncludes(linux.steps[1].args.join(" "), "--platform=linux-x64", "node runtime platform");
+  assertIncludes(linux.steps[2].args.join(" "), "--target=linux-prototype", "readiness target");
 
   const forced = buildPrepareReleasePlan({ nodePlatform: "linux", force: true });
   assertIncludes(forced.steps[0].args.join(" "), "--force", "force solver build");

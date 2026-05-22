@@ -4,7 +4,11 @@ const fs = require("node:fs");
 
 function main(): void {
   const source = fs.readFileSync(".github/workflows/build-windows-solver.yml", "utf8");
-  assertIncludes(source, "desktop/solver/nodeBuildSolver.ts --platform=windows-x64 --force", "shared solver builder");
+  assertIncludes(
+    source,
+    "desktop/solver/nodeBuildSolver.ts --platform=windows-x64 --force --skip-readiness",
+    "shared solver builder",
+  );
   assertNotIncludes(source, "python -m PyInstaller", "duplicated pyinstaller command");
 }
 

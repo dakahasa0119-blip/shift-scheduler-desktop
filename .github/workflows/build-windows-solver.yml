@@ -30,7 +30,7 @@ jobs:
 
       - name: Build solver executable
         run: |
-          npx -y -p tsx tsx desktop/solver/nodeBuildSolver.ts --platform=windows-x64 --force
+          npx -y -p tsx tsx desktop/solver/nodeBuildSolver.ts --platform=windows-x64 --force --skip-readiness
 
       - name: Verify executable starts
         run: |
