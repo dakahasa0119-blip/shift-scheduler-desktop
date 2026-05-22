@@ -4,10 +4,13 @@ function main(): void {
   const linux = buildPyInstallerCommand(initialSolverBuildTargets[0]);
   assertEqual(linux.executable, "pyinstaller", "linux builder executable");
   assertTrue(linux.args.includes("--onefile"), "linux onefile flag");
+  assertTrue(linux.args.includes("solver_cli"), "linux solver source path");
+  assertTrue(linux.args.includes("solver_cli/shift_solver/veteran_rule_policy.json:shift_solver"), "linux veteran policy data");
   assertEqual(linux.outputExecutablePath, "desktop/packaging/resources/solver/linux-x64/shift-solver", "linux output path");
 
   const windows = buildPyInstallerCommand(initialSolverBuildTargets[1]);
   assertEqual(windows.args[windows.args.indexOf("--name") + 1], "shift-solver", "windows pyinstaller name");
+  assertTrue(windows.args.includes("solver_cli/shift_solver/veteran_rule_policy.json;shift_solver"), "windows veteran policy data");
   assertEqual(
     windows.outputExecutablePath,
     "desktop/packaging/resources/solver/windows-x64/shift-solver.exe",

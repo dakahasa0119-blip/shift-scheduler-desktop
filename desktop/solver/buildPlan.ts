@@ -24,10 +24,14 @@ export function buildPyInstallerCommand(target: SolverBuildTarget): SolverBuildC
       stripExecutableExtension(target.executableName),
       "--distpath",
       target.outputDirectory,
+      "--paths",
+      "solver_cli",
       "--clean",
       "--noconfirm",
       "--collect-all",
       "ortools",
+      "--add-data",
+      formatPyInstallerDataSpec("solver_cli/shift_solver/veteran_rule_policy.json", "shift_solver", target.platform),
       target.entryScript,
     ],
     outputExecutablePath: joinPath(target.outputDirectory, target.executableName),
@@ -75,6 +79,10 @@ function stripExecutableExtension(name: string): string {
 
 function joinPath(left: string, right: string): string {
   return `${left.replace(/\/+$/, "")}/${right.replace(/^\/+/, "")}`;
+}
+
+function formatPyInstallerDataSpec(source: string, destination: string, platform: SolverBuildPlatform): string {
+  return platform === "windows-x64" ? `${source};${destination}` : `${source}:${destination}`;
 }
 
 function quoteArg(value: string): string {

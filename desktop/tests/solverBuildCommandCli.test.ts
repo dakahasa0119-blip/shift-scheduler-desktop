@@ -8,7 +8,9 @@ function main(): void {
   const windows = buildPyInstallerCommand(findSolverBuildTarget("windows-x64"));
   assertEqual(windows.outputExecutablePath, "desktop/packaging/resources/solver/windows-x64/shift-solver.exe", "windows output");
   assertIncludes(formatCommand(windows), "--distpath desktop/packaging/resources/solver/windows-x64", "formatted distpath");
+  assertIncludes(formatCommand(windows), "--paths solver_cli", "solver source path");
   assertIncludes(formatCommand(windows), "--collect-all ortools", "ortools binaries collected");
+  assertIncludes(formatCommand(windows), "solver_cli/shift_solver/veteran_rule_policy.json;shift_solver", "veteran policy bundled");
   assertIncludes(formatCommand(windows), "desktop/solver/pyinstaller_entry.py", "formatted entry script");
 }
 

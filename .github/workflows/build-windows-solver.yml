@@ -29,10 +29,8 @@ jobs:
           python -m pip install pyinstaller
 
       - name: Build solver executable
-        env:
-          PYTHONPATH: solver_cli
         run: |
-          python -m PyInstaller --onefile --name shift-solver --distpath desktop\packaging\resources\solver\windows-x64 --clean --noconfirm --collect-all ortools desktop\solver\pyinstaller_entry.py
+          npx -y -p tsx tsx desktop/solver/nodeBuildSolver.ts --platform=windows-x64 --force
 
       - name: Verify executable starts
         run: |

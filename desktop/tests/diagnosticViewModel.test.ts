@@ -10,7 +10,7 @@ function main(): void {
   assertEqual(viewModel.result.severity, "note", "result severity");
   assertEqual(
     viewModel.sections.map((section) => section.id).join(","),
-    "summary,shortages,unmetRequests,suggestions",
+    "summary,veteranEvaluation,shortages,unmetRequests,suggestions",
     "section order",
   );
 
@@ -26,6 +26,10 @@ function main(): void {
   const unmet = viewModel.sections.find((section) => section.id === "unmetRequests");
   assertEqual(unmet?.items[0].primary, "6/6 有山 希望日勤", "unmet request primary");
   assertEqual(unmet?.items[0].secondary, "割当: 早", "unmet request secondary");
+
+  const veteran = viewModel.sections.find((section) => section.id === "veteranEvaluation");
+  assertEqual(veteran?.title, "採用理由", "veteran section title");
+  assertTrue(veteran?.items.some((item) => item.primary.includes("staffing_limited_accept")) || false, "veteran decision shown");
 }
 
 function assertEqual<T>(actual: T, expected: T, label: string): void {

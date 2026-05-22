@@ -26,7 +26,7 @@ desktop/packaging/resources/solver/windows-x64/shift-solver.exe
 ## Expected Runtime Contract
 
 ```text
-shift-solver solve input.json --out output.json --debug debug.json --time-limit 240
+shift-solver solve input.json --out output.json --debug debug.json --time-limit 120
 ```
 
 ## Build Command Shape

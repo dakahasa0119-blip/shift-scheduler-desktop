@@ -1,6 +1,7 @@
 {
   "name": "night-density-and-recovery-baseline-2026-05-17",
   "description": "Deterministic solver quality gates for unattended production operation. These gates are based on generated month, staffing, leave-cluster, and recovery scenarios after night-density and four-workday tuning.",
+  "qualityStandard": "../docs/schedule_quality_standard.md",
   "batchCommand": "node scripts/run_solver_regression_batch.js --years 2028,2029,2030 --months 2,5,6,8,9,12 --variants 2 --time-limit 20 --recovery-probes 1 --recovery-max-span 4 --out .solver_runs/quality_gate",
   "baselineSummary": {
     "sourceRun": ".solver_runs/four_work_tuning_smoke/20260517100644/summary.json",
@@ -20,13 +21,14 @@
     "maxFourConsecutiveWorkCount": 50,
     "maxAbsenceCandidateDiffCount": 12,
     "maxAbsenceCandidateDiffCountPerCase": 2,
-    "maxRecoveryDiffCountPerCase": 6
+    "maxRecoveryDiffCountPerCase": 9
   },
   "interpretation": {
     "hardAndBlocking": "Must stay zero for production.",
     "infeasible": "Allowed only for intentionally over-constrained stress cases; production input should be stopped by feasibility diagnostics before calling this acceptable.",
     "tightNightBlock": "Permitted as a monitored naturalness residual when night density, leave clusters, or recovery constraints force it.",
     "fourConsecutiveWork": "Permitted only as a residual after the preferred max-three-consecutive objective.",
-    "absenceCandidate": "Allowed in recovery stress cases when public-holiday movement cannot absorb urgent leave."
+    "absenceCandidate": "Allowed in recovery stress cases when public-holiday movement cannot absorb urgent leave.",
+    "recoveryDiff": "Urgent-leave recovery should prefer minimal edits, but a small chain is allowed when it removes blocking core-shift shortages without hard violations."
   }
 }

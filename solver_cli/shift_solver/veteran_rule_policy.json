@@ -1,0 +1,2283 @@
+{
+  "schemaVersion": "veteran-rule-policy/v1",
+  "sourceModelVersion": "veteran-rule-model/20260523_all_plus_medium_candidate3_triage_carelate_rank_min20_softiso_stress_v2",
+  "sourceGeneratedAt": "2026-05-22T18:10:06.198Z",
+  "sampleCount": 468,
+  "patternCount": 241,
+  "axisPolicyCount": 109,
+  "axisKeys": [
+    "feasibility",
+    "rhythm",
+    "role",
+    "availability",
+    "familyContext",
+    "fairness",
+    "naturalness"
+  ],
+  "policies": [
+    {
+      "axes": {
+        "feasibility": "feasibility_none",
+        "rhythm": "rhythm_none",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "familyContext_none",
+        "fairness": "fairness_none",
+        "naturalness": "naturalness_none"
+      },
+      "count": 72,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 0.444,
+      "avgRiskDelta": -1067.029,
+      "examples": [
+        "2030-06-v1-recovery-p1-d1",
+        "2028-08-v0-recovery-p1-d1",
+        "2030-06-v1",
+        "2028-12-v0-recovery-p1-d1",
+        "2028-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 38,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -523.184,
+      "examples": [
+        "2029-06-v0",
+        "2029-09-v1",
+        "2028-06-v0",
+        "2028-09-v1",
+        "2030-05-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 15,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1664.599,
+      "examples": [
+        "2028-02-v1-recovery-p1-d1",
+        "2028-09-v1-recovery-p1-d1",
+        "2030-12-v0-recovery-p1-d1",
+        "2028-02-v1-recovery-p1-d1",
+        "2028-09-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 12,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -334.75,
+      "examples": [
+        "2029-09-v1-recovery-p1-d1",
+        "2030-12-v1-recovery-p1-d1",
+        "2029-09-v1-recovery-p1-d1",
+        "2030-12-v1-recovery-p1-d1",
+        "2029-09-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 12,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 0.667,
+      "avgRiskDelta": -87.833,
+      "examples": [
+        "2030-02-v0",
+        "2030-09-v0",
+        "2030-02-v0",
+        "2030-09-v0",
+        "2030-02-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 12,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 0.667,
+      "avgRiskDelta": -93.332,
+      "examples": [
+        "2029-02-v0",
+        "2030-08-v0",
+        "2028-02-v0",
+        "2029-02-v0",
+        "2030-08-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 11,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1536.455,
+      "examples": [
+        "2028-02-v1",
+        "2029-05-v0",
+        "2028-02-v1",
+        "2029-05-v0",
+        "2028-02-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 10,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -723.6,
+      "examples": [
+        "2029-06-v1",
+        "2029-09-v0",
+        "2029-06-v1",
+        "2029-09-v0",
+        "2029-06-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 9,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -2125.889,
+      "examples": [
+        "2030-09-v1",
+        "2028-05-v1",
+        "2030-09-v1",
+        "2028-05-v1",
+        "2030-09-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 9,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1152.222,
+      "examples": [
+        "2029-06-v0-recovery-p1-d1",
+        "2030-05-v1-recovery-p1-d1",
+        "2029-06-v0-recovery-p1-d1",
+        "2030-05-v1-recovery-p1-d1",
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 8,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -691.5,
+      "examples": [
+        "2028-08-v0",
+        "2028-05-v0",
+        "2028-08-v0",
+        "2028-05-v0",
+        "2028-08-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 8,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -934,
+      "examples": [
+        "2029-08-v0",
+        "2029-12-v1",
+        "2029-08-v0",
+        "2029-12-v1",
+        "2029-08-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "unmet_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 8,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": -146,
+      "examples": [
+        "2028-12-v0-recovery-p1-d1",
+        "2029-12-v1-recovery-p1-d1",
+        "2028-12-v0-recovery-p1-d1",
+        "2029-12-v1-recovery-p1-d1",
+        "2028-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 8,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 0.5,
+      "avgRiskDelta": -807,
+      "examples": [
+        "2029-12-v0",
+        "2029-05-v1",
+        "2029-12-v0",
+        "2029-05-v1",
+        "2029-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 7,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -490.571,
+      "examples": [
+        "2028-06-v0-recovery-p1-d1",
+        "2028-06-v0-recovery-p1-d1",
+        "2028-06-v0-recovery-p1-d1",
+        "2028-06-v0-recovery-p1-d1",
+        "2029-09-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 6,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -719.167,
+      "examples": [
+        "2030-08-v1",
+        "2030-08-v1",
+        "2030-08-v1",
+        "2030-08-v1",
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 6,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1557.5,
+      "examples": [
+        "2029-01-v0",
+        "2029-12-v0",
+        "2029-05-v1",
+        "2029-06-v0",
+        "2029-01-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 5,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -628.6,
+      "examples": [
+        "2030-08-v1-recovery-p1-d1",
+        "2030-08-v1-recovery-p1-d1",
+        "2030-08-v1-recovery-p1-d1",
+        "2030-08-v1-recovery-p1-d1",
+        "2029-01-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 5,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1852,
+      "examples": [
+        "2029-09-v0-recovery-p1-d1",
+        "2029-09-v0-recovery-p1-d1",
+        "2029-09-v0-recovery-p1-d1",
+        "2029-09-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 5,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1378.8,
+      "examples": [
+        "2028-06-v1",
+        "2028-06-v1",
+        "2028-06-v1",
+        "2028-06-v1",
+        "2029-08-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+limited_day_late",
+        "availability": "full_shift+limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -657,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1",
+        "2029-05-v0-recovery-p1-d1",
+        "2029-05-v0-recovery-p1-d1",
+        "2029-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -860,
+      "examples": [
+        "2028-09-v0-recovery-p1-d1",
+        "2028-09-v0-recovery-p1-d1",
+        "2028-09-v0-recovery-p1-d1",
+        "2028-09-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "same_shift_run_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -643,
+      "examples": [
+        "2030-02-v1-recovery-p1-d1",
+        "2030-02-v1-recovery-p1-d1",
+        "2030-02-v1-recovery-p1-d1",
+        "2030-02-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -414,
+      "examples": [
+        "2030-02-v1",
+        "2030-02-v1",
+        "2030-02-v1",
+        "2030-02-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "four_work_present",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_solver_improvement",
+      "recommendedAction": "increase_targeted_penalty",
+      "confidence": 1,
+      "avgRiskDelta": 106,
+      "examples": [
+        "2029-02-v0-recovery-p1-d1",
+        "2029-02-v0-recovery-p1-d1",
+        "2029-02-v0-recovery-p1-d1",
+        "2029-02-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "four_work_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_solver_improvement",
+      "recommendedAction": "increase_targeted_penalty",
+      "confidence": 1,
+      "avgRiskDelta": 442,
+      "examples": [
+        "2030-02-v0-recovery-p1-d1",
+        "2030-02-v0-recovery-p1-d1",
+        "2030-02-v0-recovery-p1-d1",
+        "2030-02-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "four_work_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_solver_improvement",
+      "recommendedAction": "increase_targeted_penalty",
+      "confidence": 1,
+      "avgRiskDelta": -638,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1",
+        "2029-08-v0-recovery-p1-d1",
+        "2029-08-v0-recovery-p1-d1",
+        "2029-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "harmful_bridge_rhythm",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "harmful_tradeoff",
+      "recommendedAction": "discourage_unpaid_tradeoff",
+      "confidence": 1,
+      "avgRiskDelta": 558,
+      "examples": [
+        "2028-02-v0-recovery-p1-d1",
+        "2028-02-v0-recovery-p1-d1",
+        "2028-02-v0-recovery-p1-d1",
+        "2028-02-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -473,
+      "examples": [
+        "2028-09-v0",
+        "2028-09-v0",
+        "2028-09-v0",
+        "2028-09-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -1270,
+      "examples": [
+        "2029-12-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -580,
+      "examples": [
+        "2029-06-v1-recovery-p1-d1",
+        "2029-06-v1-recovery-p1-d1",
+        "2029-06-v1-recovery-p1-d1",
+        "2029-06-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 4,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -962,
+      "examples": [
+        "2028-05-v0-recovery-p1-d1",
+        "2028-05-v0-recovery-p1-d1",
+        "2028-05-v0-recovery-p1-d1",
+        "2028-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -855,
+      "examples": [
+        "2028-12-v1",
+        "2028-12-v1",
+        "2028-12-v1",
+        "2028-12-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -578,
+      "examples": [
+        "2030-08-v0-recovery-p1-d1",
+        "2030-08-v0-recovery-p1-d1",
+        "2030-08-v0-recovery-p1-d1",
+        "2030-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1038,
+      "examples": [
+        "2028-12-v1-recovery-p1-d1",
+        "2028-12-v1-recovery-p1-d1",
+        "2028-12-v1-recovery-p1-d1",
+        "2028-12-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+limited_day_late+night_primary",
+        "availability": "full_shift+limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -3875,
+      "examples": [
+        "2028-08-v1-recovery-p1-d1",
+        "2028-08-v1-recovery-p1-d1",
+        "2028-08-v1-recovery-p1-d1",
+        "2028-08-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -3502,
+      "examples": [
+        "2028-08-v1",
+        "2028-08-v1",
+        "2028-08-v1",
+        "2028-08-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "four_work_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_solver_improvement",
+      "recommendedAction": "increase_targeted_penalty",
+      "confidence": 1,
+      "avgRiskDelta": -841,
+      "examples": [
+        "2029-02-v1",
+        "2029-02-v1",
+        "2029-02-v1",
+        "2029-02-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "four_work_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_solver_improvement",
+      "recommendedAction": "increase_targeted_penalty",
+      "confidence": 1,
+      "avgRiskDelta": -2249,
+      "examples": [
+        "2029-02-v1-recovery-p1-d1",
+        "2029-02-v1-recovery-p1-d1",
+        "2029-02-v1-recovery-p1-d1",
+        "2029-02-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -3009,
+      "examples": [
+        "2028-05-v1-recovery-p1-d1",
+        "2028-05-v1-recovery-p1-d1",
+        "2028-05-v1-recovery-p1-d1",
+        "2028-05-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -2863,
+      "examples": [
+        "2030-09-v1-recovery-p1-d1",
+        "2030-09-v1-recovery-p1-d1",
+        "2030-09-v1-recovery-p1-d1",
+        "2030-09-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1896,
+      "examples": [
+        "2029-05-v1-recovery-p1-d1",
+        "2029-05-v1-recovery-p1-d1",
+        "2029-05-v1-recovery-p1-d1",
+        "2029-05-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -3777,
+      "examples": [
+        "2029-08-v1",
+        "2029-08-v1",
+        "2029-08-v1",
+        "2029-08-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -3799,
+      "examples": [
+        "2029-08-v1-recovery-p1-d1",
+        "2029-08-v1-recovery-p1-d1",
+        "2029-08-v1-recovery-p1-d1",
+        "2029-08-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1400.5,
+      "examples": [
+        "2029-05-v1-recovery-p1-d1",
+        "2029-01-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1",
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -1369,
+      "examples": [
+        "2030-09-v0-recovery-p1-d1",
+        "2030-09-v0-recovery-p1-d1",
+        "2030-09-v0-recovery-p1-d1",
+        "2030-09-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -2086,
+      "examples": [
+        "2030-05-v0-recovery-p1-d1",
+        "2030-05-v0-recovery-p1-d1",
+        "2030-05-v0-recovery-p1-d1",
+        "2030-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -2024,
+      "examples": [
+        "2030-06-v0-recovery-p1-d1",
+        "2030-06-v0-recovery-p1-d1",
+        "2030-06-v0-recovery-p1-d1",
+        "2030-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1304,
+      "examples": [
+        "2030-06-v0",
+        "2030-06-v0",
+        "2030-06-v0",
+        "2030-06-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": -1367,
+      "examples": [
+        "2030-05-v0",
+        "2030-05-v0",
+        "2030-05-v0",
+        "2030-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1191,
+      "examples": [
+        "2028-06-v1-recovery-p1-d1",
+        "2028-06-v1-recovery-p1-d1",
+        "2028-06-v1-recovery-p1-d1",
+        "2028-06-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "unmet_remaining",
+        "rhythm": "four_work_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": -1457,
+      "examples": [
+        "2030-06-v1-recovery-p1-d1",
+        "2030-06-v1-recovery-p1-d1",
+        "2030-06-v1-recovery-p1-d1",
+        "2030-06-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "unmet_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": 31,
+      "examples": [
+        "2028-08-v0-recovery-p1-d1",
+        "2028-08-v0-recovery-p1-d1",
+        "2028-08-v0-recovery-p1-d1",
+        "2028-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "unmet_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": -1249,
+      "examples": [
+        "2030-06-v1",
+        "2030-06-v1",
+        "2030-06-v1",
+        "2030-06-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "unmet_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 4,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": 79,
+      "examples": [
+        "2028-12-v0",
+        "2028-12-v0",
+        "2028-12-v0",
+        "2028-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 3,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -1096,
+      "examples": [
+        "2029-01-v0-recovery-p1-d1",
+        "2029-05-v0-recovery-p1-d1",
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 2,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -469,
+      "examples": [
+        "2029-06-v0-recovery-p1-d1",
+        "2029-02-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 2,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -1985,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1",
+        "2029-08-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 2,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -2438,
+      "examples": [
+        "2029-01-v0-recovery-p1-d1",
+        "2029-12-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 2,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1993,
+      "examples": [
+        "2029-01-v0",
+        "2029-12-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 2,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 0.5,
+      "avgRiskDelta": -1006.5,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1",
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 2,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 0.5,
+      "avgRiskDelta": 732,
+      "examples": [
+        "2029-02-v0-recovery-p1-d1",
+        "2029-02-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -446,
+      "examples": [
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1383,
+      "examples": [
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 856,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": 996,
+      "examples": [
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "naturalness_improved"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -724,
+      "examples": [
+        "2029-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -911,
+      "examples": [
+        "2029-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": 1523,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 236,
+      "examples": [
+        "2029-02-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 346,
+      "examples": [
+        "2029-06-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 338,
+      "examples": [
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 407,
+      "examples": [
+        "2029-01-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -290,
+      "examples": [
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1623,
+      "examples": [
+        "2029-08-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": 1185,
+      "examples": [
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -11,
+      "examples": [
+        "2029-02-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "same_shift_run_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 1587,
+      "examples": [
+        "2029-02-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -534,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -375,
+      "examples": [
+        "2029-06-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "feasible_clean",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -501,
+      "examples": [
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "hard_blocked",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "naturalness_stable"
+      },
+      "count": 1,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": 16000,
+      "examples": [
+        "2029-01-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+limited_day_late+night_primary",
+        "availability": "full_shift+limited_day_late",
+        "familyContext": "condition_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 949,
+      "examples": [
+        "2029-06-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "care+limited_day_late+night_primary",
+        "availability": "full_shift+limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 1334,
+      "examples": [
+        "2029-06-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -1378,
+      "examples": [
+        "2029-02-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -1157,
+      "examples": [
+        "2029-01-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1920,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1375,
+      "examples": [
+        "2029-01-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "condition_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -599,
+      "examples": [
+        "2029-08-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -912,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -911,
+      "examples": [
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "night_gap_worse",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": 622,
+      "examples": [
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 726,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1256,
+      "examples": [
+        "2029-05-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "normal_pressure_clean_bot2",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "staffing_pressure_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1301,
+      "examples": [
+        "2029-05-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "beneficial_bridge_rhythm",
+        "role": "night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": -1378,
+      "examples": [
+        "2029-02-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_improved",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": -1227,
+      "examples": [
+        "2029-12-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_improved",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -25,
+      "examples": [
+        "2029-12-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "needs_quality_review",
+      "recommendedAction": "add_rule_dimension_or_weight",
+      "confidence": 1,
+      "avgRiskDelta": 2946,
+      "examples": [
+        "2029-01-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "condition_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 1599,
+      "examples": [
+        "2029-06-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "blocking_operational",
+      "recommendedAction": "fix_feasibility_first",
+      "confidence": 1,
+      "avgRiskDelta": -861619,
+      "examples": [
+        "2029-08-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "night_gap_worse",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "standard_context",
+        "fairness": "same_shift_run_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 1197,
+      "examples": [
+        "2029-02-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "care",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "staffing_limited_accept",
+      "recommendedAction": "preserve_as_staffing_pressure",
+      "confidence": 1,
+      "avgRiskDelta": 326,
+      "examples": [
+        "2029-12-v1-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "care+night_primary",
+        "availability": "full_shift",
+        "familyContext": "recovery_staffing_pressure",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "tradeoff_accept_candidate",
+      "recommendedAction": "allow_when_tradeoff_beneficial",
+      "confidence": 1,
+      "avgRiskDelta": 1060,
+      "examples": [
+        "2029-06-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": -385,
+      "examples": [
+        "2029-08-v0-recovery-p1-d1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_improved",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 2898,
+      "examples": [
+        "2029-01-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "fairness_stable",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 763,
+      "examples": [
+        "2029-12-v1"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "limited_day_late",
+        "availability": "limited_day_late",
+        "familyContext": "standard_context",
+        "fairness": "same_shift_run_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 1998,
+      "examples": [
+        "2029-02-v0"
+      ]
+    },
+    {
+      "axes": {
+        "feasibility": "shortage_remaining",
+        "rhythm": "rhythm_stable",
+        "role": "role_none",
+        "availability": "availability_none",
+        "familyContext": "recovery_context",
+        "fairness": "recovery_or_absence_worse",
+        "naturalness": "isolation_worse"
+      },
+      "count": 1,
+      "recommendedDecision": "accept_candidate",
+      "recommendedAction": "prefer_candidate",
+      "confidence": 1,
+      "avgRiskDelta": 1922,
+      "examples": [
+        "2029-02-v0-recovery-p1-d1"
+      ]
+    }
+  ]
+}

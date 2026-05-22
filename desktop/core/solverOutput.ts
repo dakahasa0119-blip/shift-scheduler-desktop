@@ -43,6 +43,41 @@ export interface SolverOutputDiagnostics {
   }[];
   fallback?: string;
   reason?: string;
+  veteranEvaluation?: SolverVeteranEvaluation;
+  candidateSelection?: SolverCandidateSelection;
+}
+
+export interface SolverVeteranEvaluation {
+  schemaVersion?: "veteran-evaluation/v1";
+  modelVersion?: string;
+  decision?: string;
+  action?: string;
+  score?: number;
+  reason?: string;
+  metrics?: Record<string, number>;
+  buckets?: Record<string, string>;
+  signals?: {
+    metric?: string;
+    count?: number;
+    severity?: string;
+    samples?: unknown[];
+  }[];
+}
+
+export interface SolverCandidateSelection {
+  schemaVersion?: "veteran-candidate-selection/v1";
+  candidateCount?: number;
+  selectedIndex?: number;
+  selectedProfile?: string;
+  candidates?: {
+    index?: number;
+    profile?: string;
+    status?: string;
+    veteranDecision?: string;
+    veteranAction?: string;
+    veteranScore?: number;
+    reason?: string;
+  }[];
 }
 
 export interface SolverDeploymentReadiness {
@@ -161,9 +196,40 @@ export function buildScheduleDiagnostics(
     shortages,
     unmetRequests,
     suggestions,
+    veteranEvaluation: normalizeVeteranEvaluation(rawDiagnostics.veteranEvaluation),
+    candidateSelection: normalizeCandidateSelection(rawDiagnostics.candidateSelection),
   };
   diagnostics.messages = buildUserFacingDiagnosticMessages(diagnostics);
   return diagnostics;
+}
+
+function normalizeVeteranEvaluation(source?: SolverVeteranEvaluation) {
+  if (!source) return null;
+  return {
+    decision: source.decision || "",
+    action: source.action || "",
+    score: Number(source.score || 0),
+    reason: source.reason || "",
+    modelVersion: source.modelVersion || "",
+  };
+}
+
+function normalizeCandidateSelection(source?: SolverCandidateSelection) {
+  if (!source) return null;
+  return {
+    candidateCount: Number(source.candidateCount || 0),
+    selectedIndex: Number(source.selectedIndex || 0),
+    selectedProfile: source.selectedProfile || "",
+    candidates: (source.candidates || []).map((item) => ({
+      index: Number(item.index || 0),
+      profile: item.profile || "",
+      status: item.status || "",
+      veteranDecision: item.veteranDecision || "",
+      veteranAction: item.veteranAction || "",
+      veteranScore: Number(item.veteranScore || 0),
+      reason: item.reason || "",
+    })),
+  };
 }
 
 function toScheduleRow(row: SolverOutputScheduleRow, staffByName: Map<string, StaffMember>): ScheduleRow {

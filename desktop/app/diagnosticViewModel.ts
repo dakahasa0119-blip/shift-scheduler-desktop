@@ -13,7 +13,7 @@ export interface DiagnosticResultViewModel {
 }
 
 export interface DiagnosticSectionViewModel {
-  id: "summary" | "requiredFixes" | "shortages" | "unmetRequests" | "suggestions";
+  id: "summary" | "veteranEvaluation" | "requiredFixes" | "shortages" | "unmetRequests" | "suggestions";
   title: string;
   severity: DiagnosticSeverity;
   items: DiagnosticItemViewModel[];
@@ -30,11 +30,38 @@ export function buildDiagnosticPanelViewModel(diagnostics: ScheduleDiagnostics):
     result: buildResult(diagnostics),
     sections: [
       buildSummarySection(diagnostics),
+      buildVeteranEvaluationSection(diagnostics),
       buildRequiredFixSection(diagnostics),
       buildShortageSection(diagnostics.shortages),
       buildUnmetRequestSection(diagnostics.unmetRequests),
       buildSuggestionSection(diagnostics.suggestions),
     ].filter((section) => section.items.length > 0),
+  };
+}
+
+function buildVeteranEvaluationSection(diagnostics: ScheduleDiagnostics): DiagnosticSectionViewModel {
+  const items: DiagnosticItemViewModel[] = [];
+  const veteran = diagnostics.veteranEvaluation;
+  const selection = diagnostics.candidateSelection;
+  if (veteran) {
+    items.push({
+      primary: `${veteran.decision} / ${veteran.action} / score ${veteran.score}`,
+      secondary: veteran.reason || veteran.modelVersion,
+      severity: veteranSeverity(veteran.action),
+    });
+  }
+  (selection?.candidates || []).slice(0, 3).forEach((item) => {
+    items.push({
+      primary: `候補${item.index + 1}: ${item.profile || "-"} / ${item.veteranDecision || "-"}`,
+      secondary: `${item.veteranAction || "-"} / score ${item.veteranScore}`,
+      severity: item.index === selection.selectedIndex ? "note" : "ok",
+    });
+  });
+  return {
+    id: "veteranEvaluation",
+    title: "採用理由",
+    severity: highestSeverity(items),
+    items,
   };
 }
 
@@ -196,6 +223,13 @@ function buildSecondaryText(prefix: string, reasons: string[]): string {
 function suggestionSeverity(priority: CorrectionSuggestion["priority"]): DiagnosticSeverity {
   if (priority === "最優先" || priority === "高") return "warning";
   if (priority === "中") return "note";
+  return "ok";
+}
+
+function veteranSeverity(action: string): DiagnosticSeverity {
+  if (action === "fix_feasibility_first" || action === "discourage_unpaid_tradeoff") return "blocked";
+  if (action === "increase_targeted_penalty" || action === "add_rule_dimension_or_weight") return "warning";
+  if (action === "preserve_as_staffing_pressure" || action === "allow_when_tradeoff_beneficial") return "note";
   return "ok";
 }
 

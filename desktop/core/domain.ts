@@ -191,6 +191,29 @@ export interface CorrectionSuggestion {
   remainingIssueSummary: string;
 }
 
+export interface VeteranEvaluationDiagnostic {
+  decision: string;
+  action: string;
+  score: number;
+  reason: string;
+  modelVersion: string;
+}
+
+export interface CandidateSelectionDiagnostic {
+  candidateCount: number;
+  selectedIndex: number;
+  selectedProfile: string;
+  candidates: {
+    index: number;
+    profile: string;
+    status: string;
+    veteranDecision: string;
+    veteranAction: string;
+    veteranScore: number;
+    reason: string;
+  }[];
+}
+
 export interface ScheduleDiagnostics {
   status: "ok" | "ok_with_notes" | "blocked";
   summary: {
@@ -205,6 +228,8 @@ export interface ScheduleDiagnostics {
   shortages: ShortageDiagnostic[];
   unmetRequests: UnmetRequestDiagnostic[];
   suggestions: CorrectionSuggestion[];
+  veteranEvaluation: VeteranEvaluationDiagnostic | null;
+  candidateSelection: CandidateSelectionDiagnostic | null;
 }
 
 export interface MonthlyScheduleDocument {

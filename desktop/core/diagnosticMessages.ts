@@ -33,6 +33,13 @@ export function buildUserFacingDiagnosticMessages(diagnostics: ScheduleDiagnosti
     lines.push(formatSuggestion(item));
   });
 
+  if (diagnostics.veteranEvaluation) {
+    lines.push(formatVeteranEvaluation(diagnostics.veteranEvaluation));
+  }
+  if (diagnostics.candidateSelection) {
+    lines.push(formatCandidateSelection(diagnostics.candidateSelection));
+  }
+
   return lines;
 }
 
@@ -61,4 +68,14 @@ function formatUnmetRequest(item: UnmetRequestDiagnostic): string {
 function formatSuggestion(item: CorrectionSuggestion): string {
   const suffix = item.remainingIssueSummary ? `（${item.remainingIssueSummary}）` : "";
   return `対応候補: ${item.target} ${item.message}${suffix}`;
+}
+
+function formatVeteranEvaluation(item: ScheduleDiagnostics["veteranEvaluation"]): string {
+  if (!item) return "";
+  return `採用理由: ${item.decision} / ${item.action} / score ${item.score} - ${item.reason}`;
+}
+
+function formatCandidateSelection(item: ScheduleDiagnostics["candidateSelection"]): string {
+  if (!item) return "";
+  return `候補選定: ${item.candidateCount}候補中 ${item.selectedIndex + 1}番目${item.selectedProfile ? `（${item.selectedProfile}）` : ""}を採用`;
 }

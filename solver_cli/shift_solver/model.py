@@ -5,6 +5,8 @@ from typing import Dict, List, Tuple
 
 from ortools.sat.python import cp_model
 
+from .veteran_quality import evaluate_veteran_quality
+
 
 WORK_SHIFTS = ["早", "日", "遅", "夜", "明"]
 CONSECUTIVE_WORK_SHIFTS = ["早", "日", "遅", "夜"]
@@ -34,6 +36,9 @@ WEIGHT_ISOLATED_PUBLIC_HOLIDAY = 220
 WEIGHT_LATE_TO_REST = 1000
 WEIGHT_POST_REST_EARLY = 1000
 WEIGHT_LATE_TO_NIGHT = 8000
+WEIGHT_RECOVERY_TO_NIGHT = 100000
+WEIGHT_RECOVERY_NIGHT_CHANGE = 1200000
+WEIGHT_NIGHT_PRIMARY_DAY_WORK_EXCESS = 30000
 REQUEST_TO_SHIFT = {
     "希望早出": "早",
     "希望日勤": "日",
@@ -301,15 +306,189 @@ def _naturalness_weight_profile(
 
 
 def _is_night_only_staff(item: Staff) -> bool:
-    return item.role == "夜専" or item.allowed_shifts == ["夜"]
+    return item.allowed_shifts == ["夜"]
+
+
+def _is_night_primary_staff(item: Staff) -> bool:
+    target = _night_target(item.condition)
+    return "夜" in item.allowed_shifts and target is not None and target >= 6
+
+
+def _allowed_shift_signature(item: Staff) -> str:
+    ordered = [shift for shift in ["早", "日", "遅", "夜"] if shift in item.allowed_shifts]
+    return "・".join(ordered)
+
+
+def _is_limited_day_late_staff(item: Staff) -> bool:
+    allowed = set(item.allowed_shifts)
+    return bool(allowed) and allowed.issubset({"早", "日", "遅"}) and "遅" in allowed and "早" not in allowed
+
+
+def _staff_dynamic_pressure(
+    item: Staff,
+    year: int,
+    month: int,
+    days: int,
+    required: dict,
+    eligible_counts: Dict[str, int],
+    requests: Dict[Tuple[str, int], Tuple[str, bool]],
+    supply_exclusions: Dict[Tuple[str, int], dict],
+    night_density: dict | None = None,
+) -> dict:
+    unavailable_days = 0
+    hard_rest_days = 0
+    supply_excluded_days = 0
+    for day in range(days):
+        weekday = _weekday_index(year, month, day)
+        if (item.name, day) in supply_exclusions:
+            supply_excluded_days += 1
+            unavailable_days += 1
+            continue
+        requested = requests.get((item.name, day))
+        if requested and requested[1]:
+            hard_rest_days += 1
+            unavailable_days += 1
+            continue
+        if weekday not in item.allowed_days or item.fixed_off == weekday:
+            unavailable_days += 1
+
+    limited_shift_pressure = 1.0 - min(1.0, len(item.allowed_shifts) / 4.0)
+    scarcity_values = []
+    for shift in item.allowed_shifts:
+        req = max(0, int(required.get(shift) or 0))
+        if req <= 0:
+            continue
+        eligible = max(1, int(eligible_counts.get(shift) or 0))
+        surplus = eligible - req
+        if surplus <= 0:
+            scarcity_values.append(1.0)
+        elif surplus == 1:
+            scarcity_values.append(0.75)
+        elif surplus == 2:
+            scarcity_values.append(0.45)
+        else:
+            scarcity_values.append(0.15)
+    scarcity_pressure = sum(scarcity_values) / len(scarcity_values) if scarcity_values else 0.0
+    night_density_pressure = 0.0
+    density_class = str((night_density or {}).get("densityClass") or "")
+    if density_class == "high":
+        night_density_pressure = 0.70
+    elif density_class == "medium":
+        night_density_pressure = 0.35
+
+    unavailable_ratio = unavailable_days / max(1, days)
+    request_compression = hard_rest_days / max(1, _public_holiday_target(days))
+    pressure = (
+        unavailable_ratio * 0.30
+        + min(1.0, request_compression) * 0.25
+        + limited_shift_pressure * 0.20
+        + scarcity_pressure * 0.20
+        + night_density_pressure * 0.05
+    )
+    pressure = max(0.0, min(1.0, pressure))
+    return {
+        "constraintPressure": round(pressure, 3),
+        "unavailableDays": unavailable_days,
+        "hardRestDays": hard_rest_days,
+        "supplyExcludedDays": supply_excluded_days,
+        "limitedShiftPressure": round(limited_shift_pressure, 3),
+        "scarcityPressure": round(scarcity_pressure, 3),
+        "nightDensityPressure": round(night_density_pressure, 3),
+    }
+
+
+def _staff_suitability_profile(
+    item: Staff,
+    night_density: dict | None = None,
+    dynamic_pressure: dict | None = None,
+) -> dict:
+    night_density = night_density or {}
+    dynamic_pressure = dynamic_pressure or {}
+    target = _night_target(item.condition)
+    if item.role == "施設長" or "介護請求不可" in item.condition:
+        staff_class = "manager"
+    elif item.allowed_shifts == ["夜"]:
+        staff_class = "night_only"
+    elif item.role == "夜専" or _is_night_primary_staff(item):
+        staff_class = "night_primary"
+    elif _is_limited_day_late_staff(item):
+        staff_class = "limited_day_late"
+    elif len(item.allowed_shifts) <= 2:
+        staff_class = "limited_shift"
+    else:
+        staff_class = "general_care"
+
+    four_day_weight = 12000
+    recovery_to_night_weight = WEIGHT_RECOVERY_TO_NIGHT
+    if staff_class == "manager":
+        four_day_weight = 2500
+    elif staff_class == "night_primary":
+        four_day_weight = 7500
+        recovery_to_night_weight = 35000
+    elif staff_class == "night_only":
+        four_day_weight = 0
+        recovery_to_night_weight = 25000
+    elif staff_class in {"limited_day_late", "limited_shift"}:
+        four_day_weight = 9000
+
+    pressure = float(dynamic_pressure.get("constraintPressure") or 0.0)
+    four_day_weight = _clamp_weight(four_day_weight * (1.0 - pressure * 0.45), minimum=1500)
+    if staff_class == "general_care":
+        recovery_to_night_weight = _clamp_weight(recovery_to_night_weight * (1.15 - pressure * 0.40), minimum=45000)
+    elif staff_class in {"night_primary", "night_only"}:
+        recovery_to_night_weight = _clamp_weight(recovery_to_night_weight * (1.0 - pressure * 0.20), minimum=15000)
+
+    if str(night_density.get("densityClass") or "") == "high":
+        recovery_to_night_weight = _clamp_weight(recovery_to_night_weight * 0.75)
+
+    return {
+        "class": staff_class,
+        "allowedShiftSignature": _allowed_shift_signature(item),
+        "nightTarget": target,
+        "dynamicPressure": dynamic_pressure,
+        "fourDayWeight": four_day_weight,
+        "recoveryToNightWeight": recovery_to_night_weight,
+        "includeInGlobalShiftFairness": staff_class == "general_care",
+    }
+
+
+def _scale_profile_weights(profile: dict, keys: List[str], multiplier: float, minimum: int = 0) -> None:
+    for key in keys:
+        if key in profile:
+            profile[key] = _clamp_weight(int(profile.get(key) or 0) * multiplier, minimum=minimum)
+
+
+def _apply_candidate_weight_profile(
+    experiment: dict,
+    naturalness_profiles: Dict[int, dict],
+    suitability_profiles: Dict[int, dict],
+    night_density_profiles: Dict[int, dict],
+) -> None:
+    profile = str((experiment or {}).get("candidateWeightProfile") or "")
+    if profile == "rhythm_guard":
+        for weights in naturalness_profiles.values():
+            _scale_profile_weights(weights, ["sameShiftRun", "lateToRest", "postRestEarly", "lateToNight"], 1.45)
+        for weights in suitability_profiles.values():
+            _scale_profile_weights(weights, ["fourDayWeight", "recoveryToNightWeight"], 1.60, minimum=1500)
+        for weights in night_density_profiles.values():
+            _scale_profile_weights(weights, ["tightNightBlockWeight", "shortNightGapWeight"], 1.65)
+    elif profile == "naturalness_guard":
+        for weights in naturalness_profiles.values():
+            _scale_profile_weights(weights, ["isolatedWorkday", "isolatedPublicHoliday", "sameShiftRun"], 1.80)
+            _scale_profile_weights(weights, ["lateToRest", "postRestEarly"], 1.30)
+    elif profile == "coverage_guard":
+        for weights in naturalness_profiles.values():
+            _scale_profile_weights(weights, ["isolatedWorkday", "isolatedPublicHoliday"], 0.75)
+        for weights in suitability_profiles.values():
+            _scale_profile_weights(weights, ["fourDayWeight"], 1.15, minimum=1500)
 
 
 def _is_external_blank_allowed_role(role: str) -> bool:
-    return role in {"夜専", "バイト", "介護部応援", "看護部応援"}
+    return role in {"バイト", "介護部応援", "看護部応援"}
 
 
 def _is_blank_allowed_staff(item: Staff) -> bool:
-    return _is_external_blank_allowed_role(item.role) or item.allowed_shifts == ["夜"]
+    return _is_external_blank_allowed_role(item.role) or item.role == "夜専" or _is_night_primary_staff(item)
 
 
 def _is_rest_target_exempt(item: Staff) -> bool:
@@ -317,6 +496,7 @@ def _is_rest_target_exempt(item: Staff) -> bool:
         item.role in {"施設長", "バイト", "介護部応援", "看護部応援"}
         or "介護請求不可" in item.condition
         or _is_night_only_staff(item)
+        or _is_night_primary_staff(item)
     )
 
 
@@ -384,6 +564,20 @@ def _build_requests(payload: dict) -> Dict[Tuple[str, int], Tuple[str, bool]]:
         if name and shift and day:
             out[(name, day - 1)] = (shift, request_type in ["事前希望休", "有給", "特別休"])
     return out
+
+
+def _build_forced_soft_requests(experiment: dict) -> Dict[Tuple[str, int], str]:
+    forced = {}
+    for item in (experiment or {}).get("forceSoftRequests") or []:
+        name = str(item.get("name") or "").strip()
+        shift = str(item.get("shift") or "").strip()
+        if not name or shift not in ["早", "日", "遅", "夜"]:
+            continue
+        for date_text in item.get("dates") or []:
+            day = _parse_date_day(str(date_text or ""))
+            if day > 0:
+                forced[(name, day - 1)] = shift
+    return forced
 
 
 def _build_supply_exclusions(payload: dict) -> Dict[Tuple[str, int], dict]:
@@ -652,7 +846,16 @@ def _span_label(start: int, end: int) -> str:
     return f"{one(start)}-{one(end)}"
 
 
-def _build_naturalness_report(staff: List[Staff], solved_by_name: Dict[str, List[str]], days: int) -> dict:
+def _build_naturalness_report(
+    staff: List[Staff],
+    solved_by_name: Dict[str, List[str]],
+    days: int,
+    payload: dict | None = None,
+    recovery_settings: dict | None = None,
+) -> dict:
+    payload = payload or {}
+    hard_requests = _hard_requests_by_name_day(payload)
+    urgent_leave = (recovery_settings or {}).get("urgentLeaveByNameDay", {})
     report = {
         "fiveConsecutiveWork": {"count": 0, "samples": []},
         "fourConsecutiveWork": {"count": 0, "samples": []},
@@ -669,15 +872,41 @@ def _build_naturalness_report(staff: List[Staff], solved_by_name: Dict[str, List
         "previousMonthBoundaryChecks": {"count": 0, "samples": []},
     }
 
-    def add(key: str, item: Staff, start: int, end: int, detail: str):
+    def four_work_reason(item: Staff, start: int, end: int) -> dict:
+        labels = []
+        near_start = max(-7, start - 3)
+        near_end = min(days - 1, end + 3)
+        if any((item.name, day) in hard_requests for day in range(max(0, near_start), near_end + 1)):
+            labels.append("本人希望休圧縮")
+        if item.fixed_off >= 0 or len(item.allowed_days) < 7:
+            labels.append("曜日/固定休制限")
+        if _is_night_primary_staff(item):
+            labels.append("夜勤主担当")
+        if start < 0:
+            labels.append("月跨ぎ影響")
+        if any((item.name, day) in urgent_leave for day in range(max(0, near_start), near_end + 1)):
+            labels.append("急休復旧影響")
+        if not labels:
+            labels.append("全体調整")
+        disposition = "許容候補" if any(label != "全体調整" for label in labels) else "改善対象"
+        return {
+            "reasonLabels": labels,
+            "disposition": disposition,
+        }
+
+    def add(key: str, item: Staff, start: int, end: int, detail: str, extra: dict | None = None):
         bucket = report[key]
         bucket["count"] += 1
         if len(bucket["samples"]) < 20:
-            bucket["samples"].append({
+            sample = {
                 "name": item.name,
+                "role": item.role,
                 "span": _span_label(start, end),
                 "detail": detail,
-            })
+            }
+            if extra:
+                sample.update(extra)
+            bucket["samples"].append(sample)
 
     for item in staff:
         shifts = solved_by_name.get(item.name) or []
@@ -699,7 +928,14 @@ def _build_naturalness_report(staff: List[Staff], solved_by_name: Dict[str, List
             if any(start + offset >= days for offset in range(4)):
                 continue
             if all(_is_consecutive_work_shift(shift) for shift in window):
-                add("fourConsecutiveWork", item, start, start + 3, "".join(window))
+                add(
+                    "fourConsecutiveWork",
+                    item,
+                    start,
+                    start + 3,
+                    "".join(window),
+                    four_work_reason(item, start, start + 3),
+                )
 
         for start in range(first_index, days - 2):
             if start + 2 < 0:
@@ -864,7 +1100,11 @@ def _build_recovery_diffs(payload: dict, recovery_settings: dict, solved_by_name
     return diffs
 
 
-def _day_work_swap_score(item: Staff, shifts: List[str], days: int) -> int:
+def _day_work_swap_score(
+    item: Staff,
+    shifts: List[str],
+    days: int,
+) -> int:
     score = 0
     first_index = -min(7, len(item.previous_tail))
     for start in range(first_index, days - 2):
@@ -932,6 +1172,7 @@ def _improve_day_work_naturalness_by_safe_swaps(
     requests: Dict[Tuple[str, int], Tuple[str, bool]],
     supply_exclusions: Dict[Tuple[str, int], dict],
     recovery_settings: dict,
+    required: dict | None = None,
 ) -> dict:
     day_work_shifts = {"早", "日", "遅"}
     swaps = []
@@ -1010,6 +1251,105 @@ def _improve_day_work_naturalness_by_safe_swaps(
     return {"dayWorkSwapCount": len(swaps), "dayWorkSwaps": swaps[:30]}
 
 
+def _improve_soft_shift_requests_by_safe_day_swaps(
+    staff: List[Staff],
+    solved_by_name: Dict[str, List[str]],
+    year: int,
+    month: int,
+    days: int,
+    requests: Dict[Tuple[str, int], Tuple[str, bool]],
+    supply_exclusions: Dict[Tuple[str, int], dict],
+    recovery_settings: dict,
+) -> dict:
+    day_work_shifts = {"早", "日", "遅"}
+    swaps = []
+    by_name = {item.name: item for item in staff}
+    names = [item.name for item in staff if item.name in solved_by_name]
+
+    for day in range(days):
+        for requester in staff:
+            request = requests.get((requester.name, day))
+            if not request:
+                continue
+            requested_shift, is_hard_leave = request
+            if is_hard_leave or requested_shift not in day_work_shifts:
+                continue
+            requester_shifts = solved_by_name.get(requester.name)
+            if not requester_shifts or day >= len(requester_shifts):
+                continue
+            current_shift = requester_shifts[day]
+            if current_shift == requested_shift or current_shift not in day_work_shifts:
+                continue
+            if requested_shift not in requester.allowed_shifts:
+                continue
+            weekday = _weekday_index(year, month, day)
+            if weekday not in requester.allowed_days or requester.fixed_off == weekday:
+                continue
+            if (requester.name, day) in supply_exclusions:
+                continue
+            if recovery_settings.get("urgentLeaveByNameDay", {}).get((requester.name, day)):
+                continue
+            if recovery_settings.get("enabled") and _is_fixed_recovery_day(recovery_settings, day):
+                continue
+
+            best = None
+            for other_name in names:
+                if other_name == requester.name:
+                    continue
+                other = by_name[other_name]
+                other_shifts = solved_by_name[other_name]
+                other_shift = other_shifts[day] if day < len(other_shifts) else ""
+                if other_shift != requested_shift:
+                    continue
+                if not _can_swap_day_work_shift(other, day, current_shift, year, month, requests, supply_exclusions, recovery_settings):
+                    continue
+
+                requester_candidate = list(requester_shifts)
+                other_candidate = list(other_shifts)
+                requester_candidate[day], other_candidate[day] = requested_shift, current_shift
+                if _has_late_to_early_edge(requester, requester_candidate, day, days):
+                    continue
+                if _has_late_to_early_edge(other, other_candidate, day, days):
+                    continue
+
+                before = (
+                    _day_work_swap_score(requester, requester_shifts, days)
+                    + _day_work_swap_score(other, other_shifts, days)
+                )
+                after = (
+                    _day_work_swap_score(requester, requester_candidate, days)
+                    + _day_work_swap_score(other, other_candidate, days)
+                )
+                naturalness_delta = before - after
+                if not best or naturalness_delta > best["naturalnessDelta"]:
+                    best = {
+                        "day": day,
+                        "requester": requester.name,
+                        "otherName": other_name,
+                        "requesterBefore": current_shift,
+                        "otherBefore": other_shift,
+                        "requesterAfter": requested_shift,
+                        "otherAfter": current_shift,
+                        "naturalnessDelta": naturalness_delta,
+                        "requesterCandidate": requester_candidate,
+                        "otherCandidate": other_candidate,
+                    }
+            if best:
+                solved_by_name[best["requester"]] = best["requesterCandidate"]
+                solved_by_name[best["otherName"]] = best["otherCandidate"]
+                swaps.append({
+                    "day": best["day"] + 1,
+                    "requester": best["requester"],
+                    "otherName": best["otherName"],
+                    "requesterBefore": best["requesterBefore"],
+                    "otherBefore": best["otherBefore"],
+                    "requesterAfter": best["requesterAfter"],
+                    "otherAfter": best["otherAfter"],
+                    "naturalnessDelta": best["naturalnessDelta"],
+                })
+    return {"requestSwapCount": len(swaps), "requestSwaps": swaps[:30]}
+
+
 def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
     year = int(payload["targetYear"])
     month = int(payload["targetMonth"])
@@ -1039,6 +1379,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
         requests,
     )
     night_density_profiles = {}
+    forced_soft_requests = _build_forced_soft_requests(experiment)
     for s, item in enumerate(staff):
         target = _night_target(item.condition)
         if target is None:
@@ -1055,10 +1396,40 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
         )
         for s, item in enumerate(staff)
     }
+    staff_dynamic_pressures = {
+        s: _staff_dynamic_pressure(
+            item,
+            year,
+            month,
+            days,
+            required,
+            eligible_counts,
+            requests,
+            supply_exclusions,
+            night_density_profiles.get(s) or {},
+        )
+        for s, item in enumerate(staff)
+    }
+    staff_suitability_profiles = {
+        s: _staff_suitability_profile(
+            item,
+            night_density_profiles.get(s) or {},
+            staff_dynamic_pressures.get(s) or {},
+        )
+        for s, item in enumerate(staff)
+    }
+    _apply_candidate_weight_profile(
+        experiment,
+        naturalness_weight_profiles,
+        staff_suitability_profiles,
+        night_density_profiles,
+    )
     unmet_request_terms = []
+    soft_day_request_night_conflict_terms = []
     forced_single_shift_terms = []
     change_terms = []
     changed_work_terms = []
+    changed_night_terms = []
     urgent_absence_terms = []
 
     model = cp_model.CpModel()
@@ -1113,8 +1484,12 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
                 for shift in SUPPLY_EXCLUDED_SHIFTS:
                     model.Add(x[s, d, shift] == 0)
 
-            requested = None if urgent_leave or supply_exclusion else current_request
-            if requested:
+            fixed_recovery_day = recovery_settings["enabled"] and _is_fixed_recovery_day(recovery_settings, d)
+            requested = None if urgent_leave or supply_exclusion or fixed_recovery_day else current_request
+            forced_soft_shift = None if urgent_leave or supply_exclusion else forced_soft_requests.get((item.name, d))
+            if forced_soft_shift:
+                model.Add(x[s, d, forced_soft_shift] == 1)
+            elif requested:
                 requested_shift, is_hard_leave = requested
                 if is_hard_leave:
                     model.Add(x[s, d, requested_shift] == 1)
@@ -1123,6 +1498,9 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
                     model.Add(x[s, d, requested_shift] == 0).OnlyEnforceIf(unmet)
                     model.Add(x[s, d, requested_shift] == 1).OnlyEnforceIf(unmet.Not())
                     unmet_request_terms.append(unmet)
+                    if requested_shift in {"早", "日", "遅"}:
+                        model.Add(x[s, d, "夜"] == 0)
+                        model.Add(x[s, d, "明"] == 0)
             elif (
                 len(item.allowed_shifts) == 1
                 and item.allowed_shifts[0] in ["早", "日", "遅"]
@@ -1144,17 +1522,23 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
                     change_terms.append(changed)
                     if comparable_shift in WORK_SHIFTS:
                         changed_work_terms.append(changed)
+                    if comparable_shift in ["夜", "明"]:
+                        changed_night_terms.append(changed)
 
         # Previous-month carryover.
         last_previous_shift = item.previous_tail[-1] if item.previous_tail else ""
         if last_previous_shift == "夜":
             model.Add(x[s, 0, "明"] == 1)
             if days > 1:
-                model.Add(x[s, 1, "公"] == 1)
+                model.Add(sum(x[s, 1, shift] for shift in REST_COUNT_SHIFTS) + x[s, 1, "夜"] == 1)
         else:
             model.Add(x[s, 0, "明"] == 0)
         if last_previous_shift == "明":
-            model.Add(x[s, 0, "公"] == 1)
+            previous_before_recovery = item.previous_tail[-2] if len(item.previous_tail) >= 2 else ""
+            if previous_before_recovery == "夜":
+                model.Add(sum(x[s, 0, shift] for shift in REST_COUNT_SHIFTS) + x[s, 0, "夜"] == 1)
+            else:
+                model.Add(x[s, 0, "公"] == 1)
         elif last_previous_shift == "遅" and days > 0:
             model.Add(x[s, 0, "早"] == 0)
 
@@ -1165,7 +1549,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             if d > 0:
                 model.Add(x[s, d, "明"] == x[s, d - 1, "夜"])
             if d + 2 < days:
-                model.Add(x[s, d, "夜"] <= sum(x[s, d + 2, shift] for shift in REST_COUNT_SHIFTS))
+                model.Add(x[s, d, "夜"] <= sum(x[s, d + 2, shift] for shift in REST_COUNT_SHIFTS) + x[s, d + 2, "夜"])
 
         tail_len = min(7, len(item.previous_tail))
         for start in range(-tail_len, max(0, days - 4)):
@@ -1257,23 +1641,40 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
     work_counts = {}
     for shift in ["早", "遅", "夜"]:
         counts = []
+        bucket_counts = {}
         for s in range(len(staff)):
             count = model.NewIntVar(0, days, f"count_{s}_{shift}")
             model.Add(count == sum(x[s, d, shift] for d in range(days)))
             shift_counts[s, shift] = count
             item = staff[s]
+            profile = staff_suitability_profiles.get(s) or {}
             if (
                 shift in item.allowed_shifts
                 and not _is_rest_target_exempt(item)
                 and not (shift == "夜" and _night_target(item.condition) is not None)
             ):
-                counts.append(count)
+                if profile.get("includeInGlobalShiftFairness"):
+                    counts.append(count)
+                signature = str(profile.get("allowedShiftSignature") or "")
+                if signature and profile.get("includeInGlobalShiftFairness"):
+                    bucket_counts.setdefault(signature, []).append(count)
         if counts:
             max_count = model.NewIntVar(0, days, f"max_{shift}")
             min_count = model.NewIntVar(0, days, f"min_{shift}")
             model.AddMaxEquality(max_count, counts)
             model.AddMinEquality(min_count, counts)
             gap = model.NewIntVar(0, days, f"gap_{shift}")
+            model.Add(gap == max_count - min_count)
+            fairness_terms.append(gap)
+        for signature, signature_counts in bucket_counts.items():
+            if len(signature_counts) < 2:
+                continue
+            safe_signature = re.sub(r"[^0-9A-Za-z]+", "_", signature)
+            max_count = model.NewIntVar(0, days, f"max_{shift}_{safe_signature}")
+            min_count = model.NewIntVar(0, days, f"min_{shift}_{safe_signature}")
+            model.AddMaxEquality(max_count, signature_counts)
+            model.AddMinEquality(min_count, signature_counts)
+            gap = model.NewIntVar(0, days, f"gap_{shift}_{safe_signature}")
             model.Add(gap == max_count - min_count)
             fairness_terms.append(gap)
 
@@ -1320,6 +1721,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
     flexible_night_target_terms = []
     for s, target in flexible_night_targets.items():
         count = shift_counts[s, "夜"]
+        model.Add(count <= target + 1)
         diff = model.NewIntVar(0, days, f"flex_night_target_diff_{s}")
         model.AddAbsEquality(diff, count - target)
         flexible_night_target_terms.append(diff)
@@ -1336,11 +1738,15 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
     late_to_night_terms = []
     month_end_work_pressure_terms = []
     cross_boundary_four_day_terms = []
+    night_primary_day_work_excess_terms = []
     for s in range(len(staff)):
         item = staff[s]
         tail_len = min(7, len(item.previous_tail))
         night_density = night_density_profiles.get(s) or {}
         naturalness_weights = naturalness_weight_profiles.get(s) or {}
+        suitability_profile = staff_suitability_profiles.get(s) or {}
+        four_day_weight = int(suitability_profile.get("fourDayWeight") or 0)
+        recovery_to_night_weight = int(suitability_profile.get("recoveryToNightWeight") or WEIGHT_RECOVERY_TO_NIGHT)
         tight_night_weight = int(night_density.get("tightNightBlockWeight") or 100000)
         short_night_gap_weight = int(night_density.get("shortNightGapWeight") or 3000)
         for start in range(-tail_len, 0):
@@ -1369,7 +1775,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
                 term = model.NewBoolVar(f"cross_boundary_four_run_{s}_{start}")
                 model.Add(previous_work_count + sum(current_work_terms) == 4).OnlyEnforceIf(term)
                 model.Add(previous_work_count + sum(current_work_terms) != 4).OnlyEnforceIf(term.Not())
-                cross_boundary_four_day_terms.append(term)
+                cross_boundary_four_day_terms.append((term, four_day_weight))
 
         for d in range(max(0, days - 3)):
             term = model.NewBoolVar(f"four_run_{s}_{d}")
@@ -1379,7 +1785,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             else:
                 model.Add(four_work_count == 4).OnlyEnforceIf(term)
                 model.Add(four_work_count != 4).OnlyEnforceIf(term.Not())
-                four_day_terms.append(term)
+                four_day_terms.append((term, four_day_weight))
 
         for d in range(max(0, days - 2)):
             for shift in ["早", "遅"]:
@@ -1433,7 +1839,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             recovery_to_night = model.NewBoolVar(f"recovery_to_night_{s}_{d}")
             model.Add(x[s, d - 1, "明"] + x[s, d, "夜"] == 2).OnlyEnforceIf(recovery_to_night)
             model.Add(x[s, d - 1, "明"] + x[s, d, "夜"] != 2).OnlyEnforceIf(recovery_to_night.Not())
-            recovery_to_night_terms.append(recovery_to_night)
+            recovery_to_night_terms.append((recovery_to_night, recovery_to_night_weight))
 
             late_to_night = model.NewBoolVar(f"late_to_night_{s}_{d}")
             model.Add(x[s, d - 1, "遅"] + x[s, d, "夜"] == 2).OnlyEnforceIf(late_to_night)
@@ -1460,7 +1866,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             pattern = [
                 (start, ["夜"]),
                 (start + 1, ["明"]),
-                (start + 2, REST_COUNT_SHIFTS),
+                (start + 2, REST_COUNT_SHIFTS + ["夜"]),
                 (start + 3, ["夜"]),
             ]
             valid_window = True
@@ -1488,6 +1894,12 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
                 if 0 <= current_day < days:
                     short_night_gap_terms.append((x[s, current_day, "夜"], short_night_gap_weight))
 
+        if _is_night_primary_staff(item):
+            day_work_count = sum(x[s, d, shift] for d in range(days) for shift in ["早", "日", "遅"])
+            excess = model.NewIntVar(0, days, f"night_primary_day_work_excess_{s}")
+            model.Add(excess >= day_work_count - 5)
+            night_primary_day_work_excess_terms.append(excess)
+
         for d in range(max(0, days - 5), days):
             term = model.NewBoolVar(f"month_end_work_pressure_{s}_{d}")
             model.Add(sum(x[s, d, shift] for shift in WORK_SHIFTS) == 1).OnlyEnforceIf(term)
@@ -1495,20 +1907,23 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             month_end_work_pressure_terms.append(term)
 
     objective = []
+    unmet_request_weight = int(500000 * float(experiment.get("requestWeightMultiplier") or 1.0))
     for shift, var in shortage_vars:
         objective.append(var * WEIGHT_ALLOWED_SHORTAGE)
     objective.extend(var * 2000 for var in optional_day_shortages)
-    objective.extend(var * 500000 for var in unmet_request_terms)
+    objective.extend(var * unmet_request_weight for var in unmet_request_terms)
+    objective.extend(var * 250000 for var in soft_day_request_night_conflict_terms)
     objective.extend(var * recovery_settings["changePenalty"] for var in change_terms)
     objective.extend(var * recovery_settings["changedWorkPenalty"] for var in changed_work_terms)
+    objective.extend(var * WEIGHT_RECOVERY_NIGHT_CHANGE for var in changed_night_terms)
     objective.extend(var * 400000 for var in urgent_absence_terms)
     objective.extend(var * 150000 for var in forced_single_shift_terms)
     objective.extend(var * 2500 for var in flexible_night_target_terms)
     objective.extend(var * 300 for var in fairness_terms)
     objective.extend(var * 200 for var in work_count_fairness_terms)
     objective.extend(var * 220 for var in weekend_rest_fairness_terms)
-    objective.extend(var * 12000 for var in four_day_terms)
-    objective.extend(var * 12000 for var in cross_boundary_four_day_terms)
+    objective.extend(var * weight for var, weight in four_day_terms)
+    objective.extend(var * weight for var, weight in cross_boundary_four_day_terms)
     objective.extend(var * weight for var, weight in same_shift_run_terms)
     objective.extend(var * weight for var, weight in isolated_workday_terms)
     objective.extend(var * weight for var, weight in isolated_public_holiday_terms)
@@ -1516,14 +1931,18 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
     objective.extend(var * weight for var, weight in post_rest_early_terms)
     objective.extend(var * weight for var, weight in tight_night_block_terms)
     objective.extend(var * weight for var, weight in short_night_gap_terms)
-    objective.extend(var * 2000 for var in recovery_to_night_terms)
+    objective.extend(var * weight for var, weight in recovery_to_night_terms)
     objective.extend(var * weight for var, weight in late_to_night_terms)
+    objective.extend(var * WEIGHT_NIGHT_PRIMARY_DAY_WORK_EXCESS for var in night_primary_day_work_excess_terms)
     objective.extend(var * 15 for var in month_end_work_pressure_terms)
     model.Minimize(sum(objective) if objective else 0)
 
     solver = cp_model.CpSolver()
+    search_workers = int(experiment.get("searchWorkers") or 8)
+    random_seed = int(experiment.get("randomSeed") or 1)
     solver.parameters.max_time_in_seconds = float(time_limit_seconds)
-    solver.parameters.num_search_workers = 8
+    solver.parameters.num_search_workers = search_workers
+    solver.parameters.random_seed = random_seed
     status = solver.Solve(model)
     status_name = solver.StatusName(status)
 
@@ -1551,7 +1970,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             row.append(SUPPLY_EXCLUSION_DISPLAY_SHIFT.get(shift, "" if shift == BLANK_SHIFT else shift))
         solved_by_name[item.name] = row
 
-    post_process = _improve_day_work_naturalness_by_safe_swaps(
+    request_post_process = _improve_soft_shift_requests_by_safe_day_swaps(
         staff,
         solved_by_name,
         year,
@@ -1561,7 +1980,19 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
         supply_exclusions,
         recovery_settings,
     )
-    naturalness_report = _build_naturalness_report(staff, solved_by_name, days)
+    naturalness_post_process = _improve_day_work_naturalness_by_safe_swaps(
+        staff,
+        solved_by_name,
+        year,
+        month,
+        days,
+        requests,
+        supply_exclusions,
+        recovery_settings,
+        required,
+    )
+    post_process = {**request_post_process, **naturalness_post_process}
+    naturalness_report = _build_naturalness_report(staff, solved_by_name, days, payload, recovery_settings)
     recovery_diffs = _build_recovery_diffs(payload, recovery_settings, solved_by_name, days)
 
     schedule = []
@@ -1580,6 +2011,11 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
         "status": status_name,
         "objective": solver.ObjectiveValue(),
         "wallTime": solver.WallTime(),
+        "solverParameters": {
+            "maxTimeInSeconds": float(time_limit_seconds),
+            "numSearchWorkers": search_workers,
+            "randomSeed": random_seed,
+        },
         "staffCount": len(staff),
         "shortageCount": sum(solver.Value(var) for _, var in shortage_vars),
         "flexibleNightTargets": {
@@ -1594,6 +2030,10 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             staff[index].name: profile
             for index, profile in naturalness_weight_profiles.items()
         },
+        "staffSuitabilityProfiles": {
+            staff[index].name: profile
+            for index, profile in staff_suitability_profiles.items()
+        },
         "shiftPressureProfiles": {
             "早": _build_shift_pressure_profile(required, eligible_counts_by_day, "早"),
             "遅": _build_shift_pressure_profile(required, eligible_counts_by_day, "遅"),
@@ -1601,9 +2041,11 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
         "objectiveBreakdown": {
             "allowedShortagePenalty": sum(solver.Value(var) * WEIGHT_ALLOWED_SHORTAGE for shift, var in shortage_vars),
             "optionalDayShortagePenalty": sum(solver.Value(var) * 2000 for var in optional_day_shortages),
-            "unmetRequestPenalty": sum(solver.Value(var) * 500000 for var in unmet_request_terms),
+            "unmetRequestPenalty": sum(solver.Value(var) * unmet_request_weight for var in unmet_request_terms),
+            "softDayRequestNightConflictPenalty": sum(solver.Value(var) * 250000 for var in soft_day_request_night_conflict_terms),
             "recoveryChangePenalty": sum(solver.Value(var) * recovery_settings["changePenalty"] for var in change_terms),
             "recoveryChangedWorkPenalty": sum(solver.Value(var) * recovery_settings["changedWorkPenalty"] for var in changed_work_terms),
+            "recoveryNightChangePenalty": sum(solver.Value(var) * WEIGHT_RECOVERY_NIGHT_CHANGE for var in changed_night_terms),
             "urgentAbsencePenalty": sum(solver.Value(var) * 400000 for var in urgent_absence_terms),
             "singleShiftAvailabilityPenalty": sum(solver.Value(var) * 150000 for var in forced_single_shift_terms),
             "flexibleNightTargetPenalty": sum(solver.Value(var) * 2500 for var in flexible_night_target_terms),
@@ -1611,8 +2053,8 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             "workCountFairnessPenalty": sum(solver.Value(var) * 200 for var in work_count_fairness_terms),
             "weekendRestFairnessPenalty": sum(solver.Value(var) * 220 for var in weekend_rest_fairness_terms),
             "preferredConsecutiveWorkPenalty": (
-                sum(solver.Value(var) * 12000 for var in four_day_terms)
-                + sum(solver.Value(var) * 12000 for var in cross_boundary_four_day_terms)
+                sum(solver.Value(var) * weight for var, weight in four_day_terms)
+                + sum(solver.Value(var) * weight for var, weight in cross_boundary_four_day_terms)
             ),
             "sameShiftRunPenalty": sum(solver.Value(var) * weight for var, weight in same_shift_run_terms),
             "isolatedWorkdayPenalty": sum(solver.Value(var) * weight for var, weight in isolated_workday_terms),
@@ -1621,11 +2063,13 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             "postRestEarlyPenalty": sum(solver.Value(var) * weight for var, weight in post_rest_early_terms),
             "tightNightBlockPenalty": sum(solver.Value(var) * weight for var, weight in tight_night_block_terms),
             "shortNightBlockGapPenalty": sum(solver.Value(var) * weight for var, weight in short_night_gap_terms),
-            "recoveryToNightPenalty": sum(solver.Value(var) * 2000 for var in recovery_to_night_terms),
+            "recoveryToNightPenalty": sum(solver.Value(var) * weight for var, weight in recovery_to_night_terms),
             "lateToNightPenalty": sum(solver.Value(var) * weight for var, weight in late_to_night_terms),
+            "nightPrimaryDayWorkExcessPenalty": sum(solver.Value(var) * WEIGHT_NIGHT_PRIMARY_DAY_WORK_EXCESS for var in night_primary_day_work_excess_terms),
             "monthEndWorkPressurePenalty": sum(solver.Value(var) * 15 for var in month_end_work_pressure_terms),
         },
         "naturalnessReport": naturalness_report,
+        "schedule": schedule,
         "postProcess": post_process,
         "recoveryDiffs": recovery_diffs,
         "recoverySummary": {
@@ -1635,6 +2079,7 @@ def solve_shift_schedule(payload: dict, time_limit_seconds: float = 120.0):
             "fixedThroughDay": recovery_settings["fixedThroughDay"],
         },
     }
+    diagnostics["veteranEvaluation"] = evaluate_veteran_quality(status_name, diagnostics, payload)
     output = {
         "schemaVersion": "gas-shift-solver-output/v1",
         "targetYear": year,
@@ -1663,6 +2108,7 @@ def _fallback_output(payload: dict, current_rows: Dict[str, dict], status_name: 
             "reason": "no_feasible_solution",
             **_build_infeasible_diagnostics(payload, staff)
         }
+    diagnostics.setdefault("veteranEvaluation", evaluate_veteran_quality(status_name, diagnostics, payload))
     return {
         "schemaVersion": "gas-shift-solver-output/v1",
         "targetYear": payload.get("targetYear"),
@@ -1672,6 +2118,130 @@ def _fallback_output(payload: dict, current_rows: Dict[str, dict], status_name: 
         "schedule": schedule,
         "diagnostics": diagnostics,
     }
+
+
+def _candidate_experiments(payload: dict, candidate_count: int) -> List[dict]:
+    base = dict(payload.get("experiment") or {})
+    profiles = [
+        ("standard", {}),
+        ("rhythm_guard", {"forceNoShortageShifts": ["遅"], "candidateWeightProfile": "rhythm_guard"}),
+        ("coverage_guard", {"forceNoShortageShifts": ["遅"], "candidateWeightProfile": "coverage_guard"}),
+    ]
+    experiments = []
+    for name, overrides in profiles[:max(1, candidate_count)]:
+        experiment = dict(base)
+        experiment.update(overrides)
+        experiment["candidateProfile"] = name
+        experiments.append(experiment)
+    return experiments
+
+
+def _candidate_rank(output: dict) -> tuple:
+    diagnostics = output.get("diagnostics") or {}
+    veteran = diagnostics.get("veteranEvaluation") or {}
+    action = veteran.get("action") or "unknown"
+    profile = str(diagnostics.get("candidateProfile") or "")
+    action_penalty = {
+        "prefer_candidate": 0,
+        "allow_when_tradeoff_beneficial": 25000,
+        "preserve_as_staffing_pressure": 75000,
+        "add_rule_dimension_or_weight": 150000,
+        "increase_targeted_penalty": 350000,
+        "discourage_unpaid_tradeoff": 650000,
+        "fix_feasibility_first": 900000,
+    }.get(action, 500000)
+    profile_penalty = {
+        "standard": 0,
+        "rhythm_guard": 5000,
+        "coverage_guard": 15000,
+    }.get(profile, 0)
+    status_penalty = 0 if output.get("status") in {"OPTIMAL", "FEASIBLE"} else 1000000
+    shortage_penalty = int(diagnostics.get("shortageCount") or 0) * 100000
+    objective = float(diagnostics.get("objective") or 0)
+    veteran_score = int(veteran.get("score") or 0)
+    metrics = veteran.get("metrics") or {}
+    unmet_penalty = int(metrics.get("unmet") or 0) * 8000
+    bridge_penalty = max(0, int(metrics.get("recoveryToNight") or 0) - 6) * 2500
+    four_day_penalty = max(0, int(metrics.get("fourConsecutiveWork") or 0) - 6) * 3000
+    care_late_penalty = int(metrics.get("careLateBlock") or 0) * 12000
+    isolated_work_penalty = max(0, int(metrics.get("isolatedWorkday") or 0) - 6) * 1500
+    isolated_rest_penalty = max(0, int(metrics.get("isolatedPublicHoliday") or 0) - 24) * 1000
+    adjusted_veteran_score = (
+        veteran_score
+        + unmet_penalty
+        + bridge_penalty
+        + four_day_penalty
+        + care_late_penalty
+        + isolated_work_penalty
+        + isolated_rest_penalty
+    )
+    return (status_penalty, shortage_penalty, action_penalty, adjusted_veteran_score, profile_penalty, objective)
+
+
+def _summarize_candidate_output(index: int, profile: str, output: dict) -> dict:
+    diagnostics = output.get("diagnostics") or {}
+    veteran = diagnostics.get("veteranEvaluation") or {}
+    metrics = veteran.get("metrics") or {}
+    return {
+        "index": index,
+        "profile": profile,
+        "status": output.get("status"),
+        "objective": diagnostics.get("objective"),
+        "shortageCount": diagnostics.get("shortageCount"),
+        "veteranDecision": veteran.get("decision"),
+        "veteranAction": veteran.get("action"),
+        "veteranScore": veteran.get("score"),
+        "unmetRequestCount": metrics.get("unmet"),
+        "fourConsecutiveWorkCount": metrics.get("fourConsecutiveWork"),
+        "fiveConsecutiveWorkCount": metrics.get("fiveConsecutiveWork"),
+        "careLateBlockCount": metrics.get("careLateBlock"),
+        "sameShiftRunCount": metrics.get("sameShiftRun"),
+        "isolatedWorkdayCount": metrics.get("isolatedWorkday"),
+        "isolatedPublicHolidayCount": metrics.get("isolatedPublicHoliday"),
+        "shortNightBlockGapCount": metrics.get("shortNightBlockGap"),
+        "recoveryToNightCount": metrics.get("recoveryToNight"),
+        "contextualRelief": ((veteran.get("patternApproximation") or {}).get("contextualRelief")),
+        "rank": list(_candidate_rank(output)),
+        "reason": veteran.get("reason"),
+    }
+
+
+def solve_shift_schedule_candidates(payload: dict, time_limit_seconds: float = 120.0, candidate_count: int = 1):
+    candidate_count = max(1, min(3, int(candidate_count or 1)))
+    if candidate_count == 1:
+        return solve_shift_schedule(payload, time_limit_seconds=time_limit_seconds)
+
+    experiments = _candidate_experiments(payload, candidate_count)
+    per_candidate_time = max(20.0, float(time_limit_seconds) / len(experiments))
+    candidates = []
+    for index, experiment in enumerate(experiments):
+        candidate_payload = copy.deepcopy(payload)
+        candidate_payload["experiment"] = experiment
+        output, debug = solve_shift_schedule(candidate_payload, time_limit_seconds=per_candidate_time)
+        profile = str(experiment.get("candidateProfile") or f"candidate_{index}")
+        output.setdefault("diagnostics", {})["candidateProfile"] = profile
+        debug["candidateProfile"] = profile
+        candidates.append({
+            "index": index,
+            "profile": profile,
+            "output": output,
+            "debug": debug,
+            "summary": _summarize_candidate_output(index, profile, output),
+        })
+
+    selected = min(candidates, key=lambda item: _candidate_rank(item["output"]))
+    selected_output = copy.deepcopy(selected["output"])
+    selected_debug = copy.deepcopy(selected["debug"])
+    candidate_selection = {
+        "schemaVersion": "veteran-candidate-selection/v1",
+        "candidateCount": len(candidates),
+        "selectedIndex": selected["index"],
+        "selectedProfile": selected["profile"],
+        "candidates": [item["summary"] for item in candidates],
+    }
+    selected_output.setdefault("diagnostics", {})["candidateSelection"] = candidate_selection
+    selected_debug["candidateSelection"] = candidate_selection
+    return selected_output, selected_debug
 
 
 def _shortage_summary_from_output(output: dict, payload: dict) -> Dict[str, dict]:
