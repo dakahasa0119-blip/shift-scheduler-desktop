@@ -39,7 +39,7 @@ function main(): void {
   console.log(`solver platform: ${plan.solverPlatform}`);
   for (const step of plan.steps) {
     console.log(`step: ${step.label}`);
-    const result = childProcess.spawnSync(step.executable, step.args, {
+    const result = childProcess.spawnSync(resolveExecutable(step.executable), step.args, {
       stdio: "inherit",
     });
     if (result.error) {
@@ -53,6 +53,11 @@ function main(): void {
     }
   }
   console.log("prepare release: completed");
+}
+
+function resolveExecutable(executable: string): string {
+  if (process.platform === "win32" && executable === "npx") return "npx.cmd";
+  return executable;
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodePrepareRelease.ts") || arg.endsWith("nodePrepareRelease.ts"))) {

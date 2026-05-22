@@ -18,6 +18,7 @@ declare const process: {
 const childProcess = require("node:child_process");
 const fs = require("node:fs");
 const http = require("node:http");
+const path = require("node:path");
 
 async function main(): Promise<void> {
   const targetArg = process.argv.find((arg) => arg.startsWith("--target="));
@@ -60,7 +61,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const child = childProcess.spawn(smokePlan.launcherPath, [`--port=${smokePlan.port}`], {
+  const child = childProcess.spawn(path.resolve(smokePlan.launcherPath), [`--port=${smokePlan.port}`], {
     cwd: smokePlan.outputDirectory,
     detached: process.platform !== "win32",
     env: {

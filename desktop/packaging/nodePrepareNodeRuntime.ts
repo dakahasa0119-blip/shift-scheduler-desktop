@@ -51,7 +51,7 @@ async function prepareWindowsNode(tempDir: string, outputPath: string): Promise<
   await downloadFile(`https://nodejs.org/dist/v${nodeVersion}/node-v${nodeVersion}-win-x64.zip`, archive);
   const extractDir = path.join(tempDir, "extract");
   await fsp.mkdir(extractDir, { recursive: true });
-  run("python3", ["-m", "zipfile", "-e", archive, extractDir]);
+  run(pythonExecutable(), ["-m", "zipfile", "-e", archive, extractDir]);
   await fsp.copyFile(path.join(extractDir, `node-v${nodeVersion}-win-x64`, "node.exe"), outputPath);
 }
 
@@ -75,6 +75,10 @@ function run(executable: string, args: string[]): void {
   const result = childProcess.spawnSync(executable, args, { stdio: "inherit" });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error(`${executable} failed`);
+}
+
+function pythonExecutable(): string {
+  return process.platform === "win32" ? "python" : "python3";
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodePrepareNodeRuntime.ts") || arg.endsWith("nodePrepareNodeRuntime.ts"))) {

@@ -112,7 +112,7 @@ function main(): void {
     `--out=${archivePlan.verifyExtractRoot}`,
     "--port=45982",
   ];
-  const smoke = childProcess.spawnSync("npx", smokeArgs, {
+  const smoke = childProcess.spawnSync(npxExecutable(), smokeArgs, {
     stdio: "inherit",
   });
   if (smoke.error) {
@@ -134,13 +134,21 @@ function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget 
 
 function extractArchive(format: "tar.gz" | "zip", archivePath: string, outputDirectory: string): { error?: Error; status: number | null } {
   if (format === "zip") {
-    return childProcess.spawnSync("python3", ["-m", "zipfile", "-e", archivePath, outputDirectory], {
+    return childProcess.spawnSync(pythonExecutable(), ["-m", "zipfile", "-e", archivePath, outputDirectory], {
       stdio: "inherit",
     });
   }
   return childProcess.spawnSync("tar", ["-xzf", archivePath, "-C", outputDirectory], {
     stdio: "inherit",
   });
+}
+
+function npxExecutable(): string {
+  return process.platform === "win32" ? "npx.cmd" : "npx";
+}
+
+function pythonExecutable(): string {
+  return process.platform === "win32" ? "python" : "python3";
 }
 
 function sha256File(filePath: string): string {

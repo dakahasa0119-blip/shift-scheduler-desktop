@@ -34,7 +34,7 @@ function main(): void {
     if (!prepared) return;
   } else {
     const readiness = childProcess.spawnSync(
-      "npx",
+      npxExecutable(),
       ["-y", "-p", "tsx", "tsx", "desktop/packaging/nodeReleaseReadiness.ts", `--target=${releaseTarget}`],
       { stdio: "inherit" },
     );
@@ -86,7 +86,7 @@ function main(): void {
       `--target=${releaseTarget}`,
     ];
     if (outputArg) smokeArgs.push(outputArg);
-    const smoke = childProcess.spawnSync("npx", smokeArgs, {
+    const smoke = childProcess.spawnSync(npxExecutable(), smokeArgs, {
       stdio: "inherit",
     });
     if (smoke.error) {
@@ -128,7 +128,7 @@ function prepareRelease(target: ReleaseTarget | undefined, force: boolean): bool
     `--target=${releasePlan.target}`,
   ];
   if (force) prepareArgs.push("--force");
-  const prepare = childProcess.spawnSync("npx", prepareArgs, {
+  const prepare = childProcess.spawnSync(npxExecutable(), prepareArgs, {
     stdio: "inherit",
   });
   if (prepare.error) {
@@ -146,7 +146,7 @@ function prepareRelease(target: ReleaseTarget | undefined, force: boolean): bool
 function buildRuntimeBundle(target: ReleaseTarget): boolean {
   const entryPoint = target === "windows-prototype" ? "desktop/app/windowsLauncher.ts" : "desktop/app/linuxLauncher.ts";
   const bundle = childProcess.spawnSync(
-    "npx",
+    npxExecutable(),
     [
       "-y",
       "-p",
@@ -173,7 +173,7 @@ function buildRuntimeBundle(target: ReleaseTarget): boolean {
 function prepareNodeRuntime(target: ReleaseTarget): boolean {
   const platform = target === "windows-prototype" ? "windows-x64" : "linux-x64";
   const result = childProcess.spawnSync(
-    "npx",
+    npxExecutable(),
     [
       "-y",
       "-p",
@@ -194,6 +194,10 @@ function prepareNodeRuntime(target: ReleaseTarget): boolean {
     return false;
   }
   return true;
+}
+
+function npxExecutable(): string {
+  return process.platform === "win32" ? "npx.cmd" : "npx";
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodeAssembleRelease.ts") || arg.endsWith("nodeAssembleRelease.ts"))) {

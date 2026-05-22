@@ -16,7 +16,7 @@ function main(): void {
 
   fs.mkdirSync(path.dirname(outputFile), { recursive: true });
   const result = childProcess.spawnSync(
-    "npx",
+    npxExecutable(),
     [
       "-y",
       "-p",
@@ -41,6 +41,10 @@ function main(): void {
     return;
   }
   console.log(`runtime bundle: ${outputFile}`);
+}
+
+function npxExecutable(): string {
+  return process.platform === "win32" ? "npx.cmd" : "npx";
 }
 
 if (process.argv.some((arg) => arg.endsWith("desktop/packaging/nodeBuildRuntimeBundle.ts") || arg.endsWith("nodeBuildRuntimeBundle.ts"))) {

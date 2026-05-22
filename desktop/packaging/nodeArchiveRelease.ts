@@ -47,7 +47,7 @@ function main(): void {
   if (force) assembleArgs.push("--force");
   if (skipPrepare) assembleArgs.push("--skip-prepare");
   if (skipSmoke) assembleArgs.push("--skip-smoke");
-  const assemble = childProcess.spawnSync("npx", assembleArgs, {
+  const assemble = childProcess.spawnSync(npxExecutable(), assembleArgs, {
     stdio: "inherit",
   });
   if (assemble.error) {
@@ -107,7 +107,7 @@ function main(): void {
     if (outputArg) verifyArgs.push(outputArg);
     if (archiveOutArg) verifyArgs.push(archiveOutArg);
     if (verifyOutArg) verifyArgs.push(verifyOutArg);
-    const verify = childProcess.spawnSync("npx", verifyArgs, {
+    const verify = childProcess.spawnSync(npxExecutable(), verifyArgs, {
       stdio: "inherit",
     });
     if (verify.error) {
@@ -128,7 +128,7 @@ function resolveReleaseTarget(target: ReleaseTarget | undefined): ReleaseTarget 
 
 function createArchive(format: "tar.gz" | "zip", archivePath: string, assembledDirectory: string): { error?: Error; status: number | null } {
   if (format === "zip") {
-    return childProcess.spawnSync("python3", ["-m", "zipfile", "-c", archivePath, path.basename(assembledDirectory)], {
+    return childProcess.spawnSync(pythonExecutable(), ["-m", "zipfile", "-c", archivePath, path.basename(assembledDirectory)], {
       cwd: path.dirname(assembledDirectory),
       stdio: "inherit",
     });
@@ -138,6 +138,14 @@ function createArchive(format: "tar.gz" | "zip", archivePath: string, assembledD
     ["-czf", archivePath, "-C", path.dirname(assembledDirectory), path.basename(assembledDirectory)],
     { stdio: "inherit" },
   );
+}
+
+function npxExecutable(): string {
+  return process.platform === "win32" ? "npx.cmd" : "npx";
+}
+
+function pythonExecutable(): string {
+  return process.platform === "win32" ? "python" : "python3";
 }
 
 function cleanReleaseOnlyArtifacts(assembledDirectory: string): void {
