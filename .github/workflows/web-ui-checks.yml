@@ -1,0 +1,45 @@
+name: Web UI checks
+
+on:
+  push:
+    branches: [feat/authenticated-web-ui-20260906]
+  pull_request:
+    paths:
+      - 'desktop/**'
+      - 'solver_cli/**'
+      - '.github/workflows/web-ui-checks.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-ui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run existing desktop regression tests
+        run: npm test
+      - name: Run web gateway tests when present
+        run: |
+          if [ -f desktop/web/gateway.test.cjs ]; then
+            node --test desktop/web/gateway.test.cjs
+          fi
+      - name: Package reviewed source for local browser verification
+        if: always()
+        run: git archive --format=zip --output=reviewed-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reviewed-source
+          path: reviewed-source.zip
+          retention-days: 7
