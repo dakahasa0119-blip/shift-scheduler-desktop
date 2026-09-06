@@ -7,6 +7,8 @@ on:
     paths:
       - 'desktop/**'
       - 'solver_cli/**'
+      - 'Dockerfile.web'
+      - 'package.json'
       - '.github/workflows/web-ui-checks.yml'
 
 permissions:
@@ -29,10 +31,38 @@ jobs:
           node-version: '22'
       - name: Run existing desktop regression tests
         run: npm test
-      - name: Run web gateway tests when present
+      - name: Start authenticated web preview
+        env:
+          WEB_USERNAME: preview
+          WEB_PASSWORD: preview-test-password
+          PORT: '3080'
         run: |
-          if [ -f desktop/web/gateway.test.cjs ]; then
-            node --test desktop/web/gateway.test.cjs
+          npx -y -p tsx tsx desktop/web/publicGateway.ts > /tmp/shift-web.log 2>&1 &
+          echo $! > /tmp/shift-web.pid
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3080/healthz >/tmp/health.json; then
+              break
+            fi
+            sleep 1
+          done
+          cat /tmp/health.json
+          grep -q '"ok":true' /tmp/health.json
+      - name: Verify authentication and live UI
+        run: |
+          unauth_status=$(curl -sS -o /tmp/unauth.txt -w '%{http_code}' http://127.0.0.1:3080/)
+          test "$unauth_status" = "401"
+          curl -fsS -u preview:preview-test-password http://127.0.0.1:3080/ > /tmp/index.html
+          grep -q '勤務表' /tmp/index.html
+          quit_status=$(curl -sS -u preview:preview-test-password -X POST -o /tmp/quit.txt -w '%{http_code}' http://127.0.0.1:3080/app/quit)
+          test "$quit_status" = "403"
+      - name: Show gateway log on failure
+        if: failure()
+        run: cat /tmp/shift-web.log || true
+      - name: Stop preview
+        if: always()
+        run: |
+          if [ -f /tmp/shift-web.pid ]; then
+            kill $(cat /tmp/shift-web.pid) || true
           fi
       - name: Package reviewed source for local browser verification
         if: always()
