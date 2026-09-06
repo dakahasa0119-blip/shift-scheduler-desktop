@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: shift-scheduler-preview
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: feat/authenticated-web-ui-20260906
+    dockerfilePath: ./Dockerfile.web
+    dockerContext: .
+    healthCheckPath: /healthz
+    envVars:
+      - key: WEB_USERNAME
+        sync: false
+      - key: WEB_PASSWORD
+        sync: false
+      - key: SOLVER_TIME_LIMIT_SECONDS
+        value: "30"
