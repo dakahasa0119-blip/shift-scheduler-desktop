@@ -33,6 +33,12 @@ function parsePort(value: string | undefined, fallback: number): number {
   return parsed;
 }
 
+function parsePositiveSeconds(value: string | undefined, fallback: number): number {
+  const parsed = Number(value || fallback);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return Math.min(Math.max(Math.floor(parsed), 1), 240);
+}
+
 function safeEqual(left: string, right: string): boolean {
   const leftBuffer = Buffer.from(left, "utf8");
   const rightBuffer = Buffer.from(right, "utf8");
@@ -87,7 +93,7 @@ async function main(): Promise<void> {
     host: "127.0.0.1",
     runtimeOptions: {
       appVersion: "0.1.0-web-preview",
-      defaultTimeLimitSeconds: parsePort(process.env.SOLVER_TIME_LIMIT_SECONDS, 30),
+      defaultTimeLimitSeconds: parsePositiveSeconds(process.env.SOLVER_TIME_LIMIT_SECONDS, 30),
     },
   });
 
@@ -114,18 +120,18 @@ async function main(): Promise<void> {
       return;
     }
 
+    const forwardedHeaders = { ...(request.headers || {}) };
+    delete forwardedHeaders.authorization;
+    forwardedHeaders.host = upstream.host;
+    forwardedHeaders["x-forwarded-proto"] = "https";
+
     const proxyRequest = http.request(
       {
         hostname: upstream.hostname,
         port: Number(upstream.port),
         path: request.url,
         method: request.method,
-        headers: {
-          ...request.headers,
-          host: upstream.host,
-          authorization: undefined,
-          "x-forwarded-proto": "https",
-        },
+        headers: forwardedHeaders,
       },
       (proxyResponse: any) => {
         const headers = { ...proxyResponse.headers };
