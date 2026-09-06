@@ -21,7 +21,7 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +29,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install solver build dependencies
+        run: python -m pip install --disable-pip-version-check -r solver_cli/requirements.txt pyinstaller
+      - name: Build bundled Linux solver
+        run: npx -y -p tsx tsx desktop/solver/nodeBuildSolver.ts --platform=linux-x64 --force --skip-readiness
       - name: Run existing desktop regression tests
         run: npm test
       - name: Start authenticated web preview
