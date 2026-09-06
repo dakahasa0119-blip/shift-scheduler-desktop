@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test": "node desktop/tests/runAll.cjs",
+    "web:preview": "npx -y -p tsx tsx desktop/web/publicGateway.ts",
     "release:linux": "npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=linux-prototype",
     "release:windows": "npx -y -p tsx tsx desktop/packaging/nodeArchiveRelease.ts --target=windows-prototype"
   }
