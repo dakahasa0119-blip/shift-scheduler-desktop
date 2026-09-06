@@ -2,7 +2,9 @@ import { startAppShellServer } from "../app/appShellServer";
 
 declare const require: (name: string) => any;
 declare const process: {
+  argv: string[];
   env: Record<string, string | undefined>;
+  exitCode?: number;
   on(event: string, listener: () => void): void;
 };
 declare const Buffer: {
@@ -45,17 +47,17 @@ export async function startPublicGateway(options: PublicGatewayOptions) {
       return;
     }
 
+    const forwardedHeaders = { ...(request.headers || {}) };
+    delete forwardedHeaders.authorization;
+    forwardedHeaders.host = `127.0.0.1:${shell.port}`;
+
     const target = http.request(
       {
         hostname: "127.0.0.1",
         port: shell.port,
         path: request.url || "/",
         method: request.method || "GET",
-        headers: {
-          ...request.headers,
-          host: `127.0.0.1:${shell.port}`,
-          authorization: undefined,
-        },
+        headers: forwardedHeaders,
       },
       (upstream: any) => {
         const headers = { ...upstream.headers };
@@ -111,7 +113,7 @@ async function main(): Promise<void> {
   process.on("SIGINT", shutdown);
 }
 
-if (require.main === module) {
+if (process.argv.some((arg) => arg.endsWith("desktop/web/publicServer.ts") || arg.endsWith("publicServer.ts"))) {
   main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
