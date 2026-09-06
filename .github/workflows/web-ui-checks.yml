@@ -8,6 +8,7 @@ on:
       - 'desktop/**'
       - 'solver_cli/**'
       - 'Dockerfile.web'
+      - 'render.yaml'
       - 'package.json'
       - '.github/workflows/web-ui-checks.yml'
 
@@ -80,3 +81,41 @@ jobs:
           name: reviewed-source
           path: reviewed-source.zip
           retention-days: 7
+
+  container-smoke:
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build deployable Docker image
+        run: docker build -f Dockerfile.web -t shift-scheduler-web:ci .
+      - name: Start Docker image
+        run: |
+          docker run -d --rm --name shift-scheduler-web-ci \
+            -p 3090:3000 \
+            -e WEB_USERNAME=preview \
+            -e WEB_PASSWORD=preview-test-password \
+            shift-scheduler-web:ci
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3090/healthz >/tmp/docker-health.json; then
+              break
+            fi
+            sleep 1
+          done
+          cat /tmp/docker-health.json
+          grep -q '"ok":true' /tmp/docker-health.json
+      - name: Verify authenticated UI in container
+        run: |
+          unauth_status=$(curl -sS -o /tmp/docker-unauth.txt -w '%{http_code}' http://127.0.0.1:3090/)
+          test "$unauth_status" = "401"
+          curl -fsS -u preview:preview-test-password http://127.0.0.1:3090/ > /tmp/docker-index.html
+          grep -q '勤務表' /tmp/docker-index.html
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs shift-scheduler-web-ci || true
+      - name: Stop container
+        if: always()
+        run: docker rm -f shift-scheduler-web-ci || true
