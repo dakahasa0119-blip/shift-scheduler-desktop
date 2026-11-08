@@ -1,0 +1,44 @@
+name: Local LLM - Japanese weights comparison
+on:
+  push:
+    branches: ['experiments/local-llm-windows-20261108']
+    paths:
+      - '.github/workflows/local-llm-comparison.yml'
+      - 'experiments/local-llm/**'
+permissions:
+  contents: read
+concurrency:
+  group: local-llm-weights-comparison
+  cancel-in-progress: false
+jobs:
+  compare:
+    name: ${{ matrix.profile }}
+    runs-on: windows-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        profile: [tiny-ja-1b5, qwen35-4b, qwen3-8b, swallow-ja-8b, deepseek-distill-8b, qwen3-14b]
+    env:
+      EXPERIMENT_PROFILE: ${{ matrix.profile }}
+      EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results
+      EXPERIMENT_CASES: daily-followup,daily-client-b,hint-open,monthly
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Evaluate pinned public model on fictional care records
+        run: node experiments/local-llm/compare.cjs
+      - name: Preserve small fictional outputs, never model weights
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: comparison-${{ matrix.profile }}
+          path: llm-results/
+          retention-days: 1
+          if-no-files-found: warn
+          compression-level: 6

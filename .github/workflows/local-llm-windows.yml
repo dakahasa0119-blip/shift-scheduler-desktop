@@ -1,10 +1,6 @@
 name: Local LLM - fictional Windows CPU experiment
 on:
-  push:
-    branches: ['experiments/local-llm-windows-20261108']
-    paths:
-      - '.github/workflows/local-llm-windows.yml'
-      - 'experiments/local-llm/**'
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:

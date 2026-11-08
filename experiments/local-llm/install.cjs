@@ -31,6 +31,11 @@ async function startServer(installed,manifest,results,tag='first'){
  const port=await unusedPort(),apiKey=crypto.randomBytes(24).toString('hex'),base='http://127.0.0.1:'+port;
  const logFile=path.join(results,'server-'+tag+'.log'),fd=fs.openSync(logFile,'w');
  const args=['--model',installed.modelPath,'--host','127.0.0.1','--port',String(port),'--api-key',apiKey,'--threads',String(manifest.inference.threads),'--threads-batch',String(manifest.inference.threads),'--ctx-size',String(manifest.inference.contextTokens),'--parallel','1','--gpu-layers','0','--no-webui','--no-cache-prompt','--no-cache-idle-slots','--no-context-shift','--offline','--metrics'];
+ if(manifest.inference.batchSize)args.push('--batch-size',String(manifest.inference.batchSize));
+ if(manifest.inference.ubatchSize)args.push('--ubatch-size',String(manifest.inference.ubatchSize));
+ if(manifest.inference.noRepack)args.push('--no-repack');
+ if(Object.hasOwn(manifest.inference,'enableThinking'))args.push('--reasoning',manifest.inference.enableThinking?'on':'off');
+ if(manifest.inference.reasoning)args.push('--jinja','--reasoning','on','--reasoning-format','deepseek');
  const started=Date.now(),child=spawn(installed.exe,args,{windowsHide:true,stdio:['ignore',fd,fd]});fs.closeSync(fd);
  let exit=null,spawnError=null;child.on('exit',(code,signal)=>{exit={code,signal};});child.on('error',e=>{spawnError=e;});
  function request(endpoint,body,timeout=10000){return requestJSON(base,apiKey,endpoint,body,timeout);}
