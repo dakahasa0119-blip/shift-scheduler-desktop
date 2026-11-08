@@ -28,7 +28,7 @@
     "temperature": 0,
     "seed": 271828,
     "maxOutputTokens": 2400,
-    "requestTimeoutMs": 600000,
+    "requestTimeoutMs": 1800000,
     "minimumAvailableMemoryBytes": 5368709120,
     "diskReserveBytes": 1073741824
   }
