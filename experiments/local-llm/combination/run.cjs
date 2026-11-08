@@ -1,0 +1,33 @@
+'use strict';
+const fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),os=require('node:os'),crypto=require('node:crypto');
+const {spawn}=require('node:child_process');
+const {install,startServer,delay}=require('../install.cjs');
+const {writeJson}=require('../download.cjs');const {schema:checkSchema,validate}=require('../validate.cjs');const {render}=require('../render.cjs');
+const {suites,hash}=require('./fixtures.cjs');const {variants,plan,assemble}=require('./protocol.cjs');
+const profile=require('../profiles.json').find(p=>p.id==='qwen35-4b-compact-greedy');
+const suiteName=process.env.COMBINATION_SUITE,suite=suites[suiteName],slot=Number(process.env.COMBINATION_SLOT||1);if(!suite)throw new Error('unknown_suite');const variant=suite.order[slot-1];if(!variant)throw new Error('unknown_slot');
+const dir=path.resolve(process.env.EXPERIMENT_RESULTS||'combination-results');
+const rows=[],report={protocol:'combination-1',startedAt:new Date().toISOString(),suite:suiteName,variant,condition:variants[variant],fictionalOnly:true,model:profile.model,runtime:profile.runtime,inference:profile.inference,environment:{platform:process.platform,cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,totalMemory:os.totalmem(),availableMemory:os.freemem(),githubRun:process.env.GITHUB_RUN_ID||null,githubJob:process.env.GITHUB_JOB||null},cases:rows,limits:['Small fictional comparison, not clinical or statistical acceptance','One model and one quantization, not a minimum-B study','Same suite variants share a runner; different suites can have different CPUs','Split calls keep total maximum output tokens at4096; total prompt tokens and runtime differ','No generated prose is rewritten during assembly; all stage outputs retained','Examples are fictional and disjoint from test records; known and held-out cases identified separately']};
+function log(event,data={}){console.log(JSON.stringify({at:new Date().toISOString(),event,suite:suiteName,variant,...data}));}
+function parseFinal(text){if(typeof text!=='string')throw new Error('missing_final_text');let s=text.trim();if(s.startsWith('```')){const m=s.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/);if(!m)throw new Error('invalid_json_fence');s=m[1];}return JSON.parse(s);}
+function monitor(pid){const stop=path.join(dir,'memory.stop');const p=spawn('powershell.exe',['-NoLogo','-NoProfile','-NonInteractive','-File',path.join(__dirname,'../memory.ps1'),'-ServerPid',String(pid),'-OutputFile',path.join(dir,'memory.csv'),'-StopFile',stop],{windowsHide:true,stdio:'ignore'});p.on('error',()=>{});return async()=>{await fsp.writeFile(stop,'stop');for(let i=0;i<30&&p.exitCode===null;i++)await delay(200);if(p.exitCode===null)p.kill();};}
+async function main(){await fsp.mkdir(dir,{recursive:true});let server,stopMonitor;try{
+ log('install_started');report.install=await install(path.join(os.tmpdir(),'care-llm-combination-1'),profile);server=await startServer(report.install,profile,dir);report.startupMs=server.ms;stopMonitor=monitor(server.pid);log('ready');
+ await writeJson(path.join(dir,'cases.json'),suite.cases);
+ for(const c of suite.cases){const began=Date.now(),parts=plan(c,variant),entry={id:c.id,inputHash:c.inputHash,sourceDataSha256:hash(c.bundle.data),maxTotalOutputTokens:parts.reduce((s,p)=>s+p.maxTokens,0),stages:[]};
+  for(const p of parts){const started=Date.now(),stage={name:p.name,type:p.type,ref:p.ref,maxOutputTokens:p.maxTokens,promptSha256:hash(p.messages),schemaSha256:hash(p.schema)};try{
+   await writeJson(path.join(dir,c.id+'.'+p.name+'.request.json'),{messages:p.messages,schema:p.schema,maxOutputTokens:p.maxTokens,allowedSourceIds:p.sourceIds});
+   const kwargs={enable_thinking:false},template=await server.request('/apply-template',{messages:p.messages,add_generation_prompt:true,chat_template_kwargs:kwargs}),tokens=await server.request('/tokenize',{content:template.prompt,add_special:true});stage.inputTokens=tokens.tokens.length;stage.promptTemplateSha256=crypto.createHash('sha256').update(template.prompt).digest('hex');
+   if(stage.inputTokens+p.maxTokens+64>profile.inference.contextTokens)throw new Error('context_budget_exceeded_no_truncation');
+   log('stage_started',{case:c.id,stage:p.name,inputTokens:stage.inputTokens});
+   const raw=await server.request('/v1/chat/completions',{model:'local',messages:p.messages,temperature:0,top_p:profile.inference.topP,top_k:profile.inference.topK,min_p:0,presence_penalty:0,repeat_penalty:1,seed:profile.inference.seed,max_tokens:p.maxTokens,stream:false,cache_prompt:false,chat_template_kwargs:kwargs,response_format:{type:'json_object',schema:p.schema}},profile.inference.requestTimeoutMs);
+   await writeJson(path.join(dir,c.id+'.'+p.name+'.raw.json'),raw);stage.usage=raw.usage;stage.timings=raw.timings;stage.finishReason=raw.choices?.[0]?.finish_reason;
+   if(stage.finishReason!=='stop')throw new Error('generation_not_complete_'+stage.finishReason);stage.output=parseFinal(raw.choices?.[0]?.message?.content);checkSchema(stage.output,p.schema);stage.structuralPass=true;
+  }catch(e){stage.error=e.message;stage.structuralPass=false;}stage.elapsedMs=Date.now()-started;entry.stages.push(stage);await writeJson(path.join(dir,c.id+'.progress.json'),entry);log('stage_finished',{case:c.id,stage:p.name,ms:stage.elapsedMs,error:stage.error});}
+  try{entry.output=assemble(c,entry.stages);entry.validation=validate(entry.output,c);}catch(e){entry.error=e.message;entry.validation={structuralPass:false,error:e.message,semanticAcceptance:'not_accepted'};}
+  entry.elapsedMs=Date.now()-began;entry.inputTokens=entry.stages.reduce((n,s)=>n+(s.inputTokens||0),0);entry.outputTokens=entry.stages.reduce((n,s)=>n+(s.usage?.completion_tokens||0),0);rows.push(entry);await writeJson(path.join(dir,'report.json'),report);log('case_finished',{case:c.id,ms:entry.elapsedMs,structuralPass:entry.validation.structuralPass,error:entry.error});
+ }report.executionCompleted=true;
+ }catch(e){report.error=e.stack;report.executionCompleted=false;process.exitCode=1;log('failed',{error:e.message});}
+ finally{if(stopMonitor)await stopMonitor();if(server)await server.stop();report.finishedAt=new Date().toISOString();const f=path.join(dir,'memory.csv'),s=fs.existsSync(f)?fs.readFileSync(f,'utf8').trim().split(/\r?\n/).slice(1).map(x=>x.split(',').slice(1).map(Number)):[];report.memory={sampleCount:s.length,maxSampledWorkingSetBytes:Math.max(0,...s.map(x=>x[0])),maxSampledPrivateBytes:Math.max(0,...s.map(x=>x[1])),sumProcessPeakWorkingSetUpperBound:Math.max(0,...s.map(x=>x[2]))};await writeJson(path.join(dir,'report.json'),report);render(suite.cases,rows,dir);log('completed',{executionCompleted:report.executionCompleted});}
+}
+main().catch(e=>{console.error(e);process.exitCode=1;});

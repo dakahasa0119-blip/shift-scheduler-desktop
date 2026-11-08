@@ -1,0 +1,79 @@
+name: Local LLM - fictional combination comparison
+on:
+  workflow_dispatch:
+  push:
+    branches: [experiments/local-llm-windows-20261108]
+    paths: [experiments/local-llm/combination/**, .github/workflows/local-llm-combination.yml]
+permissions:
+  contents: read
+concurrency:
+  group: local-llm-combination-1
+  cancel-in-progress: false
+jobs:
+  compare:
+    name: combination-${{ matrix.suite }}
+    runs-on: windows-latest
+    timeout-minutes: 100
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        suite: [known, heldout, short]
+    env:
+      COMBINATION_SUITE: ${{ matrix.suite }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Verify fixture separation and output assembly
+        run: node experiments/local-llm/combination/selftest.cjs
+      - name: Condition slot 1
+        env:
+          COMBINATION_SLOT: '1'
+          EXPERIMENT_RESULTS: results-1
+        run: node experiments/local-llm/combination/run.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: combination-${{ matrix.suite }}-1
+          path: results-1/
+          retention-days: 1
+      - name: Condition slot 2
+        if: ${{ !cancelled() }}
+        env:
+          COMBINATION_SLOT: '2'
+          EXPERIMENT_RESULTS: results-2
+        run: node experiments/local-llm/combination/run.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: combination-${{ matrix.suite }}-2
+          path: results-2/
+          retention-days: 1
+      - name: Condition slot 3
+        if: ${{ !cancelled() && matrix.suite != 'short' }}
+        env:
+          COMBINATION_SLOT: '3'
+          EXPERIMENT_RESULTS: results-3
+        run: node experiments/local-llm/combination/run.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ always() && matrix.suite != 'short' }}
+        with:
+          name: combination-${{ matrix.suite }}-3
+          path: results-3/
+          retention-days: 1
+      - name: Condition slot 4
+        if: ${{ !cancelled() && matrix.suite != 'short' }}
+        env:
+          COMBINATION_SLOT: '4'
+          EXPERIMENT_RESULTS: results-4
+        run: node experiments/local-llm/combination/run.cjs
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ always() && matrix.suite != 'short' }}
+        with:
+          name: combination-${{ matrix.suite }}-4
+          path: results-4/
+          retention-days: 1
