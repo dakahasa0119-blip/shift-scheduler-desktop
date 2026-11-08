@@ -1,10 +1,6 @@
-name: Local LLM - conservative writing follow-up
+name: Local LLM - manual fictional-record experiment
 on:
-  push:
-    branches: ['experiments/local-llm-windows-20261108']
-    paths:
-      - '.github/workflows/local-llm-comparison.yml'
-      - 'experiments/local-llm/**'
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:

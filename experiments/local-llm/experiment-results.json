@@ -1,0 +1,1282 @@
+{
+  "recordedAt": "2026-11-08T15:17:44.482Z",
+  "status": "screening_review_complete",
+  "pendingProfiles": [],
+  "scope": "Fictional screening on standard public Windows CPU runners. No production integration.",
+  "reviewer": "This assistant; no human clinician validation",
+  "minimumParameterCount": "not_established",
+  "automaticProductionAdoption": false,
+  "profiles": [
+    {
+      "profileId": "tiny-ja-1b5",
+      "model": "TinySwallow-1.5B-Instruct-Q5_K_M",
+      "modelRevision": "38c003aaf8be9d17af11dece1fbabeb873c567fa",
+      "modelSha256": "85aab0b1776d358eb04e79f47af7856f21ffc60514dad072c97debb94b7782f2",
+      "weightBytes": 1125051232,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.6,
+        "topP": 0.9,
+        "topK": 40,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 4294967296,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14339080192,
+        "cpu": "AMD EPYC 7763 64-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 195,
+        "maxSampledWorkingSetBytes": 1635323904,
+        "maxSampledPrivateBytes": 592769024,
+        "sumProcessPeakWorkingSetUpperBound": 1709850624,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "AI部分のRAMは約1.6GiBに収まりましたが、月次報告で日付・出来事・目標と実績の混同が多く、今回の一括生成には不足しました。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 57194,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "partial",
+            "summary": "本人の『今は痛くない』は反映しましたが、本人の回答より先に『痛みはなくなり』と断定。家族向けの丁寧な文体にもなっていません。"
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 53709,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [
+              {
+                "reason": "中庭の白い花を見て「この花が好き」と話された。膝の痛みの訴えはなかった。",
+                "sourceIds": [
+                  "R1"
+                ]
+              }
+            ],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "partial",
+            "summary": "原記録をほぼコピーし、別人の症状も掲載。確認事項が単なる本文の繰り返しになっています。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 48103,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "fail",
+            "summary": "題名だけでなく根拠や不明点にも『150文字以内』等の説明文がそのまま残りました。引用検査は通っても実用的なヒントになっていません。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 247570,
+          "finishReason": "stop",
+          "error": "inexact_quotation",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "date_not_in_cited_sources"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "入浴中止・歩行・聞き取りの日付を混同。無効な旧追記の風邪回復を事実として使用し、未観察の衣類整理目標も実績のある行として出力。必要な出来事行も欠落。"
+          }
+        }
+      ],
+      "reportSha256": "45c3d44b000bf7c79e94f54bf85b6d96c6e2ffab8f2b99774e657f82016ab356",
+      "reviewSha256": "ff7ed2218f3d2146a8fb44ad6acd246605eefef6ec9290fc91ee85caa541596d"
+    },
+    {
+      "profileId": "qwen35-4b",
+      "model": "Qwen3.5-4B-Q4_K_M",
+      "modelRevision": "e87f176479d0855a907a41277aca2f8ee7a09523",
+      "modelSha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+      "weightBytes": 2740937888,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 1.5,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 5368709120,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": false,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14358441984,
+        "cpu": "AMD EPYC 9V45 96-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 155,
+        "maxSampledWorkingSetBytes": 4961513472,
+        "maxSampledPrivateBytes": 2733744128,
+        "sumProcessPeakWorkingSetUpperBound": 5122580480,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "文体は丁寧になりRAMも減りましたが、別の日の支援を一続きの変更と解釈するなど、事実の整理に誤りが残りました。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 48445,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "partial",
+            "summary": "休息後の本人の言葉と立ち上がり時の未確認は区別。ただし本文に時刻を列挙し、誰が確認したか等の過剰な確認事項を追加。",
+            "factualIssues": [],
+            "writingIssues": [
+              "Long record-like framing and unnecessary missingness in family text",
+              "Product numeric-prose rule rejected times"
+            ]
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 70691,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [
+              {
+                "reason": "隣にいた別の利用者が膝を痛めた際、本人がその様子を見てどう反応したか、または本人の膝の状態は変わらなかったかについて確認が必要です。",
+                "sourceIds": [
+                  "R1"
+                ]
+              },
+              {
+                "reason": "職員が別の利用者のもとへ向かった直後、本人は中庭で待機していたのか、あるいは他の場所へ移動したのか、その後の行動について確認が必要です。",
+                "sourceIds": [
+                  "R1"
+                ]
+              },
+              {
+                "reason": "「本人の膝の痛みの訴えはない」という記載は、当日に全く訴えなかったのか、それとも職員が確認した結果ではないかについて、記録の意図を確認する必要があります。",
+                "sourceIds": [
+                  "R1"
+                ]
+              },
+              {
+                "reason": "白い花を見て話されたという場面での本人の表情や雰囲気（楽しそうだったか、単に名前を呼んだか）について、より詳細な観察が求められます。",
+                "sourceIds": [
+                  "R1"
+                ]
+              },
+              {
+                "reason": "別の利用者の膝痛みの訴えと本人の行動の関連性（例えば、本人も不安だったか、見守っていたか）を推測せず、事実関係の確認が必要です。",
+                "sourceIds": [
+                  "R1"
+                ]
+              }
+            ],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "fail",
+            "summary": "別人の膝痛を本人へ付け替えませんでしたが、記録にない『職員が中庭を出ていった』を追加し、別人の情報と不要な確認事項5件を掲載。",
+            "factualIssues": [
+              "Moving toward the other person does not establish leaving the courtyard",
+              "Adds absence of discomfort although source only states no knee-pain complaint"
+            ],
+            "writingIssues": [
+              "Other person's pain is unnecessary family content",
+              "Five speculative review questions including affect, waiting place and knee response"
+            ]
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 50046,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "fail",
+            "summary": "引用検査は通りましたが『膝痛り』『何をしてくださいましたか』等が不自然。未確認の痛みについて『再発』を問うなど、先に治まったことを含意。",
+            "factualIssues": [
+              "Recurrent pain wording presupposes a prior resolution not yet established",
+              "Focuses on adjusting activity because of pain, an unrecorded relationship"
+            ],
+            "writingIssues": [
+              "Typos/unnatural Japanese and several questions joined together"
+            ]
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 150349,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "入浴中止が1回あっただけなのに『洗う介助を減らしてタオル拭きへ移行』と記載。後日の入浴実施と矛盾し、本人の通院欠席を家族の欠席とも表現。",
+            "factualIssues": [
+              "Invents an ongoing bathing-policy change from separate dated events",
+              "R6 explicitly records bathing and washing the back, contradicting towel-only continuation",
+              "Family is described as the absent person instead of the selected client",
+              "Includes superseded cold-recovery text in event/main content without the corresponding source citation",
+              "Connects walk/rest and photo activity across dates"
+            ],
+            "writingIssues": [
+              "Source-backed November plan left empty in its dedicated field",
+              "CM consultation request left empty",
+              "Repeats the invented bathing transition across overview and goal course"
+            ]
+          }
+        }
+      ],
+      "reportSha256": "41154e47391340599a21a620a56fb5701206feb4ca6e8b1d361fbd4a4b0cb96a",
+      "reviewSha256": "f9907cc57042c803aa26ae4b5ad50cd197427a9c75f887d185570c30ec250583"
+    },
+    {
+      "profileId": "qwen3-8b",
+      "model": "Qwen3-8B-Q4_K_M",
+      "modelRevision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+      "modelSha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "weightBytes": 5027783488,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 9663676416,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": false,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14358253568,
+        "cpu": "AMD EPYC 7763 64-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 800,
+        "maxSampledWorkingSetBytes": 9948479488,
+        "maxSampledPrivateBytes": 5819916288,
+        "sumProcessPeakWorkingSetUpperBound": 9948479488,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "本人の取り違えはありませんでしたが、月次では目標の書き写しと、決まっていない相談対応の予定化が残りました。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 263532,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": true,
+            "validationWarnings": [
+              {
+                "reason": "立ち上がった時の痛みの確認がされていないため、痛みの経過や改善の状況が不明です。",
+                "sourceIds": [
+                  "R2"
+                ]
+              }
+            ],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "factual_pass_style_partial",
+            "summary": "本人の発言と、立ち上がった時の未確認を保っています。『その後、休息後』が重複し、座位で痛くないと聞けた経過まで不明とする確認文は広すぎます。"
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 261728,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_fail",
+            "summary": "本人と別の利用者は区別しましたが、原記録をほぼコピー。家族への文章に別人の痛みが入り、丁寧な文体にもなっていません。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 218899,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "fail",
+            "summary": "『歩いた後に痛み』が『痛みで歩いた後』になり、因果の読め方が変わっています。記録済みの反応を聞き直し、次に確かめたい休息後の様子へつながっていません。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 933104,
+          "finishReason": "stop",
+          "error": "text_source_pair",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "欠席・入浴中止の行と後日の聞き取り日は保持。一方、目標の経過に目標文をそのまま置き、家族の相談希望を『ケアマネジャーに確認する予定』へ変えました。",
+            "factualIssues": [
+              "Family next_plan invents an agreed office action from a family consultation wish"
+            ],
+            "writingIssues": [
+              "Goal courses copy goal definitions instead of summarizing actual monthly observations",
+              "Family and CM overview enumerate almost all dated records rather than presenting a concise overview",
+              "Unobserved G3 has nonempty copied goal text with no sources"
+            ],
+            "validatorNote": "Screening text_source_pair and product numeric_text_requires_review are recorded separately. Grounded numeric wording is not automatically a hallucination."
+          }
+        }
+      ],
+      "reportSha256": "4271051002ebdb8e5f227217f9745174045653378bd8604f18992ee584bbb5f0",
+      "reviewSha256": "1d339008a7cafac14921e6f569ba0df7e1843bfc22bff3734f44e37270ab9cb2"
+    },
+    {
+      "profileId": "swallow-ja-8b",
+      "model": "Llama-3.1-Swallow-8B-Instruct-v0.5-Q4_K_M",
+      "modelRevision": "dc00f584312c641eb7af415f7f44bcc4487350cb",
+      "modelSha256": "6da177cee6797ad8f67cdaf6fac5d52818cc0582c7b0779c5c50ef419ca0b088",
+      "weightBytes": 4920736064,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 16384,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.6,
+        "topP": 0.9,
+        "topK": 40,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 9663676416,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14409089024,
+        "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 576,
+        "maxSampledWorkingSetBytes": 10248216576,
+        "maxSampledPrivateBytes": 6117732352,
+        "sumProcessPeakWorkingSetUpperBound": 10248216576,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "日本語は読めますが、後日の聞き取り日を誤り、月次の目標欄が目標のコピーになりました。確認済みの内容も繰り返し質問しています。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 220515,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "factual_pass_style_fail",
+            "summary": "時刻と痛みの発言は記録通り。一方、休息後の状況が書かれていても具体的状況が不明とし、痛みの原因まで追加確認を求めています。家族文は常体です。"
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 178613,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_partial",
+            "summary": "丁寧語で本人と別人を区別。ただし家族向けに不要な別の利用者の痛みが残ります。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 179513,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "fail",
+            "summary": "回復は決めつけませんが、前日の記録を『本日』としています。同じ未確認点を複数回説明し、休息という既存の対応も改めて尋ねています。",
+            "factualIssue": "periodは10月7日、R1は10月6日。basisの本日は観察日を移している。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 623080,
+          "finishReason": "stop",
+          "error": "superseded_followup_used",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "superseded_followup_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "入浴中止の理由と対応、家族の相談希望は保持しました。しかし16日に聞いた13日の休息の話を『13日には話された』とし、目標欄は目標文のままです。",
+            "factualIssues": [
+              "Family overview shifts the later interview on October 16 to October 13",
+              "Includes superseded R10 among factual overview sources without a review marker"
+            ],
+            "writingIssues": [
+              "G1 and G2 copy goals instead of describing this month's support and observed ability",
+              "G3 not_observed contains a copied goal without evidence rather than remaining empty",
+              "Overview repeats next month's plan and omits useful specific self-washing observations"
+            ],
+            "validatorNote": "superseded_followup_requires_review rejects the stale citation. The output does not explicitly assert cold recovery; do not describe it as that different error."
+          }
+        }
+      ],
+      "reportSha256": "a2895a41215a5f0d87bdfa76d4a45e12ab56d1159c6413b2ed12c09f1248dc09",
+      "reviewSha256": "307609223105e49cfc2d6c90752a8c396846f401995af8bd907eb05c10cdc8bd"
+    },
+    {
+      "profileId": "deepseek-distill-8b",
+      "model": "DeepSeek-R1-0528-Qwen3-8B-Q4_K_M",
+      "modelRevision": "eb48357c179d34dbf515983f798dfb8752a0f261",
+      "modelSha256": "a86349a4180c4e6bb43f874c29c404fa2be3f90b15509bd6d86f697dba724ec1",
+      "weightBytes": 5027785216,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 16384,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.6,
+        "topP": 0.95,
+        "topK": 0,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 8192,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 10737418240,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "reasoning": true,
+        "noRepack": false
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14432759808,
+        "cpu": "AMD EPYC 7763 64-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 2033,
+        "maxSampledWorkingSetBytes": 10551898112,
+        "maxSampledPrivateBytes": 8665288704,
+        "sumProcessPeakWorkingSetUpperBound": 10551898112,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "本人を選んだ記録でも『対象者が分からない』と質問し、訴えがないことを痛みがないことへ変えました。月次の必須項目も欠け、今回のCPUでは1件約15〜25分でした。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 966410,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": false,
+            "error": "quotation_not_in_cited_sources"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "factual_pass_style_fail",
+            "summary": "痛みの発言、休息後に聞いた内容、立ち上がった時の未確認は保持。ただし『記録から』『記録が不足』という作成過程の説明が家族文に残ります。",
+            "validatorNote": "quotation_not_in_cited_sources is triggered by a proposed question quoted inside needs_review, not by a fabricated quotation attributed to the person. Keep this compatibility issue distinct from factual accuracy."
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 901064,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [
+              {
+                "reason": "中庭の白い花を見て話されたのは誰の話か確認できませんでした。記録の主語が不明で、具体的な対象者が分かっていません。",
+                "sourceIds": [
+                  "R1"
+                ]
+              },
+              {
+                "reason": "別の利用者が膝の痛みを訴えましたが、その利用者の詳細や本人の反応について記録が不足しています。",
+                "sourceIds": [
+                  "R1"
+                ]
+              }
+            ],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "fail",
+            "summary": "本人の記録である前提を使わず、白い花の発言が誰のものか確認を求めました。『痛みの訴えがない』を『痛みはありません』と断定し、別の利用者の詳細も質問しています。",
+            "factualIssues": [
+              "Converts absence of a pain complaint into absence of pain"
+            ],
+            "workflowIssues": [
+              "Asks who the selected person's omitted-subject observation is about",
+              "Asks for unnecessary details about another service user"
+            ]
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 1499747,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "style_fail",
+            "summary": "前日の未確認という関係は保っていますが、『追及する必要』など硬い説明が増え、具体的な次の観察を促す短い問いとしては曖昧です。出典IDも職員向け本文に出ています。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 870959,
+          "finishReason": "stop",
+          "error": "$.result: extra event_courses",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "unexpected_output_fields"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "未観察目標G3とCMへの依頼欄が欠け、出来事の表を違う階層に出しました。入浴計画の継続や状況確認を、根拠のないまま記述しています。",
+            "factualIssues": [
+              "CM next_plan adds continued bathing support planning while R8 only confirms the gardening-photo activity",
+              "E1 response asserts the situation was confirmed despite no recorded hospital outcome or follow-up confirmation"
+            ],
+            "coverageIssues": [
+              "Missing G3 not_observed row",
+              "Missing cm_request",
+              "event_courses appears under result instead of cm",
+              "Absence reason omits the hospital visit",
+              "Goal prose omits retained self-washing ability and the later report of relief"
+            ],
+            "writingIssues": [
+              "Generic support-adjusted and goal-aimed statements instead of concrete monthly course",
+              "Vague consultation and absence response wording"
+            ],
+            "validatorNote": "unexpected_output_fields is a real format incompatibility, separate from the factual and coverage problems."
+          }
+        }
+      ],
+      "reportSha256": "9b7301f7925f145935612f02c837f00006744d18fa22687ec0cc5a36ad384d81",
+      "reviewSha256": "f2ae086659c0f1c85528a30cd48a237b5b6b1f3f283db0a4e093e7f4720f6f9c"
+    },
+    {
+      "profileId": "qwen3-14b",
+      "model": "Qwen3-14B-Q4_K_M",
+      "modelRevision": "a04a82c4739b3ef5fa6da7d10261db2c67dd1985",
+      "modelSha256": "5eaa0870bd81ed3b58a630a271234cfa604e43ffb3a19cd68e54a80dd9d52a66",
+      "weightBytes": 9001753984,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 12884901888,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": false,
+        "reasoning": false,
+        "noRepack": true
+      },
+      "githubRun": "42487437451",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14328483840,
+        "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42487437451"
+      },
+      "memory": {
+        "sampleCount": 806,
+        "maxSampledWorkingSetBytes": 10692698112,
+        "maxSampledPrivateBytes": 2732810240,
+        "sumProcessPeakWorkingSetUpperBound": 10692698112,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "日付や相談希望の整理は改善しました。ただし目標の経過で別の日の休息と写真活動を結びつけ、家族文も原記録のコピーが残りました。AI部分は約10GiB。",
+      "cases": [
+        {
+          "id": "daily-followup",
+          "elapsedMs": 259839,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-followup",
+            "productValidatorPass": true,
+            "validationWarnings": [
+              {
+                "reason": "立ち上がった時の痛みは確認していないため、その様子について確認が必要です。",
+                "sourceIds": [
+                  "R2"
+                ]
+              }
+            ],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-followup",
+            "result": "factual_pass_style_partial",
+            "summary": "本人の痛みの発言、休息後の言葉、立ち上がり時の未確認を保ちました。職員への問いは『確認が必要』と硬い表現です。"
+          }
+        },
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 239155,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_fail",
+            "summary": "本人と他人を取り違えず、不要な確認事項もありません。ただし原記録をほぼコピーし、別人の痛みを家族への文章へ掲載。丁寧な文体にもなっていません。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 246770,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "factual_pass_style_partial",
+            "summary": "未確認の痛みを回復済みとせず、確認する観点を出せました。ただし可能性の説明と支援調整の目的が前面に出て、同僚に添える短い問いとしては硬い表現です。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 931081,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "聞き取りの日付、欠席・入浴中止の理由と対応、未観察目標、家族の相談希望は整理できました。一方、歩行後の休息と別日の写真活動を『写真鑑賞に休息を取りながら参加』と一つにまとめています。",
+            "factualIssues": [
+              "G2 asserts rest during photo viewing although rest was after walking on another date"
+            ],
+            "writingIssues": [
+              "G1 says records are confirmed rather than describing retained self-washing ability and support differences",
+              "Family overview lists dates and repeats the November plan",
+              "Office wishes/CM consultation fields repeat the same family request without much editing"
+            ],
+            "validatorNote": "numeric_text_requires_review is a separate application compatibility rejection. Some numeric/month wording is grounded in source; do not count every such rejection as hallucination."
+          }
+        }
+      ],
+      "reportSha256": "cd78bcf6b96c09b88d76302b4714f8f1408d4202e2e473edc0a071ac63cf098b",
+      "reviewSha256": "1a420a61d56c5fa6b1941634bc9fc89230d4b2c092da6fd56f7ba486ef4176a8"
+    },
+    {
+      "profileId": "qwen35-4b-thinking",
+      "model": "Qwen3.5-4B-Q4_K_M",
+      "modelRevision": "e87f176479d0855a907a41277aca2f8ee7a09523",
+      "modelSha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+      "weightBytes": 2740937888,
+      "promptVariant": "product-original",
+      "inference": {
+        "contextTokens": 16384,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 1,
+        "topP": 0.95,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 1.5,
+        "seed": 271828,
+        "maxOutputTokens": 8192,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 6442450944,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": true,
+        "reasoning": true,
+        "noRepack": false
+      },
+      "githubRun": "42488612446",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14381002752,
+        "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42488612446"
+      },
+      "memory": {
+        "sampleCount": 786,
+        "maxSampledWorkingSetBytes": 4980752384,
+        "maxSampledPrivateBytes": 3253313536,
+        "sumProcessPeakWorkingSetUpperBound": 4980752384,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "推論を有効にしても改善は一律ではありませんでした。ヒントで歩行の試行を促し、月次で未記録の風邪を欠席理由に加えています。",
+      "cases": [
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 435100,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_partial",
+            "summary": "本人と別の利用者を区別し、丁寧語になっています。ただし別人の痛みも家族文へ載り、約7分かかりました。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 135328,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "fail",
+            "summary": "未確認の痛みを確かめるだけの問いから、軽い移動を試す・痛みなく完了したか観察する提案へ広がりました。不自然な日本語や中国語の文字も混じっています。",
+            "issues": [
+              "Suggests light movement attempts instead of an optional observation during normal care",
+              "Raises self-judgment ability and additional signs without grounding in the record",
+              "Uses source IDs and mixed Chinese text in staff-facing prose"
+            ],
+            "positive": "昨日という日付関係は正しい。periodは10月7日、R1は10月6日であり、日付の誤りには数えない。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 1058403,
+          "finishReason": "stop",
+          "error": "superseded_followup_used",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "superseded_followup_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "『風邪のため通院』という未記録の欠席理由を追加。本人が洗える部分を洗った事実を、自己選択の拡大やその日からの変更へ広げています。相談欄も空欄です。",
+            "factualIssues": [
+              "Imports the superseded cold-recovery reply into the current absence reason while citing R2",
+              "Invents expanded self-choice and a new support policy starting October 20",
+              "CM overview shifts the later interview to October 13",
+              "Questions whether the clearly labelled later interview is a new observation"
+            ],
+            "coverageIssues": [
+              "Family next_plan and consultation have empty text with nonempty sources",
+              "CM consultation and cm_request omit the recorded family request"
+            ],
+            "writingIssues": [
+              "Long date-by-date enumeration instead of a concise overview",
+              "Unnatural phrases such as 希望をください and 自己負担の範囲",
+              "Internal goal IDs appear in recipient-facing prose"
+            ],
+            "validatorNote": "Superseded-source rejection is separate from human review. The incorrect cold absence reason is visible in the actual generated text, not merely inferred from a citation."
+          }
+        }
+      ],
+      "reportSha256": "669dd79445746fda3bbad322b515de19870f973e351aac58f3bdb7b13a55e7d7",
+      "reviewSha256": "107a3d1df002755b3f4dc2d8b8cb11b03e4472cd809938a4f52f168bb5363921"
+    },
+    {
+      "profileId": "qwen35-4b-compact",
+      "model": "Qwen3.5-4B-Q4_K_M",
+      "modelRevision": "e87f176479d0855a907a41277aca2f8ee7a09523",
+      "modelSha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+      "weightBytes": 2740937888,
+      "promptVariant": "compact-v1",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0.7,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 1.5,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 5368709120,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": false,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42489455693",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14459580416,
+        "cpu": "INTEL(R) XEON(R) PLATINUM 8573C",
+        "logicalCpus": 4,
+        "githubRun": "42489455693"
+      },
+      "memory": {
+        "sampleCount": 174,
+        "maxSampledWorkingSetBytes": 5200773120,
+        "maxSampledPrivateBytes": 2928267264,
+        "sumProcessPeakWorkingSetUpperBound": 5361840128,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "短い依頼文でヒントの要点は改善しましたが、月次で別の出来事の結合、欠席理由の追加、決まっていない支援計画が残りました。",
+      "cases": [
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 57518,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_partial",
+            "summary": "元の長い依頼文で出た未記録の移動はなくなり、丁寧語になりました。ただし本人の家族に不要な別人の痛みも掲載しています。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 65485,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "factual_pass_style_partial",
+            "summary": "未確認の休息後の痛みに絞れ、回復を決めつけていません。ただし『今はまだ痛いのか？』『直接尋ねて』は現場向けに硬く、任意の問いかけに整える余地があります。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 238520,
+          "finishReason": "stop",
+          "error": "unknown_source",
+          "structuralPass": false,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "観察済みの経過を書く試みはありますが、歩行後の休息と別日の写真活動を結合。通院欠席に体調不良を加え、未決定の家庭内状況確認などを支援予定にしています。",
+            "factualIssues": [
+              "Merges walking-related rest with photo-viewing activity on a different day",
+              "Adds ill-health as the absence reason although the source only states a hospital visit",
+              "Invents office plans to handle handrail consultation and investigate clothing organization",
+              "Treats G3 goal definition as a source record in prose",
+              "Turns towel wiping after bath cancellation into support during bathing"
+            ],
+            "coverageIssues": [
+              "Blank event response cells omit documented family phone report and towel-wiping support",
+              "Office plan R8 is placed in consultation instead of CM next_plan"
+            ],
+            "validatorNote": "The screening detected unknown_source. The product validator stopped earlier at numeric_text_requires_review; these are distinct checks."
+          }
+        }
+      ],
+      "reportSha256": "cbc8b5879b4831d1754b13e3b655598fa1f9a84eea5e5c4a1f6984be9ca02ed1",
+      "reviewSha256": "ccd4e72fed972452225dedfcca2f2d9aae9525da7001da9f691a25267eb9c4fb"
+    },
+    {
+      "profileId": "qwen35-4b-compact-greedy",
+      "model": "Qwen3.5-4B-Q4_K_M",
+      "modelRevision": "e87f176479d0855a907a41277aca2f8ee7a09523",
+      "modelSha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+      "weightBytes": 2740937888,
+      "promptVariant": "compact-v1",
+      "inference": {
+        "contextTokens": 12288,
+        "threads": 4,
+        "parallel": 1,
+        "gpuLayers": 0,
+        "temperature": 0,
+        "topP": 0.8,
+        "topK": 20,
+        "minP": 0,
+        "presencePenalty": 0,
+        "seed": 271828,
+        "maxOutputTokens": 4096,
+        "requestTimeoutMs": 2400000,
+        "minimumAvailableMemoryBytes": 5368709120,
+        "diskReserveBytes": 1073741824,
+        "batchSize": 256,
+        "ubatchSize": 128,
+        "enableThinking": false,
+        "reasoning": false,
+        "noRepack": false
+      },
+      "githubRun": "42491639968",
+      "environment": {
+        "platform": "win32",
+        "arch": "x64",
+        "node": "v24.22.2",
+        "totalMemory": 17174360064,
+        "availableMemory": 14388207616,
+        "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+        "logicalCpus": 4,
+        "githubRun": "42491639968"
+      },
+      "memory": {
+        "sampleCount": 128,
+        "maxSampledWorkingSetBytes": 5282684928,
+        "maxSampledPrivateBytes": 2933133312,
+        "sumProcessPeakWorkingSetUpperBound": 5364187136,
+        "measurement": "Server process tree, sampled every 2 s; not total system RAM"
+      },
+      "executionCompleted": true,
+      "decision": "not_accepted_unchanged",
+      "summary": "目標ごとの経過は改善し、別日の写真活動との結合も避けました。ただし入浴中止の理由を体調不良に広げ、対応表とCMへの相談が欠けています。",
+      "cases": [
+        {
+          "id": "daily-client-b",
+          "elapsedMs": 38550,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "daily-client-b",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "daily-client-b",
+            "result": "factual_pass_style_partial",
+            "summary": "本人と別人を区別し、丁寧語で書けています。ただし別の利用者の痛みと不要な年月日が残ります。年月日は原記録どおりで、捏造には数えません。"
+          }
+        },
+        {
+          "id": "hint-open",
+          "elapsedMs": 56961,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "hint-open",
+            "productValidatorPass": true,
+            "validationWarnings": [],
+            "note": "Schema/citations/rules only; human semantic review remains necessary"
+          },
+          "semanticReview": {
+            "id": "hint-open",
+            "result": "factual_pass_style_partial",
+            "summary": "休息後の痛みが未確認であることを保ち、そこに絞った問いができました。具体的で使える方向ですが、問いの表現は改善したかどうかに寄っており、もう少し中立的にできます。"
+          }
+        },
+        {
+          "id": "monthly",
+          "elapsedMs": 168812,
+          "finishReason": "stop",
+          "error": null,
+          "structuralPass": true,
+          "productCheck": {
+            "id": "monthly",
+            "productValidatorPass": false,
+            "error": "numeric_text_requires_review"
+          },
+          "semanticReview": {
+            "id": "monthly",
+            "result": "fail",
+            "summary": "G1は自分で洗った部分と職員の支援を区別し、G2も歩行後の休息と写真活動を分けて記述。未観察のG3も正しく扱いました。一方、家族本文は体調不良による中止と読め、入浴中止時の対応表とCMへの依頼欄が空です。",
+            "factualIssues": [
+              "Family overall associates cancellation with ill-health although the bathing source gives only the person's preference"
+            ],
+            "coverageIssues": [
+              "E2 response is blank despite recorded towel-wiping support",
+              "cm_request is blank despite the family's explicit CM consultation request"
+            ],
+            "writingIssues": [
+              "CM overview says goals are recorded and flexibly handled rather than giving concrete key points",
+              "G2 preserves that relief was heard from the person, but does not explicitly preserve the later interview timing"
+            ],
+            "positive": [
+              "No invented office plan from family consultation wish",
+              "Does not use the superseded cold-recovery statement as a current fact",
+              "Goal-course prose reflects actual support and retained ability instead of copying the goal",
+              "Does not merge rest during walking with rest during photo viewing"
+            ],
+            "validatorNote": "The product's numeric_text_requires_review includes the grounded November plan. This compatibility rejection is separate from the semantic issues listed above."
+          }
+        }
+      ],
+      "reportSha256": "0fdb837b987ceede59b57391e337a8c7461a13b59126ea981222a8ad1d259906",
+      "reviewSha256": "3d6a65d2aaf9def6048f4255ab40603fb5e32923aeba29eb722f53c58dbc9755"
+    }
+  ],
+  "limits": [
+    "Small known-case screening; repeats are not independent cases",
+    "Different model families, tokenizers, recommended sampling and CPU hosts",
+    "14B uses no-repack; RAM and timing are configuration-specific",
+    "Raw responses were not rewritten; format pass is not factual or clinical acceptance"
+  ]
+}
