@@ -16,6 +16,9 @@ jobs:
     timeout-minutes: 45
     env:
       EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results
+      # The first run covered all eight cases. Repeat only the monthly case
+      # interrupted by the transport's hidden 300-second header timeout.
+      EXPERIMENT_CASES: monthly
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -25,6 +28,8 @@ jobs:
           node-version: '24'
       - name: Fault injection and isolation checks
         run: node experiments/local-llm/selftest.cjs
+      - name: Explicit response timeout checks
+        run: node --test experiments/local-llm/transport.test.cjs
       - name: Verified automatic installation and real model evaluation
         run: node experiments/local-llm/run.cjs
       - name: Preserve only small fictional results

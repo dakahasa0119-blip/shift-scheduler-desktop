@@ -5,7 +5,10 @@ const {install,startServer,delay}=require('./install.cjs');
 const {writeJson}=require('./download.cjs');
 const {validate}=require('./validate.cjs');
 const {render}=require('./render.cjs');
-const manifest=require('./manifest.json'),cases=require('./cases.json');
+const manifest=require('./manifest.json'),allCases=require('./cases.json');
+const selectedIds=(process.env.EXPERIMENT_CASES||'').split(',').filter(Boolean);
+if(selectedIds.some(id=>!allCases.some(c=>c.id===id)))throw new Error('unknown_experiment_case');
+const cases=selectedIds.length?allCases.filter(c=>selectedIds.includes(c.id)):allCases;
 const resultsDir=path.resolve(process.env.EXPERIMENT_RESULTS||path.join(__dirname,'results'));
 const root=path.resolve(process.env.EXPERIMENT_HOME||path.join(os.tmpdir(),'care-local-llm-experiment'));
 const results=[],report={startedAt:new Date().toISOString(),fictionalOnly:true,model:manifest.model,runtime:manifest.runtime,inference:manifest.inference,environment:{platform:process.platform,arch:process.arch,node:process.version,totalMemory:os.totalmem(),availableMemory:os.freemem(),cpu:os.cpus()[0]?.model,logicalCpus:os.cpus().length,githubRun:process.env.GITHUB_RUN_ID||null},limits:['Prototype only; not an installed application provider','GitHub Windows runner has preinstalled tools; not a clean consumer laptop','Single model, one pass per fictional case; no clinical or statistical guarantee','No 8 GB laptop acceptance','Schema checks do not prove factual or linguistic correctness'],cases:results};
@@ -17,7 +20,7 @@ async function generate(server,c){
  if(inputTokens+manifest.inference.maxOutputTokens+64>manifest.inference.contextTokens)throw new Error('context_budget_exceeded_no_truncation');
  const began=Date.now();log('case_started',{id:c.id,inputTokens});
  const pending=server.request('/v1/chat/completions',{model:'local',messages:c.messages,temperature:0,seed:manifest.inference.seed,max_tokens:manifest.inference.maxOutputTokens,stream:false,cache_prompt:false,response_format:{type:'json_object',schema:c.schema}},manifest.inference.requestTimeoutMs);
- if(c.id==='daily-short'){
+ if(!report.concurrentRecordSave){
   await delay(100);const at=Date.now();await writeJson(path.join(root,'fictional-record.json'),{client:'fictional-A',memo:'生成を待つ間に記録を保存',revision:2});
   report.concurrentRecordSave={actualDuringInference:true,ms:Date.now()-at,scope:'Prototype JSON store only; production UI not exercised'};
  }

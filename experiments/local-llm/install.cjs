@@ -2,6 +2,7 @@
 const fs=require('node:fs'),fsp=fs.promises,path=require('node:path'),os=require('node:os'),net=require('node:net'),crypto=require('node:crypto');
 const {spawn}=require('node:child_process');
 const {download,valid,writeJson,removeFile}=require('./download.cjs');
+const {requestJSON}=require('./http-client.cjs');
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 function checkResources({freeDisk,freeMemory},needDisk,needMemory){if(freeDisk<needDisk)throw new Error('insufficient_disk');if(freeMemory<needMemory)throw new Error('insufficient_available_memory');}
 function psQuote(s){return "'"+String(s).replace(/'/g,"''")+"'";}
@@ -32,7 +33,7 @@ async function startServer(installed,manifest,results,tag='first'){
  const args=['--model',installed.modelPath,'--host','127.0.0.1','--port',String(port),'--api-key',apiKey,'--threads',String(manifest.inference.threads),'--threads-batch',String(manifest.inference.threads),'--ctx-size',String(manifest.inference.contextTokens),'--parallel','1','--gpu-layers','0','--no-webui','--no-cache-prompt','--no-cache-idle-slots','--no-context-shift','--offline','--metrics'];
  const started=Date.now(),child=spawn(installed.exe,args,{windowsHide:true,stdio:['ignore',fd,fd]});fs.closeSync(fd);
  let exit=null,spawnError=null;child.on('exit',(code,signal)=>{exit={code,signal};});child.on('error',e=>{spawnError=e;});
- async function request(endpoint,body,timeout=10000){const r=await fetch(base+endpoint,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+apiKey,...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(timeout)});const text=await r.text();if(!r.ok)throw new Error('server_http_'+r.status+': '+text.slice(0,600));return JSON.parse(text);}
+ function request(endpoint,body,timeout=10000){return requestJSON(base,apiKey,endpoint,body,timeout);}
  async function stop(){if(child.exitCode===null&&!spawnError){child.kill();for(let i=0;i<40&&child.exitCode===null;i++)await delay(100);}}
  try{while(Date.now()-started<180000){if(spawnError)throw spawnError;if(exit)throw new Error('server_exited_'+exit.code);try{const h=await request('/health');if(h.status==='ok')return {pid:child.pid,port,base,request,stop,child,ms:Date.now()-started,logFile};}catch{}await delay(500);}throw new Error('server_start_timeout');}catch(e){await stop();throw e;}
 }
