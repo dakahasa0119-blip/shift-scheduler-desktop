@@ -1,4 +1,4 @@
-name: Local LLM - small-model reasoning follow-up
+name: Local LLM - compact writing instructions follow-up
 on:
   push:
     branches: ['experiments/local-llm-windows-20261108']
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: local-llm-small-reasoning-follow-up
+  group: local-llm-compact-instructions-follow-up
   cancel-in-progress: false
 jobs:
   compare:
@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        profile: [qwen35-4b-thinking]
+        profile: [qwen35-4b-compact]
     env:
       EXPERIMENT_PROFILE: ${{ matrix.profile }}
       EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results

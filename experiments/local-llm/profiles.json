@@ -324,5 +324,53 @@
       "noRepack": false
     },
     "note": "Follow-up to factual failures in non-thinking mode: same weights and fictional input, official general thinking sampling. Native thinking/final separation, no JSON grammar during reasoning. CPU generation budget 8192 tokens."
+  },
+  {
+    "id": "qwen35-4b-compact",
+    "experimentVersion": "comparison-1",
+    "runtime": {
+      "name": "llama.cpp",
+      "version": "b12110",
+      "file": "llama-b12110-bin-win-cpu-x64.zip",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b12110/llama-b12110-bin-win-cpu-x64.zip",
+      "bytes": 24708445,
+      "sha256": "98901e327c252875accaf2d1bf364e10e868843b0b63468baad1aa945cdc5da2",
+      "license": "MIT"
+    },
+    "model": {
+      "name": "Qwen3.5-4B-Q4_K_M",
+      "author": "Qwen",
+      "quantizer": "Unsloth",
+      "repository": "unsloth/Qwen3.5-4B-GGUF",
+      "revision": "e87f176479d0855a907a41277aca2f8ee7a09523",
+      "file": "Qwen3.5-4B-Q4_K_M.gguf",
+      "url": "https://huggingface.co/unsloth/Qwen3.5-4B-GGUF/resolve/e87f176479d0855a907a41277aca2f8ee7a09523/Qwen3.5-4B-Q4_K_M.gguf",
+      "bytes": 2740937888,
+      "sha256": "00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4",
+      "license": "apache-2.0"
+    },
+    "inference": {
+      "contextTokens": 12288,
+      "threads": 4,
+      "parallel": 1,
+      "gpuLayers": 0,
+      "temperature": 0.7,
+      "topP": 0.8,
+      "topK": 20,
+      "minP": 0,
+      "presencePenalty": 1.5,
+      "seed": 271828,
+      "maxOutputTokens": 4096,
+      "requestTimeoutMs": 2400000,
+      "minimumAvailableMemoryBytes": 5368709120,
+      "diskReserveBytes": 1073741824,
+      "batchSize": 256,
+      "ubatchSize": 128,
+      "enableThinking": false,
+      "reasoning": false,
+      "noRepack": false
+    },
+    "note": "Same Qwen3.5 weights and non-thinking sampling, original fictional data and accepted output fields. Shorter task-specific instructions replace the cloud-sized prompt; no answer-specific facts added.",
+    "promptVariant": "compact-v1"
   }
 ]
