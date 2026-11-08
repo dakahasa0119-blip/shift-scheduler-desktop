@@ -1,4 +1,4 @@
-name: Local LLM - Japanese weights comparison
+name: Local LLM - small-model reasoning follow-up
 on:
   push:
     branches: ['experiments/local-llm-windows-20261108']
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: local-llm-weights-comparison
+  group: local-llm-small-reasoning-follow-up
   cancel-in-progress: false
 jobs:
   compare:
@@ -17,13 +17,13 @@ jobs:
     timeout-minutes: 150
     strategy:
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 1
       matrix:
-        profile: [tiny-ja-1b5, qwen35-4b, qwen3-8b, swallow-ja-8b, deepseek-distill-8b, qwen3-14b]
+        profile: [qwen35-4b-thinking]
     env:
       EXPERIMENT_PROFILE: ${{ matrix.profile }}
       EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results
-      EXPERIMENT_CASES: daily-followup,daily-client-b,hint-open,monthly
+      EXPERIMENT_CASES: daily-client-b,hint-open,monthly
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
