@@ -1,4 +1,4 @@
-name: Local LLM - compact writing instructions follow-up
+name: Local LLM - conservative writing follow-up
 on:
   push:
     branches: ['experiments/local-llm-windows-20261108']
@@ -8,7 +8,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: local-llm-compact-instructions-follow-up
+  group: local-llm-conservative-writing-follow-up
   cancel-in-progress: false
 jobs:
   compare:
@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        profile: [qwen35-4b-compact]
+        profile: [qwen35-4b-compact-greedy]
     env:
       EXPERIMENT_PROFILE: ${{ matrix.profile }}
       EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results
