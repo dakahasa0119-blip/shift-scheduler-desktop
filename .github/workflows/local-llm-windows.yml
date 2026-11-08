@@ -15,8 +15,6 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 45
     env:
-      EXPERIMENT_HOME: ${{ runner.temp }}\care-local-llm-experiment
-      EXPERIMENT_TEST_HOME: ${{ runner.temp }}\care-local-llm-selftest
       EXPERIMENT_RESULTS: ${{ github.workspace }}\llm-results
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
