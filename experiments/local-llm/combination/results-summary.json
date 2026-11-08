@@ -1,0 +1,133 @@
+{
+  "at": "2026-11-08T18:32:50.490Z",
+  "status": "complete",
+  "summary": "完成例と分割で欄の欠落は減ったが、誤った因果関係・取消予定の再採用・重要な経過の省略が残り、今回の4構成は報告作成全体の採用条件を満たさなかった。",
+  "findings": [
+    "同じ4Bモデルで、清拭の理由と対応、CM相談を別欄に載せる処理は分割により改善した。",
+    "完成例を加えれば必ずよくなるわけではない。既知ケースの分割＋例では別日の休息と写真活動を因果で結び、新規ケースでは取消済みの歌の予定を復活させた。",
+    "月次1件の生成は一括で約92〜113秒、分割で約132〜193秒。AIだけの最大メモリは約4.5〜5.1GiB。普通のノートPCのOS・アプリ分は別途必要。",
+    "短い事実要約や最初のヒントには使える場面があるが、別人の情報の不要な掲載や追記後のヒントの更新に問題が残った。",
+    "18出力は同一7ケースの条件比較を含む。必要なB数の下限、全ローカルモデルの不可能性、臨床安全性を示す試験ではない。",
+    "実際のアプリ・利用者記録・設定・配布ZIPは変更していない。"
+  ],
+  "model": "Qwen3.5-4B Q4_K_M",
+  "conditions": [
+    {
+      "suite": "heldout",
+      "variant": "A",
+      "summary": "一括・例なしでも設備故障と清拭は整理できましたが、取消予定の扱いとCM相談欄、疲れの経過に問題が残りました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 112878,
+      "peakWorkingSetBytes": 4882735104,
+      "cases": 1,
+      "reportSha256": "b7a60bbc6391484f8e56c2c3323c850c11805e9fa70f7609ae444f7a1abfd58a",
+      "reviewSha256": "649a5e8ac6e07c982dbcf07ac59fff288338fc46116c53313eb5669103f15e92"
+    },
+    {
+      "suite": "heldout",
+      "variant": "B",
+      "summary": "完成例だけでは改善が揃わず、家族欄では取消を認識したのに、CM方針では歌の準備を復活させました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 91842,
+      "peakWorkingSetBytes": 4845858816,
+      "cases": 1,
+      "reportSha256": "ec6bf0474fa844bccf6ee97f88b6f48682b068f3fdae85b16118b2b277e2be37",
+      "reviewSha256": "5a9845759fd5324ee17f14d764b928aecc9ba50e6e61901cda18d5e1fe3dc5e4"
+    },
+    {
+      "suite": "heldout",
+      "variant": "C",
+      "summary": "分割・例なしでは取消予定と各表が比較的よく保たれました。ただし家族向けの疲れの経過が抜け、文章の重複・曖昧さが残ります。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 132183,
+      "peakWorkingSetBytes": 4881825792,
+      "cases": 1,
+      "reportSha256": "186456849e894761f99946c16411c898c7a225f4507b432cba10e4b1a07574db",
+      "reviewSha256": "8455638f4e0126ea39ba133abd1330ff3b5469254e80101d9a971b10e1cf2716"
+    },
+    {
+      "suite": "heldout",
+      "variant": "D",
+      "summary": "分割した理由・対応の表は正しく埋まりましたが、取り消した歌の予定を再準備すると書き、希望を事業所の方針へ変えました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 177427,
+      "peakWorkingSetBytes": 5376339968,
+      "cases": 1,
+      "reportSha256": "e27ce50818af7b823d9e7b5477bbb0e2ef4915a570522a07a4fcd61a3faba1a2",
+      "reviewSha256": "a88a9b0f5551823e5632426c712d223eab4f080caef59e7ffc1ae184ba4b85f6"
+    },
+    {
+      "suite": "known",
+      "variant": "A",
+      "summary": "一括生成では、入浴中止を体調不良と説明し、出来事表の清拭対応とCMへの相談欄が欠けました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 112530,
+      "peakWorkingSetBytes": 4883750912,
+      "cases": 1,
+      "reportSha256": "e3f7ed1e7f0d942f74043163255636d7d6ab1abe38dabd4d017644791943127e",
+      "reviewSha256": "ac04ce8f0d096c160e26a558caa4990c75422fcd3b503b18a12fb3789df0fff2"
+    },
+    {
+      "suite": "known",
+      "variant": "B",
+      "summary": "完成例で体調不良の創作は消えましたが、清拭の対応欄とCM相談欄の欠落、出典の不足が残りました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 98189,
+      "peakWorkingSetBytes": 4845785088,
+      "cases": 1,
+      "reportSha256": "6008f0e81a1ba8163fb180689116776c328065d61e2ba7c0e8c7b826b26aca68",
+      "reviewSha256": "26b0c315c85a25b66d3bf00c2671b06a5ddcb70f599788e91eb1dee215cd110d"
+    },
+    {
+      "suite": "known",
+      "variant": "C",
+      "summary": "分割で清拭の対応欄とCM相談欄が埋まりました。一方、過去の支援を今後も続ける方針へ広げ、体調変化の経過を省きました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 145684,
+      "peakWorkingSetBytes": 4883574784,
+      "cases": 1,
+      "reportSha256": "520d55503e2773190dee17969ba9ab8e5fc5e7c631d990537ee557ccecc615b8",
+      "reviewSha256": "d173d3ccf1fba750dcc31f2e050d35a5fcc7f95fa3e0ca935ff1804d48336291"
+    },
+    {
+      "suite": "known",
+      "variant": "D",
+      "summary": "分割と完成例で必要な欄は埋まりましたが、別日の休息と写真活動を一つの支援効果として結び付けました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 193380,
+      "peakWorkingSetBytes": 5380775936,
+      "cases": 1,
+      "reportSha256": "2d811da96e0f70b70ce8d7d0feb01889a399040d67d43a8666a632e1801e0c7c",
+      "reviewSha256": "7b5b565ae40f7f2aa55b35321ec9926dc4c9e2fd0d1c5a6dc8ed5d8cdd569383"
+    },
+    {
+      "suite": "short",
+      "variant": "A",
+      "summary": "短い事実要約や最初の観察ヒントは使える場面がありました。一方、別人の情報の不要な掲載と、追記後のヒントの更新に問題がありました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 330040,
+      "peakWorkingSetBytes": 5352656896,
+      "cases": 5,
+      "reportSha256": "4aec8779ca37c759da7f1e53b1b76016145253e7f17e624de9205e002b89af34",
+      "reviewSha256": "f4033d0b882829e9c5911012a92285943abf23253c9799396605f08cf50fea37"
+    },
+    {
+      "suite": "short",
+      "variant": "B",
+      "summary": "完成例で家族向けの丁寧語は改善しましたが、別人情報の掲載は残り、追記後のヒントでは発言日の曖昧さと写真の選択の抜けがありました。",
+      "decision": "not_accepted_full_workflow",
+      "totalMs": 370650,
+      "peakWorkingSetBytes": 5105692672,
+      "cases": 5,
+      "reportSha256": "0e93fdaf8b1fcdb046bf3c107fbec11c20421273a11b486626c72d2800e85b2a",
+      "reviewSha256": "d356837ef5951c92a10390ed99bb81bc4f41a5e850131e727d4b8114ac5a3188"
+    }
+  ],
+  "documents": 18,
+  "distinctCases": 7,
+  "rawOutputsUnchanged": true,
+  "reviewer": "Assistant manual review; no clinician acceptance",
+  "productionAdoption": false,
+  "minimumParameterThreshold": "not_established",
+  "githubRun": "42508806296"
+}

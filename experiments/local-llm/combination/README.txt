@@ -29,5 +29,13 @@ No product data, credentials, source, deployment, or installer is changed.
 
 Artifacts contain fictional text and logs only, never model weights.
 Standard public runners only; no larger paid runner/GPU/cache upload.
-The push trigger is temporary on the experiment branch and will be returned to
-manual-only at completion. A new run must not be inferred from old experiment state.
+Completed run42508806296: all3 jobs succeeded and all10 artifacts/18 outputs were
+collected and reviewed. Workflow is now manual-only; do not rerun merely because
+these files exist. See results-summary.json for actual results and limitations.
+
+Splitting improved event response and CM request coverage, but all four monthly
+configurations retained content or usability defects. Examples were not a uniform
+improvement: canceled plans and unsupported cross-day causality remained.
+Monthly inference took92-113s one-shot and132-193s split; AI-only RAM4.5-5.1GiB.
+This does not establish a universal minimum model size or local-LLM impossibility.
+No production adoption. Raw model outputs were never edited to pass review.

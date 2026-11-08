@@ -1,9 +1,6 @@
 name: Local LLM - fictional combination comparison
 on:
   workflow_dispatch:
-  push:
-    branches: [experiments/local-llm-windows-20261108]
-    paths: [experiments/local-llm/combination/**, .github/workflows/local-llm-combination.yml]
 permissions:
   contents: read
 concurrency:
